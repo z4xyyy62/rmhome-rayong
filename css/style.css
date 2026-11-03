@@ -301,7 +301,6 @@ button, input, select, textarea {
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: 0.5px;
-  backdrop-filter: blur(10px);
 }
 
 .gold-badge svg {
@@ -372,7 +371,6 @@ button, input, select, textarea {
   background: rgba(56, 12, 20, 0.65);
   color: var(--color-gold-300);
   border: 1.5px solid var(--color-gold-500);
-  backdrop-filter: blur(8px);
 }
 
 .btn-outline-gold:hover {
@@ -451,16 +449,14 @@ button, input, select, textarea {
   position: sticky;
   top: 0;
   width: 100%;
-  background: rgba(8, 28, 19, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #081c13;
   border-bottom: 1px solid rgba(212, 175, 55, 0.28);
   z-index: 1000;
   transition: var(--transition-smooth);
 }
 
 .site-header.scrolled {
-  background: rgba(6, 22, 15, 0.98);
+  background: #06160f;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
   border-bottom-color: rgba(212, 175, 55, 0.4);
 }
@@ -714,8 +710,6 @@ button, input, select, textarea {
   height: 50px;
   border-radius: 50%;
   background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(212, 175, 55, 0.6);
   color: #ffffff;
   display: flex;
@@ -758,8 +752,6 @@ button, input, select, textarea {
   align-items: center;
   gap: 10px;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   padding: 8px 16px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -795,8 +787,6 @@ button, input, select, textarea {
   right: 24px;
   z-index: 25;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(212, 175, 55, 0.5);
   color: #f8fafc;
   padding: 5px 14px;
@@ -996,8 +986,6 @@ button, input, select, textarea {
   border: 1px solid var(--border-gold-subtle);
   border-radius: var(--radius-lg);
   padding: 1.5rem 2rem;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -1158,7 +1146,6 @@ button, input, select, textarea {
   font-weight: 500;
   padding: 0.3rem 0.8rem;
   border-radius: var(--radius-full);
-  backdrop-filter: blur(8px);
 }
 
 .house-body {
@@ -1673,7 +1660,6 @@ button, input, select, textarea {
   padding: 2.25rem;
   transition: var(--transition-smooth);
   position: relative;
-  backdrop-filter: blur(8px);
 }
 
 .why-card:hover {
@@ -1754,12 +1740,11 @@ button, input, select, textarea {
   position: absolute;
   bottom: 2rem;
   right: 2rem;
-  background: rgba(10, 36, 25, 0.94);
+  background: #0a2419;
   border: 1.5px solid var(--color-gold-500);
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.75rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(12px);
   text-align: center;
 }
 
@@ -2060,7 +2045,6 @@ button, input, select, textarea {
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
 }
 
 .reviews-more-pill:hover {
@@ -2642,9 +2626,7 @@ textarea.form-control {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(4, 20, 14, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(4, 20, 14, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2771,7 +2753,6 @@ textarea.form-control {
   font-weight: 600;
   padding: 0.35rem 0.85rem;
   border-radius: 9999px;
-  backdrop-filter: blur(4px);
   z-index: 5;
 }
 
