@@ -713,6 +713,9 @@ function saveLeadToLocalStorage(newLead) {
     newLead.createdAt = new Date().toLocaleString('th-TH');
     leads.unshift(newLead);
     localStorage.setItem('rm_leads', JSON.stringify(leads));
+    if (window.CloudSync && window.CloudSync.isConnected()) {
+      window.CloudSync.saveItem('rm_leads', leads);
+    }
   } catch (err) {
     console.error('Error saving lead:', err);
   }
@@ -1898,3 +1901,22 @@ function renderSiteInfo() {
     }
   } catch (e) {}
 }
+
+// ==========================================================================
+// CloudSync Global Realtime Listener for All Visitors & Devices
+// ==========================================================================
+(function initCloudRealtime() {
+  if (window.CloudSync && window.CloudSync.isConnected()) {
+    window.CloudSync.fetchAll().then(cloudData => {
+      if (cloudData) {
+        if (typeof renderPortfolioGrid === 'function') renderPortfolioGrid();
+        if (typeof renderDynamicReviews === 'function') renderDynamicReviews();
+        if (typeof renderDynamicServices === 'function') renderDynamicServices();
+        if (typeof renderDynamicStandards === 'function') renderDynamicStandards();
+        if (typeof renderDynamicWhyUs === 'function') renderDynamicWhyUs();
+        if (typeof renderDynamicWorkflow === 'function') renderDynamicWorkflow();
+        if (typeof applySiteInfo === 'function') applySiteInfo();
+      }
+    });
+  }
+})();

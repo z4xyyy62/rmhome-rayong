@@ -138,6 +138,9 @@
         <p id="adminUserGreeting">สวัสดี, z4xy123 (ผู้ดูแลระบบ)</p>
       </div>
       <div class="header-actions">
+        <button class="btn-action-outline" id="btnCloudSync" style="background:#0e3d29; color:#fff; border:1px solid #d4af37; font-weight:600;" title="ตั้งค่าฐานข้อมูลคลาวด์กลาง (Firebase Realtime DB) เพื่อให้ทุกเครื่องในโลกเห็นข้อมูลอัปเดตตรงกัน">
+          <span>☁️ ตั้งค่า Cloud DB</span>
+        </button>
         <button class="btn-export-csv" id="btnExportCsv" title="ส่งออกข้อมูลรายงาน Leads เป็นไฟล์ CSV สำหรับเปิดใน Excel">
           <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
           <span>📥 ส่งออก CSV</span>
@@ -1155,6 +1158,34 @@
     </div>
   </div>
 
+  <!-- Cloud Database Settings Modal (Firebase Realtime DB) -->
+  <div class="modal-admin-overlay" id="cloudSyncModal">
+    <div class="modal-admin-box">
+      <div class="modal-admin-header">
+        <h3 style="font-size:1.15rem; font-weight:700; color:#0e3d29; display:flex; align-items:center; gap:0.5rem;">
+          ☁️ ตั้งค่าฐานข้อมูลคลาวด์กลาง (Cloud DB)
+        </h3>
+        <button class="modal-admin-close" id="closeCloudSyncModal">✕</button>
+      </div>
+      <p style="font-size:0.85rem; color:#516d61; margin-bottom:1.25rem; line-height:1.5;">
+        เมื่อเชื่อมต่อ Firebase Realtime Database แล้ว ข้อมูลที่คุณแก้ไขในแดชบอร์ด จะอัปเดตไปแสดงผลบนมือถือและคอมพิวเตอร์ของลูกค้าทุกคนในโลกทันทีแบบ <strong>Real-time</strong>!
+      </p>
+      <div class="form-group" style="margin-bottom:1.25rem;">
+        <label class="form-label" style="font-weight:600;">Firebase Database URL:</label>
+        <input type="url" id="cloudDbUrlInput" class="form-control" placeholder="https://rmhome-rayong-default-rtdb.asia-southeast1.firebasedatabase.app" style="margin-top:0.35rem;">
+        <p style="font-size:0.78rem; color:#64748b; margin-top:0.4rem;">
+          💡 ดูวิธีรับ URL ฟรีด้านล่าง หรือนำ URL ที่ได้จาก Firebase Console มาวางที่นี่
+        </p>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <button type="button" class="btn-green-submit" id="btnSaveCloudDbUrl">
+          💾 บันทึกและซิงค์ข้อมูลขึ้น Cloud ทันที
+        </button>
+        <span id="cloudDbStatusBadge" style="font-size:0.82rem; font-weight:600;"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- Admin Users Management Modal (+เพิ่มรหัสแอดมินได้เรื่อยๆ) -->
   <div class="modal-admin-overlay" id="adminUsersModal">
     <div class="modal-admin-box large">
@@ -1213,6 +1244,7 @@
     </div>
   </div>
 
+  <script src="js/cloud-sync.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
