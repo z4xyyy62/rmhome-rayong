@@ -23,24 +23,27 @@
   {
     "@context": "https://schema.org",
     "@type": "GeneralContractor",
-    "name": "RMHome สร้างบ้านระยอง",
-    "alternateName": ["RMHome", "รับสร้างบ้านระยอง RMHome", "บริษัท RMHome ระยอง"],
+    "name": "รับสร้างบ้านระยอง RM HOME",
+    "legalName": "บริษัท อาร์เอ็ม โฮม จำกัด",
+    "alternateName": ["RM HOME", "RMHome สร้างบ้านระยอง", "รับสร้างบ้านระยอง RMHome", "บริษัท อาร์เอ็ม โฮม จำกัด"],
     "url": "https://rmhome-rayong.netlify.app/",
-    "image": "https://rmhome-rayong.netlify.app/assets/images/hero-winter-villa.jpg",
-    "description": "บริษัทรับสร้างบ้านคุณภาพพรีเมียมอันดับ 1 ในจังหวัดระยองและพื้นที่เศรษฐกิจ EEC ออกแบบบ้านตามงบประมาณ รับประกันโครงสร้าง 20 ปี",
+    "logo": "https://rmhome-rayong.netlify.app/assets/images/rm-logo.jpg",
+    "image": "https://rmhome-rayong.netlify.app/assets/images/rm-logo.jpg",
+    "description": "บริษัท อาร์เอ็ม โฮม จำกัด (RM HOME) รับสร้างบ้านคุณภาพพรีเมียมอันดับ 1 ในจังหวัดระยองและพื้นที่ EEC ออกแบบบ้านตามงบประมาณ ควบคุมงานโดยวิศวกร รับประกันโครงสร้าง 20 ปี",
     "telephone": "+66-91-299-8797",
     "priceRange": "฿฿฿",
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": "อำเภอเมืองระยอง",
+      "streetAddress": "Ban Khai",
+      "addressLocality": "อำเภอบ้านค่าย",
       "addressRegion": "จังหวัดระยอง",
-      "postalCode": "21000",
+      "postalCode": "21120",
       "addressCountry": "TH"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": 12.6814,
-      "longitude": 101.2816
+      "latitude": 12.7825,
+      "longitude": 101.2981
     },
     "areaServed": [
       { "@type": "AdministrativeArea", "name": "ระยอง" },
@@ -842,13 +845,34 @@
   <!-- Section: Customer Reviews -->
   <section class="reviews-section" id="reviews">
     <div class="container">
-      <div class="section-tag">
-        <span class="gold-badge">TESTIMONIALS</span>
+      <!-- Reviews Header with Realtime Counter Badge (Left) and Gold Add Review Button (Right) -->
+      <div class="reviews-section-header">
+        <div class="reviews-header-left">
+          <div class="section-tag" style="text-align:left; margin-bottom:0.5rem;">
+            <span class="gold-badge">TESTIMONIALS</span>
+          </div>
+          <h2 class="section-title" style="text-align:left; margin-bottom:0.5rem;">
+            เสียงตอบรับจาก <span class="text-gold-gradient">ลูกค้าในระยอง</span>
+          </h2>
+          <p class="section-subtitle" style="text-align:left; margin:0 0 0.75rem 0;">
+            ความไว้วางใจจากผู้ว่าจ้างจริง ที่สร้างบ้านเสร็จตามกำหนดและประทับใจในผลงาน
+          </p>
+          <!-- Dynamic Extra Reviews Badge (มุมซ้ายบน อ้างอิงจาก Database แบบ Real-time) -->
+          <div id="reviewsCountBadgeWrap" class="reviews-badge-wrap" style="display:none;">
+            <button type="button" id="btnToggleAllReviews" class="reviews-more-pill" title="คลิกเพื่อสลับดูรีวิวทั้งหมด">
+              <span class="pill-sparkle">✨</span>
+              <span id="reviewsMoreCountText">ยังมีอีก 1 รีวิวจากลูกค้าจริง (คลิกเพื่อดูทั้งหมด ➔)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="reviews-header-right">
+          <button type="button" class="btn-review-add-gold" id="btnOpenUserReviewModal" title="คลิกเพื่อร่วมแชร์ความประทับใจ">
+            <span class="btn-gold-icon">+</span>
+            <span class="btn-gold-text">เขียนรีวิวความประทับใจ</span>
+          </button>
+        </div>
       </div>
-      <h2 class="section-title">เสียงตอบรับจาก <span class="text-gold-gradient">ลูกค้าในระยอง</span></h2>
-      <p class="section-subtitle">
-        ความไว้วางใจจากผู้ว่าจ้างจริง ที่สร้างบ้านเสร็จตามกำหนดและประทับใจในผลงาน
-      </p>
 
       <div class="reviews-grid" id="reviewsGridContainer">
         <div class="review-card">
@@ -1095,6 +1119,83 @@
       <div id="modalDynamicContent">
         <!-- Content will be injected dynamically by app.js -->
       </div>
+    </div>
+  </div>
+
+  <!-- User Review Submission Modal (หน้าต่างสำหรับให้ User เขียนรีวิวความประทับใจ) -->
+  <div class="modal-backdrop" id="userReviewModal">
+    <div class="modal-container user-review-modal-card">
+      <button class="modal-close-btn" id="closeUserReviewModalBtn" aria-label="ปิด">&times;</button>
+      
+      <div class="user-review-modal-header">
+        <div class="section-tag" style="text-align:left; margin-bottom:0.4rem;">
+          <span class="gold-badge">✍️ SHARE YOUR EXPERIENCE</span>
+        </div>
+        <h3 class="user-review-modal-title">ร่วมแชร์ <span class="text-gold-gradient">ความประทับใจกับ RM HOME</span></h3>
+        <p class="user-review-modal-desc">
+          รีวิวและความคิดเห็นของคุณมีความหมายยิ่ง เพื่อพัฒนาบริการและสร้างความมั่นใจแก่ผู้สร้างบ้านท่านต่อไป
+        </p>
+      </div>
+
+      <form id="userReviewForm" class="user-review-form">
+        <!-- 1. Star Rating Picker -->
+        <div class="form-group full-width">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+            <label class="form-label" style="margin-bottom:0;">ให้คะแนนความพึงพอใจ *</label>
+            <span id="starRatingLabel" class="star-rating-score-label">★★★★★ (5/5 ดีเยี่ยม ประทับใจมาก)</span>
+          </div>
+          <div class="star-rating-selector" id="starRatingPicker">
+            <button type="button" class="star-btn active" data-rating="1" title="1 ดาว (ต้องปรับปรุง)">★</button>
+            <button type="button" class="star-btn active" data-rating="2" title="2 ดาว (พอใช้)">★</button>
+            <button type="button" class="star-btn active" data-rating="3" title="3 ดาว (ปานกลาง)">★</button>
+            <button type="button" class="star-btn active" data-rating="4" title="4 ดาว (ดีมาก)">★</button>
+            <button type="button" class="star-btn active" data-rating="5" title="5 ดาว (ดีเยี่ยม ประทับใจมาก)">★</button>
+          </div>
+          <input type="hidden" id="userReviewRatingInput" value="5">
+        </div>
+
+        <!-- 2. Customer Name -->
+        <div class="form-group full-width">
+          <label class="form-label" for="userReviewName">ชื่อ-นามสกุล หรือชื่อเล่นของคุณ *</label>
+          <input type="text" id="userReviewName" class="form-control review-input-custom" placeholder="เช่น คุณกฤษฎา, คุณณัชชา หรือ คุณก้อย" required>
+        </div>
+
+        <!-- 3. House Model or Location -->
+        <div class="form-group full-width">
+          <label class="form-label" for="userReviewRole">แบบบ้าน หรือ อำเภอในระยอง *</label>
+          <input type="text" id="userReviewRole" class="form-control review-input-custom" placeholder="เช่น แบบบ้านสไตล์นอร์ดิก • อ.บ้านฉาง ระยอง" required>
+        </div>
+
+        <!-- 4. Review Message -->
+        <div class="form-group full-width">
+          <label class="form-label" for="userReviewText">ข้อความรีวิวความประทับใจ *</label>
+          <textarea id="userReviewText" class="form-control review-input-custom" rows="4" placeholder="เล่าถึงความประทับใจ การทำงานของทีมช่าง วิศวกรคุมงาน ความสะอาด หรือความคุ้มค่า..." required></textarea>
+        </div>
+
+        <!-- 5. Optional Photo Upload -->
+        <div class="form-group full-width">
+          <label class="form-label">แนบรูปถ่ายบ้าน หรือรูปโปรไฟล์ของคุณ (ถ้ามี)</label>
+          <div style="display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;">
+            <button type="button" class="btn-review-upload" id="btnUserReviewUploadImg">
+              📷 เลือกรูปถ่าย
+            </button>
+            <span id="userReviewFileName" style="font-size:0.82rem; color:#94a3b8;">ยังไม่ได้เลือกไฟล์ (ระบบจะย่อรูปให้อัตโนมัติ)</span>
+            <input type="file" id="userReviewFileInput" accept="image/*" style="display:none;">
+          </div>
+          <div id="userReviewPreviewBox" style="display:none; margin-top:0.75rem; width:72px; height:72px; border-radius:50%; overflow:hidden; border:2px solid #ffd700; box-shadow:0 4px 15px rgba(0,0,0,0.4);">
+            <img id="userReviewPreviewImg" src="" alt="Preview" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="user-review-actions">
+          <button type="button" class="btn-cancel-modal" id="btnCancelUserReview">ยกเลิก</button>
+          <button type="submit" class="btn-review-add-gold" id="btnSubmitUserReview" style="padding:0.75rem 1.75rem;">
+            <span class="btn-gold-icon">✍️</span>
+            <span class="btn-gold-text">ส่งรีวิวความประทับใจ</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

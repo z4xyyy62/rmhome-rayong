@@ -1742,6 +1742,7 @@ function escapeHtml(text) {
 function initDynamicCMSContent() {
   renderSiteInfo();
   renderReviews();
+  initUserReviewModal();
   renderServices();
   renderStandards();
   renderWhyUs();
@@ -1770,6 +1771,9 @@ function initDynamicCMSContent() {
   });
 }
 
+// State for toggling all reviews vs latest 3
+let isAllReviewsExpanded = false;
+
 function renderReviews() {
   const container = document.getElementById('reviewsGridContainer');
   if (!container) return;
@@ -1785,7 +1789,7 @@ function renderReviews() {
       {
         id: 'rev_01',
         name: 'คุณก้อย',
-        role: 'เจ้าของบ้าน',
+        role: 'เจ้าของบ้าน Modern Tropical',
         image: 'assets/images/quality-engineer.jpg',
         text: 'ลูกค้าประทับใจในความเป็นมืออาชีพของทีม RM HOME ทั้งเรื่องความสะอาด ความเรียบร้อยของหน้างาน ทีมช่างสุภาพ และการแก้ไขปัญหาที่รวดเร็ว ทำให้มั่นใจและไว้วางใจในการดูแลบ้านทุกขั้นตอน',
         rating: 5
@@ -1817,8 +1821,42 @@ function renderReviews() {
     ];
   }
 
+  // 1. Dynamic Extra Reviews Counter Badge (Real-time from Database/LocalStorage)
+  const badgeWrap = document.getElementById('reviewsCountBadgeWrap');
+  const moreCountText = document.getElementById('reviewsMoreCountText');
+  const toggleBtn = document.getElementById('btnToggleAllReviews');
+  const totalCount = reviews.length;
+
+  if (badgeWrap && moreCountText) {
+    if (totalCount > 3) {
+      badgeWrap.style.display = 'block';
+      const remaining = totalCount - 3;
+      if (!isAllReviewsExpanded) {
+        moreCountText.textContent = `ยังมีอีก ${remaining} รีวิวจากลูกค้าจริง (คลิกเพื่อดูทั้งหมด ➔)`;
+      } else {
+        moreCountText.textContent = `▲ แสดงเฉพาะ 3 รีวิวล่าสุด (ย่อมุมมอง)`;
+      }
+    } else {
+      badgeWrap.style.display = 'none';
+    }
+  }
+
+  if (toggleBtn && !toggleBtn._hasToggleEvent) {
+    toggleBtn._hasToggleEvent = true;
+    toggleBtn.addEventListener('click', () => {
+      isAllReviewsExpanded = !isAllReviewsExpanded;
+      renderReviews();
+    });
+  }
+
+  // 2. Slice items depending on expanded state
+  const displayedReviews = (!isAllReviewsExpanded && totalCount > 3)
+    ? reviews.slice(0, 3)
+    : reviews;
+
+  // 3. Render Cards
   container.innerHTML = '';
-  reviews.forEach(rev => {
+  displayedReviews.forEach(rev => {
     const card = document.createElement('div');
     card.className = 'review-card';
 
@@ -1826,19 +1864,251 @@ function renderReviews() {
       ? `<img src="${escapeHtml(rev.image)}" alt="${escapeHtml(rev.name)}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #ffd700;" onerror="this.outerHTML='<div class=\\'reviewer-avatar\\'>${escapeHtml((rev.name || 'ค').charAt(0))}</div>'">`
       : `<div class="reviewer-avatar">${escapeHtml((rev.name || 'ค').charAt(0))}</div>`;
 
+    const ratingVal = parseInt(rev.rating, 10) || 5;
+    let starsStr = '';
+    for (let i = 1; i <= 5; i++) {
+      starsStr += (i <= ratingVal) ? '★' : '☆';
+    }
+
     card.innerHTML = `
-      <div class="review-stars">★★★★★</div>
+      <div class="review-stars">${starsStr}</div>
       <p class="review-text">"${escapeHtml(rev.text)}"</p>
       <div class="reviewer-meta">
         ${avatarHtml}
         <div>
           <div class="reviewer-name">${escapeHtml(rev.name)}</div>
-          <div class="reviewer-loc">${escapeHtml(rev.role || 'ลูกค้าสร้างบ้าน RMHome')}</div>
+          <div class="reviewer-loc">${escapeHtml(rev.role || 'ลูกค้าสร้างบ้าน RM HOME')}</div>
         </div>
       </div>
     `;
     container.appendChild(card);
   });
+}
+
+function initUserReviewModal() {
+  const modal = document.getElementById('userReviewModal');
+  const openBtn = document.getElementById('btnOpenUserReviewModal');
+  const closeBtn = document.getElementById('closeUserReviewModalBtn');
+  const cancelBtn = document.getElementById('btnCancelUserReview');
+  const form = document.getElementById('userReviewForm');
+  const uploadBtn = document.getElementById('btnUserReviewUploadImg');
+  const fileInput = document.getElementById('userReviewFileInput');
+  const fileNameSpan = document.getElementById('userReviewFileName');
+  const previewBox = document.getElementById('userReviewPreviewBox');
+  const previewImg = document.getElementById('userReviewPreviewImg');
+  const starPicker = document.getElementById('starRatingPicker');
+  const ratingInput = document.getElementById('userReviewRatingInput');
+  const starLabel = document.getElementById('starRatingLabel');
+
+  if (!modal) return;
+
+  let selectedRating = 5;
+  let compressedReviewImg = '';
+
+  const ratingDescriptions = {
+    1: '★☆☆☆☆ (1/5 ต้องปรับปรุง)',
+    2: '★★☆☆☆ (2/5 พอใช้)',
+    3: '★★★☆☆ (3/5 ปานกลาง)',
+    4: '★★★★☆ (4/5 ดีมาก)',
+    5: '★★★★★ (5/5 ดีเยี่ยม ประทับใจมาก)'
+  };
+
+  function updateStars(val) {
+    if (!starPicker) return;
+    const starBtns = starPicker.querySelectorAll('.star-btn');
+    starBtns.forEach(btn => {
+      const r = parseInt(btn.getAttribute('data-rating'), 10);
+      if (r <= val) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    if (ratingInput) ratingInput.value = val;
+    if (starLabel) starLabel.textContent = ratingDescriptions[val] || `${val}/5`;
+  }
+
+  // Star Rating Interaction
+  if (starPicker) {
+    const starBtns = starPicker.querySelectorAll('.star-btn');
+    starBtns.forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        const hoverVal = parseInt(btn.getAttribute('data-rating'), 10);
+        starBtns.forEach(b => {
+          const r = parseInt(b.getAttribute('data-rating'), 10);
+          if (r <= hoverVal) b.classList.add('hover');
+          else b.classList.remove('hover');
+        });
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        starBtns.forEach(b => b.classList.remove('hover'));
+      });
+
+      btn.addEventListener('click', () => {
+        selectedRating = parseInt(btn.getAttribute('data-rating'), 10);
+        updateStars(selectedRating);
+      });
+    });
+  }
+
+  // Open Modal
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      if (form) form.reset();
+      selectedRating = 5;
+      compressedReviewImg = '';
+      updateStars(5);
+      if (fileNameSpan) fileNameSpan.textContent = 'ยังไม่ได้เลือกไฟล์ (ระบบจะย่อรูปให้อัตโนมัติ)';
+      if (previewBox) previewBox.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Photo Upload & Auto Compression
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      if (fileNameSpan) fileNameSpan.textContent = `📷 ${file.name}`;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 500;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          compressedReviewImg = canvas.toDataURL('image/jpeg', 0.8);
+          if (previewImg) previewImg.src = compressedReviewImg;
+          if (previewBox) previewBox.style.display = 'block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Handle Submit
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('userReviewName');
+      const roleInput = document.getElementById('userReviewRole');
+      const textInput = document.getElementById('userReviewText');
+
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const roleVal = roleInput ? roleInput.value.trim() : '';
+      const textVal = textInput ? textInput.value.trim() : '';
+
+      if (!nameVal || !textVal) {
+        alert('กรุณากรอกชื่อและข้อความรีวิวให้ครบถ้วนครับ');
+        return;
+      }
+
+      const newReview = {
+        id: 'rev_' + Date.now(),
+        name: nameVal,
+        role: roleVal || 'ลูกค้าสร้างบ้าน RM HOME',
+        image: compressedReviewImg || '',
+        text: textVal,
+        rating: selectedRating,
+        createdAt: new Date().toISOString()
+      };
+
+      let reviews = [];
+      try {
+        const raw = localStorage.getItem('rm_reviews');
+        if (raw) reviews = JSON.parse(raw);
+      } catch (err) {}
+
+      if (!reviews || reviews.length === 0) {
+        reviews = [
+          {
+            id: 'rev_01',
+            name: 'คุณก้อย',
+            role: 'เจ้าของบ้าน Modern Tropical',
+            image: 'assets/images/quality-engineer.jpg',
+            text: 'ลูกค้าประทับใจในความเป็นมืออาชีพของทีม RM HOME ทั้งเรื่องความสะอาด ความเรียบร้อยของหน้างาน ทีมช่างสุภาพ และการแก้ไขปัญหาที่รวดเร็ว ทำให้มั่นใจและไว้วางใจในการดูแลบ้านทุกขั้นตอน',
+            rating: 5
+          },
+          {
+            id: 'rev_02',
+            name: 'คุณธีรศักดิ์ วิจิตรจินดา',
+            role: 'บ้านเดี่ยว 2 ชั้น • อ.เมืองระยอง',
+            image: 'assets/images/luxury-interior.jpg',
+            text: 'ประทับใจทีมงาน RMHome มากครับ ทำงานมืออาชีพจริงๆ สัญญาชัดเจน งวดงานตรงไปตรงมา ตอนแรกกลัวเรื่องผู้รับเหมาทิ้งงานมาก แต่ที่นี่มีวิศวกรส่งรูปให้ดูทุกวัน บ้านเสร็จเร็วกว่ากำหนด 2 สัปดาห์ แนะนำเลยครับ',
+            rating: 5
+          },
+          {
+            id: 'rev_03',
+            name: 'พญ. นภัสวรรณ รัตนศิลป์',
+            role: 'พูลวิลล่าตากอากาศ • อ.บ้านฉาง ระยอง',
+            image: 'assets/images/house-tropical.jpg',
+            text: 'จ้าง RMHome สร้างบ้านพูลวิลล่าสไตล์โมเดิร์นที่บ้านฉาง สวยตรงปกเหมือนรูป 3D ทุกประการเลยค่ะ สเปกวัสดุใช้ของ SCG แท้ทุกชิ้น ทีมงานสุภาพ เก็บงานเนี้ยบมาก บริการเรื่องยื่นกู้ธนาคารผ่านฉลุยเลยค่ะ',
+            rating: 5
+          },
+          {
+            id: 'rev_04',
+            name: 'คุณวรัญญู เอกอนันต์',
+            role: 'แบบบ้านนอร์ดิก • อ.นิคมพัฒนา ระยอง',
+            image: 'assets/images/house-nordic.jpg',
+            text: 'ผมเป็นวิศวกรโรงงานในมาบตาพุด ค่อนข้างละเอียดเรื่องโครงสร้าง พอได้เห็นขั้นตอนการตอกเสาเข็มและการผูกเหล็กของ RMHome แล้วยอมรับเลยว่าได้มาตรฐานจริง คุมงบได้ไม่มีบานปลายแม้แต่บาทเดียวครับ',
+            rating: 5
+          }
+        ];
+      }
+
+      // Prepend so new review is at the top
+      reviews.unshift(newReview);
+
+      // Save to localStorage (CloudSync intercepts and sends to Firebase Realtime DB)
+      localStorage.setItem('rm_reviews', JSON.stringify(reviews));
+
+      // Close modal & reset
+      closeModal();
+      form.reset();
+      compressedReviewImg = '';
+
+      // Re-render reviews on website
+      renderReviews();
+
+      // Trigger cross-component sync
+      window.dispatchEvent(new Event('contentUpdated'));
+
+      // Friendly notification
+      alert(`🎉 ขอบคุณ คุณ"${nameVal}" มากครับสำหรับรีวิวความประทับใจ!\n\nรีวิวของคุณได้รับการบันทึกและแสดงบนเว็บไซต์ รวมถึงส่งไปยังแดชบอร์ดแอดมินเรียบร้อยแล้วครับ ✨`);
+    });
+  }
 }
 
 function renderServices() {
