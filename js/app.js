@@ -561,27 +561,6 @@ function openHouseModalById(houseId) {
       </div>
     </div>
 
-    <!-- 6.5 Interactive 3D Virtual House Model Trigger Box (กดแล้วดีดขึ้นมากลางจอ) -->
-    <div class="box-3d-model-wrapper" id="box3DModelWrapper">
-      <button type="button" class="btn-launch-3d-modal" id="btnLaunch3DModal" title="คลิกเพื่อเปิดดูแบบบ้าน 3 มิติกลางจอ">
-        <div class="btn-toggle-3d-left">
-          <div class="cube-icon-3d">🏛️</div>
-          <div style="text-align:left;">
-            <div class="btn-toggle-3d-title">
-              <span>ดูบ้าน 3 มิติเสมือนจริง (Interactive 3D Virtual Tour)</span>
-              <span class="gold-pulse-tag">✨ ดีดขึ้นมากลางจอ 360°</span>
-            </div>
-            <div class="btn-toggle-3d-sub">
-              แบบจำลองสถาปัตยกรรม 3D ความละเอียดสูง คมชัดทุกมิติ หมุนดูรอบทิศ 360° ซูมเข้า-ออก และสลับแสงไฟกลางคืน
-            </div>
-          </div>
-        </div>
-        <div class="btn-toggle-3d-badge">
-          <span class="badge-3d-text">เปิดดู 3D กลางจอ ➔</span>
-        </div>
-      </button>
-    </div>
-
     <!-- 7. Action Buttons -->
     <div style="display:flex; gap:0.85rem; justify-content:space-between; align-items:center; flex-wrap:wrap; padding-top:1.25rem; border-top:1px solid rgba(212,175,55,0.2);">
       <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
@@ -646,20 +625,9 @@ function openHouseModalById(houseId) {
     });
   });
 
-  // Launch Centered 3D House Modal (ดีดขึ้นมากลางจอ ทันสมัย คมชัด)
-  const btnLaunch3D = modalContent.querySelector('#btnLaunch3DModal');
-  if (btnLaunch3D) {
-    btnLaunch3D.addEventListener('click', () => {
-      if (window.RMHome3D && typeof window.RMHome3D.openModal === 'function') {
-        window.RMHome3D.openModal(house);
-      }
-    });
-  }
-
   const secondaryClose = modalContent.querySelector('#btnModalCloseSecondary');
   if (secondaryClose) {
     secondaryClose.addEventListener('click', () => {
-      if (window.RMHome3D) window.RMHome3D.destroy();
       modalBackdrop.classList.remove('open');
       document.body.style.overflow = '';
     });
@@ -678,9 +646,6 @@ function initHouseModal() {
   function closeModal() {
     modalBackdrop.classList.remove('open');
     document.body.style.overflow = '';
-    if (window.RMHome3D && typeof window.RMHome3D.destroy === 'function') {
-      window.RMHome3D.destroy();
-    }
   }
 
   window.closeModal = closeModal;

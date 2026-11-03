@@ -1122,58 +1122,6 @@
     </div>
   </div>
 
-  <!-- Centered Interactive 3D House Viewer Modal (ดีดขึ้นมากลางจอ ทันสมัย คมชัด) -->
-  <div class="modal-backdrop modal-backdrop-3d" id="house3DFullscreenModal">
-    <div class="modal-container-3d" id="modalContainer3D">
-      <!-- 3D Header Bar (Overlay) -->
-      <div class="modal-3d-header">
-        <div class="modal-3d-title-wrap">
-          <div class="cube-icon-3d-sm">🏛️</div>
-          <div>
-            <h3 class="modal-3d-title" id="modal3DHouseTitle">แบบจำลองบ้าน 3 มิติ</h3>
-            <span class="modal-3d-badge">✨ 360° Real-time 3D Virtual Tour</span>
-          </div>
-        </div>
-
-        <div class="modal-3d-toolbar">
-          <button type="button" class="ctrl-3d-btn active" id="btn3DFullAutoRotate" title="เปิด/ปิดการหมุนอัตโนมัติ">
-            🔄 หมุนอัตโนมัติ: เปิด
-          </button>
-          <button type="button" class="ctrl-3d-btn" id="btn3DFullDayNight" title="สลับโหมดกลางวัน / แสงไฟกลางคืน">
-            🌙 แสงไฟกลางคืน
-          </button>
-          <button type="button" class="ctrl-3d-btn" id="btn3DFullViewFront" title="มุมมองด้านหน้า">หน้าบ้าน</button>
-          <button type="button" class="ctrl-3d-btn" id="btn3DFullViewTop" title="มุมมองมุมสูง Bird's Eye">มุมสูง</button>
-          <button type="button" class="ctrl-3d-btn" id="btn3DFullViewPool" title="มุมมองสระว่ายน้ำ">สระว่ายน้ำ</button>
-          <button type="button" class="ctrl-3d-btn" id="btn3DFullReset" title="รีเซ็ตมุมมองเดิม">รีเซ็ต ⟲</button>
-          <button type="button" class="modal-3d-close-btn" id="btnClose3DFullscreen" aria-label="ปิดหน้าต่าง 3D">&times;</button>
-        </div>
-      </div>
-
-      <!-- Loading State Overlay -->
-      <div class="modal-3d-loading" id="modal3DLoading">
-        <div class="spinner-gold-ring"></div>
-        <div class="loading-text-gold" id="modal3DLoadingText">กำลังเรนเดอร์แบบจำลอง 3 มิติ ความคมชัดสูง...</div>
-      </div>
-
-      <!-- 3D WebGL Canvas Mount Container -->
-      <div id="webglFullscreenCanvasMount" class="webgl-fullscreen-canvas-mount"></div>
-
-      <!-- Footer Overlay: Gesture Hints & Quick Consultation CTA -->
-      <div class="modal-3d-footer">
-        <div class="hint-3d-text">
-          <span>🖱️ <strong>คลิกเมาส์ค้างแล้วลาก</strong> เพื่อหมุนดู 360°</span>
-          <span>• <strong>หมุนลูกกลิ้ง</strong> เพื่อซูมเข้า-ออก</span>
-          <span>• <strong>คลิกขวาแล้วลาก</strong> เพื่อเลื่อนมุมมอง</span>
-        </div>
-        <div class="modal-3d-cta">
-          <a href="tel:0912998797" class="btn-3d-cta-call">📞 โทร: 091-299-8797</a>
-          <a href="https://line.me" target="_blank" rel="noopener" class="btn-3d-cta-line">💬 ปรึกษาแบบแปลนทาง LINE</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- User Review Submission Modal (หน้าต่างสำหรับให้ User เขียนรีวิวความประทับใจ) -->
   <div class="modal-backdrop" id="userReviewModal">
     <div class="modal-container user-review-modal-card">
@@ -1373,12 +1321,6 @@
       </g>
     </svg>
   </div>
-
-  <!-- 3D Graphics & Interactive OrbitControls & GLTF Loader -->
-  <script src="js/libs/three.min.js"></script>
-  <script src="js/libs/OrbitControls.js"></script>
-  <script src="js/libs/GLTFLoader.js"></script>
-  <script src="js/house-3d.js"></script>
 
   <!-- Javascript -->
   <script src="js/cloud-sync.js"></script>
