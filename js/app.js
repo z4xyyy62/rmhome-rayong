@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHouseFilter();
   initCalculator();
   initHouseModal();
+  initAllCenterModals();
   initContactForm();
   initMobileMenu();
   initScrollTop();
@@ -326,7 +327,89 @@ function getStoredPortfolioForWeb() {
 }
 
 let activeHouseFilter = 'all';
-let isAllHousesExpanded = false;
+
+function createHouseCardNode(item) {
+  const card = document.createElement('article');
+  card.className = `house-card ${item.tall ? 'tall-card' : ''}`;
+  card.setAttribute('data-category', item.categorySlug || 'modern');
+  card.setAttribute('data-id', item.id);
+
+  const priceText = item.budget.includes('ล้าน') ? item.budget : `${item.budget} ล้านบาท`;
+
+  card.innerHTML = `
+    <div class="house-img-wrap">
+      <img src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.src='assets/images/house-nordic.jpg'">
+      <span class="house-tag-badge has-ribbon">${item.type || 'แบบบ้าน'}</span>
+    </div>
+    <div class="house-body">
+      <span class="house-meta-code">SERIES: ${(item.category || 'MODERN').toUpperCase()}</span>
+      <h3 class="house-name">${item.title}</h3>
+      <div class="house-specs-list">
+        <div class="spec-pill">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          <span>${item.area} ตร.ม.</span>
+        </div>
+        <div class="spec-pill">
+          <svg viewBox="0 0 24 24"><path d="M19.5 4H4.5A2.5 2.5 0 0 0 2 6.5v11A2.5 2.5 0 0 0 4.5 20h15a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 19.5 4zm-7 3a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm-4.5 10a1.5 1.5 0 0 1-1.5-1.5V14h7v1.5a1.5 1.5 0 0 1-1.5 1.5h-4z"/></svg>
+          <span>${item.bedrooms} ห้องนอน</span>
+        </div>
+        <div class="spec-pill">
+          <svg viewBox="0 0 24 24"><path d="M20 13V4.83C20 3.27 18.73 2 17.17 2c-.75 0-1.47.3-2 .83l-1.25 1.25c-.16-.05-.33-.08-.51-.08h-2.82c-.18 0-.35.03-.51.08L8.83 2.83C8.3 2.3 7.58 2 6.83 2 5.27 2 4 3.27 4 4.83V13H2v6c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-6h-2z"/></svg>
+          <span>${item.bathrooms} ห้องน้ำ</span>
+        </div>
+        <div class="spec-pill">
+          <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <span>${item.parking} ที่จอดรถ</span>
+        </div>
+      </div>
+      <div class="house-footer">
+        <div class="house-price-block">
+          <span class="price-label">ราคาเริ่มต้นพร้อมสร้าง</span>
+          <span class="price-val">฿ ${priceText}</span>
+        </div>
+        <button class="btn btn-outline-gold btn-view-house" data-house-id="${item.id}">
+          ดูสเปก & แปลน
+        </button>
+      </div>
+    </div>
+  `;
+
+  const viewBtn = card.querySelector('.btn-view-house');
+  if (viewBtn) {
+    viewBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openHouseModalById(item.id);
+    });
+  }
+
+  return card;
+}
+
+function openAllHousesModal() {
+  const modal = document.getElementById('allHousesModal');
+  const grid = document.getElementById('allHousesModalGrid');
+  const countText = document.getElementById('allHousesModalCountText');
+  if (!modal || !grid) return;
+
+  const allHouses = getStoredPortfolioForWeb();
+  const filteredHouses = allHouses.filter(item => {
+    if (activeHouseFilter === 'all') return true;
+    const cat = (item.categorySlug || 'modern').toLowerCase();
+    return cat === activeHouseFilter || cat.includes(activeHouseFilter);
+  });
+
+  if (countText) {
+    countText.textContent = `(ทั้งหมด ${filteredHouses.length} หลัง)`;
+  }
+
+  grid.innerHTML = '';
+  filteredHouses.forEach(item => {
+    grid.appendChild(createHouseCardNode(item));
+  });
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 
 function renderHouseGrid() {
   const container = document.getElementById('houseGridContainer');
@@ -343,7 +426,7 @@ function renderHouseGrid() {
 
   const totalFiltered = filteredHouses.length;
 
-  // 1. Dynamic Extra Houses Counter Badge & View All Button (เหมือนระบบรีวิว)
+  // 1. Dynamic Extra Houses Counter Badge & View All Button (เด้งขึ้นโมดอลกลางจอ)
   const badgeWrap = document.getElementById('housesCountBadgeWrap');
   const moreCountText = document.getElementById('housesMoreCountText');
   const toggleBtn = document.getElementById('btnToggleAllHouses');
@@ -356,98 +439,35 @@ function renderHouseGrid() {
     if (bottomWrap) bottomWrap.style.display = 'block';
     const remaining = totalFiltered - 3;
 
-    if (!isAllHousesExpanded) {
-      if (moreCountText) moreCountText.textContent = `ยังมีอีก ${remaining} แบบบ้าน/ผลงานจริง (คลิกเพื่อดูทั้งหมด ➔)`;
-      if (bottomCountText) bottomCountText.textContent = `อีก ${remaining} หลัง`;
-      if (btnBottom) btnBottom.innerHTML = `ดูแบบบ้าน &amp; ผลงานทั้งหมด (อีก ${remaining} หลัง) ➔`;
-    } else {
-      if (moreCountText) moreCountText.textContent = `▲ แสดงเฉพาะ 3 ผลงานเด่น (ย่อมุมมอง)`;
-      if (btnBottom) btnBottom.innerHTML = `▲ แสดงเฉพาะ 3 ผลงานเด่น (ย่อมุมมอง)`;
+    if (moreCountText) {
+      moreCountText.textContent = `✨ มีอีก ${remaining} แบบบ้าน/ผลงานจริง (คลิกเพื่อดูทั้งหมดกลางจอ ➔)`;
+    }
+    if (bottomCountText) {
+      bottomCountText.textContent = `${totalFiltered} หลัง`;
+    }
+    if (btnBottom) {
+      btnBottom.innerHTML = `ดูแบบบ้าน &amp; ผลงานทั้งหมด (${totalFiltered} หลัง) ➔`;
     }
   } else {
     if (badgeWrap) badgeWrap.style.display = 'none';
     if (bottomWrap) bottomWrap.style.display = 'none';
   }
 
-  // Bind toggle clicks once
-  if (toggleBtn && !toggleBtn._hasToggleEvent) {
-    toggleBtn._hasToggleEvent = true;
-    toggleBtn.addEventListener('click', () => {
-      isAllHousesExpanded = !isAllHousesExpanded;
-      renderHouseGrid();
-    });
+  // Bind modal open clicks
+  if (toggleBtn && !toggleBtn._hasModalClick) {
+    toggleBtn._hasModalClick = true;
+    toggleBtn.addEventListener('click', () => openAllHousesModal());
   }
-  if (btnBottom && !btnBottom._hasToggleEvent) {
-    btnBottom._hasToggleEvent = true;
-    btnBottom.addEventListener('click', () => {
-      isAllHousesExpanded = !isAllHousesExpanded;
-      renderHouseGrid();
-    });
+  if (btnBottom && !btnBottom._hasModalClick) {
+    btnBottom._hasModalClick = true;
+    btnBottom.addEventListener('click', () => openAllHousesModal());
   }
 
-  // 2. Slice items depending on expanded state
-  const displayedHouses = (!isAllHousesExpanded && totalFiltered > 3)
-    ? filteredHouses.slice(0, 3)
-    : filteredHouses;
-
+  // Always render ONLY top 3 houses on the main page (ไม่ต้องไปเติมข้างล่าง)
+  const displayedHouses = filteredHouses.slice(0, 3);
   container.innerHTML = '';
-
-  displayedHouses.forEach((item) => {
-    const card = document.createElement('article');
-    card.className = `house-card ${item.tall ? 'tall-card' : ''}`;
-    card.setAttribute('data-category', item.categorySlug || 'modern');
-    card.setAttribute('data-id', item.id);
-
-    const priceText = item.budget.includes('ล้าน') ? item.budget : `${item.budget} ล้านบาท`;
-
-    card.innerHTML = `
-      <div class="house-img-wrap">
-        <img src="${item.cover}" alt="${item.title}" loading="lazy" onerror="this.src='assets/images/house-nordic.jpg'">
-        <span class="house-tag-badge has-ribbon">${item.type || 'แบบบ้าน'}</span>
-      </div>
-      <div class="house-body">
-        <span class="house-meta-code">SERIES: ${(item.category || 'MODERN').toUpperCase()}</span>
-        <h3 class="house-name">${item.title}</h3>
-        <div class="house-specs-list">
-          <div class="spec-pill">
-            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-            <span>${item.area} ตร.ม.</span>
-          </div>
-          <div class="spec-pill">
-            <svg viewBox="0 0 24 24"><path d="M19.5 4H4.5A2.5 2.5 0 0 0 2 6.5v11A2.5 2.5 0 0 0 4.5 20h15a2.5 2.5 0 0 0 2.5-2.5v-11A2.5 2.5 0 0 0 19.5 4zm-7 3a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm-4.5 10a1.5 1.5 0 0 1-1.5-1.5V14h7v1.5a1.5 1.5 0 0 1-1.5 1.5h-4z"/></svg>
-            <span>${item.bedrooms} ห้องนอน</span>
-          </div>
-          <div class="spec-pill">
-            <svg viewBox="0 0 24 24"><path d="M20 13V4.83C20 3.27 18.73 2 17.17 2c-.75 0-1.47.3-2 .83l-1.25 1.25c-.16-.05-.33-.08-.51-.08h-2.82c-.18 0-.35.03-.51.08L8.83 2.83C8.3 2.3 7.58 2 6.83 2 5.27 2 4 3.27 4 4.83V13H2v6c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-6h-2z"/></svg>
-            <span>${item.bathrooms} ห้องน้ำ</span>
-          </div>
-          <div class="spec-pill">
-            <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-            <span>${item.parking} ที่จอดรถ</span>
-          </div>
-        </div>
-        <div class="house-footer">
-          <div class="house-price-block">
-            <span class="price-label">ราคาเริ่มต้นพร้อมสร้าง</span>
-            <span class="price-val">฿ ${priceText}</span>
-          </div>
-          <button class="btn btn-outline-gold btn-view-house" data-house-id="${item.id}">
-            ดูสเปก & แปลน
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Click handler for modal
-    const viewBtn = card.querySelector('.btn-view-house');
-    if (viewBtn) {
-      viewBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openHouseModalById(item.id);
-      });
-    }
-
-    container.appendChild(card);
+  displayedHouses.forEach(item => {
+    container.appendChild(createHouseCardNode(item));
   });
 }
 
@@ -460,7 +480,6 @@ function initHouseFilter() {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeHouseFilter = btn.getAttribute('data-filter') || 'all';
-      isAllHousesExpanded = false;
       renderHouseGrid();
     });
   });
@@ -687,7 +706,12 @@ function initHouseModal() {
 
   function closeModal() {
     modalBackdrop.classList.remove('open');
-    document.body.style.overflow = '';
+    const allHousesModal = document.getElementById('allHousesModal');
+    if (allHousesModal && allHousesModal.classList.contains('open')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   window.closeModal = closeModal;
@@ -1813,13 +1837,35 @@ function initDynamicCMSContent() {
   });
 }
 
-// State for toggling all reviews vs latest 3
-let isAllReviewsExpanded = false;
+function createReviewCardNode(rev) {
+  const card = document.createElement('div');
+  card.className = 'review-card';
 
-function renderReviews() {
-  const container = document.getElementById('reviewsGridContainer');
-  if (!container) return;
+  const avatarHtml = rev.image
+    ? `<img src="${escapeHtml(rev.image)}" alt="${escapeHtml(rev.name)}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #ffd700;" onerror="this.outerHTML='<div class=\\\'reviewer-avatar\\\'>${escapeHtml((rev.name || 'ค').charAt(0))}</div>'">`
+    : `<div class="reviewer-avatar">${escapeHtml((rev.name || 'ค').charAt(0))}</div>`;
 
+  const ratingVal = parseInt(rev.rating, 10) || 5;
+  let starsStr = '';
+  for (let i = 1; i <= 5; i++) {
+    starsStr += (i <= ratingVal) ? '★' : '☆';
+  }
+
+  card.innerHTML = `
+    <div class="review-stars">${starsStr}</div>
+    <p class="review-text">"${escapeHtml(rev.text)}"</p>
+    <div class="reviewer-meta">
+      ${avatarHtml}
+      <div>
+        <div class="reviewer-name">${escapeHtml(rev.name)}</div>
+        <div class="reviewer-loc">${escapeHtml(rev.role || 'ลูกค้าสร้างบ้าน RM HOME')}</div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function getStoredReviewsForWeb() {
   let reviews = [];
   try {
     const raw = localStorage.getItem('rm_reviews');
@@ -1862,68 +1908,63 @@ function renderReviews() {
       }
     ];
   }
+  return reviews;
+}
 
-  // 1. Dynamic Extra Reviews Counter Badge (Real-time from Database/LocalStorage)
+function openAllReviewsModal() {
+  const modal = document.getElementById('allReviewsModal');
+  const grid = document.getElementById('allReviewsModalGrid');
+  const countText = document.getElementById('allReviewsModalCountText');
+  if (!modal || !grid) return;
+
+  const reviews = getStoredReviewsForWeb();
+
+  if (countText) {
+    countText.textContent = `(ทั้งหมด ${reviews.length} รีวิว)`;
+  }
+
+  grid.innerHTML = '';
+  reviews.forEach(rev => {
+    grid.appendChild(createReviewCardNode(rev));
+  });
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderReviews() {
+  const container = document.getElementById('reviewsGridContainer');
+  if (!container) return;
+
+  const reviews = getStoredReviewsForWeb();
+  const totalCount = reviews.length;
+
+  // 1. Dynamic Extra Reviews Counter Badge (เด้งขึ้นโมดอลกลางจอ)
   const badgeWrap = document.getElementById('reviewsCountBadgeWrap');
   const moreCountText = document.getElementById('reviewsMoreCountText');
   const toggleBtn = document.getElementById('btnToggleAllReviews');
-  const totalCount = reviews.length;
 
-  if (badgeWrap && moreCountText) {
-    if (totalCount > 3) {
-      badgeWrap.style.display = 'block';
-      const remaining = totalCount - 3;
-      if (!isAllReviewsExpanded) {
-        moreCountText.textContent = `ยังมีอีก ${remaining} รีวิวจากลูกค้าจริง (คลิกเพื่อดูทั้งหมด ➔)`;
-      } else {
-        moreCountText.textContent = `▲ แสดงเฉพาะ 3 รีวิวล่าสุด (ย่อมุมมอง)`;
-      }
-    } else {
-      badgeWrap.style.display = 'none';
+  if (totalCount > 3) {
+    if (badgeWrap) badgeWrap.style.display = 'block';
+    const remaining = totalCount - 3;
+    if (moreCountText) {
+      moreCountText.textContent = `✨ มีอีก ${remaining} รีวิวจากลูกค้าจริง (คลิกเพื่อดูทั้งหมดกลางจอ ➔)`;
     }
+  } else {
+    if (badgeWrap) badgeWrap.style.display = 'none';
   }
 
-  if (toggleBtn && !toggleBtn._hasToggleEvent) {
-    toggleBtn._hasToggleEvent = true;
-    toggleBtn.addEventListener('click', () => {
-      isAllReviewsExpanded = !isAllReviewsExpanded;
-      renderReviews();
-    });
+  // Bind modal open click
+  if (toggleBtn && !toggleBtn._hasModalClick) {
+    toggleBtn._hasModalClick = true;
+    toggleBtn.addEventListener('click', () => openAllReviewsModal());
   }
 
-  // 2. Slice items depending on expanded state
-  const displayedReviews = (!isAllReviewsExpanded && totalCount > 3)
-    ? reviews.slice(0, 3)
-    : reviews;
-
-  // 3. Render Cards
+  // Always render ONLY top 3 reviews on the main page (ไม่ต้องไปเติมข้างล่าง)
+  const displayedReviews = reviews.slice(0, 3);
   container.innerHTML = '';
   displayedReviews.forEach(rev => {
-    const card = document.createElement('div');
-    card.className = 'review-card';
-
-    const avatarHtml = rev.image
-      ? `<img src="${escapeHtml(rev.image)}" alt="${escapeHtml(rev.name)}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #ffd700;" onerror="this.outerHTML='<div class=\\'reviewer-avatar\\'>${escapeHtml((rev.name || 'ค').charAt(0))}</div>'">`
-      : `<div class="reviewer-avatar">${escapeHtml((rev.name || 'ค').charAt(0))}</div>`;
-
-    const ratingVal = parseInt(rev.rating, 10) || 5;
-    let starsStr = '';
-    for (let i = 1; i <= 5; i++) {
-      starsStr += (i <= ratingVal) ? '★' : '☆';
-    }
-
-    card.innerHTML = `
-      <div class="review-stars">${starsStr}</div>
-      <p class="review-text">"${escapeHtml(rev.text)}"</p>
-      <div class="reviewer-meta">
-        ${avatarHtml}
-        <div>
-          <div class="reviewer-name">${escapeHtml(rev.name)}</div>
-          <div class="reviewer-loc">${escapeHtml(rev.role || 'ลูกค้าสร้างบ้าน RM HOME')}</div>
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
+    container.appendChild(createReviewCardNode(rev));
   });
 }
 
@@ -2376,3 +2417,54 @@ function renderSiteInfo() {
     }
   }
 })();
+
+function initAllCenterModals() {
+  const allHousesModal = document.getElementById('allHousesModal');
+  const closeHousesBtn = document.getElementById('closeAllHousesModalBtn');
+  const allReviewsModal = document.getElementById('allReviewsModal');
+  const closeReviewsBtn = document.getElementById('closeAllReviewsModalBtn');
+  const btnOpenUserReviewFromAll = document.getElementById('btnOpenUserReviewFromAllModal');
+
+  function closeAllHouses() {
+    if (allHousesModal) allHousesModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeAllReviews() {
+    if (allReviewsModal) allReviewsModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (closeHousesBtn) closeHousesBtn.addEventListener('click', closeAllHouses);
+  if (allHousesModal) {
+    allHousesModal.addEventListener('click', (e) => {
+      if (e.target === allHousesModal) closeAllHouses();
+    });
+  }
+
+  if (closeReviewsBtn) closeReviewsBtn.addEventListener('click', closeAllReviews);
+  if (allReviewsModal) {
+    allReviewsModal.addEventListener('click', (e) => {
+      if (e.target === allReviewsModal) closeAllReviews();
+    });
+  }
+
+  if (btnOpenUserReviewFromAll) {
+    btnOpenUserReviewFromAll.addEventListener('click', () => {
+      closeAllReviews();
+      const userRevModal = document.getElementById('userReviewModal');
+      if (userRevModal) {
+        userRevModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  }
+
+  // Global Escape key to close modals
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllHouses();
+      closeAllReviews();
+    }
+  });
+}

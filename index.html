@@ -1214,6 +1214,58 @@
     </div>
   </div>
 
+  
+  <!-- All Houses & Works Modal (หน้าต่างแสดงผลงานและแบบบ้านทั้งหมดในระบบ เด้งกลางจอ) -->
+  <div class="modal-backdrop" id="allHousesModal">
+    <div class="modal-container modal-gallery-view">
+      <button class="modal-close-btn" id="closeAllHousesModalBtn" aria-label="ปิด">&times;</button>
+      <div class="modal-gallery-header">
+        <div class="section-tag" style="text-align:center; margin-bottom:0.4rem;">
+          <span class="gold-badge">WARM HOME COLLECTIONS</span>
+        </div>
+        <h3 class="modal-gallery-title">
+          แบบบ้าน &amp; ผลงานสร้างจริงทั้งหมด <span class="text-gold-gradient" id="allHousesModalCountText">RMHome ระยอง</span>
+        </h3>
+        <p class="modal-gallery-subtitle">
+          รวมผลงานก่อสร้างและแบบบ้านมาตรฐานวิศวกร กว. ทั้งหมด (รวม 3 หลังที่โชว์หน้าแรกและหลังอื่นๆ ทั้งหมด)
+        </p>
+      </div>
+      <div class="modal-grid-scrollable">
+        <div class="house-grid modal-house-grid" id="allHousesModalGrid">
+          <!-- Dynamically rendered by app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Customer Reviews Modal (หน้าต่างแสดงรีวิวความประทับใจทั้งหมดในระบบ เด้งกลางจอ) -->
+  <div class="modal-backdrop" id="allReviewsModal">
+    <div class="modal-container modal-gallery-view">
+      <button class="modal-close-btn" id="closeAllReviewsModalBtn" aria-label="ปิด">&times;</button>
+      <div class="modal-gallery-header">
+        <div class="section-tag" style="text-align:center; margin-bottom:0.4rem;">
+          <span class="gold-badge">REAL CLIENT REVIEWS</span>
+        </div>
+        <h3 class="modal-gallery-title">
+          รีวิวความประทับใจจากลูกค้าจริงทั้งหมด <span class="text-gold-gradient" id="allReviewsModalCountText">(RMHome ระยอง)</span>
+        </h3>
+        <p class="modal-gallery-subtitle">
+          เสียงตอบรับจริงจากเจ้าของบ้านทุกโครงการในระยองและ EEC คุมงบได้จริง ไร้ประวัติทิ้งงาน 100%
+        </p>
+        <div style="margin-top:0.75rem;">
+          <button type="button" class="btn btn-gold" id="btnOpenUserReviewFromAllModal" style="padding:0.55rem 1.4rem; font-size:0.85rem; border-radius:50px; cursor:pointer;">
+            ✍️ + เขียนรีวิวความประทับใจของคุณ
+          </button>
+        </div>
+      </div>
+      <div class="modal-grid-scrollable">
+        <div class="reviews-grid modal-reviews-grid" id="allReviewsModalGrid">
+          <!-- Dynamically rendered by app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating Quick Actions (Moved Call & LINE to Bottom Left) -->
   <div class="floating-contact-bar">
     <a href="tel:0912998797" class="float-btn float-call" title="โทรด่วนหาวิศวกร">

@@ -2655,6 +2655,11 @@ textarea.form-control {
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
+#houseDetailModal,
+#userReviewModal {
+  z-index: 2200;
+}
+
 .modal-backdrop.open {
   opacity: 1;
   visibility: visible;
@@ -3025,5 +3030,97 @@ textarea.form-control {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   Centered Pop-up Gallery Modals for Houses & Reviews
+   ========================================================================== */
+.modal-gallery-view {
+  max-width: 1140px !important;
+  width: 95% !important;
+  max-height: 92vh !important;
+  padding: 2.25rem 2rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.modal-gallery-header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+
+.modal-gallery-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.35rem;
+}
+
+.modal-gallery-subtitle {
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.modal-grid-scrollable {
+  max-height: calc(90vh - 170px);
+  overflow-y: auto;
+  padding: 0.5rem 0.5rem 1.5rem 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 #0e3d29;
+}
+
+.modal-grid-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-grid-scrollable::-webkit-scrollbar-track {
+  background: #0e3d29;
+  border-radius: 4px;
+}
+
+.modal-grid-scrollable::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}
+
+.modal-house-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.5rem !important;
+}
+
+.modal-reviews-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.5rem !important;
+}
+
+@media (max-width: 992px) {
+  .modal-house-grid,
+  .modal-reviews-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-gallery-view {
+    padding: 1.5rem 1rem !important;
+    max-height: 95vh !important;
+  }
+  .modal-gallery-title {
+    font-size: 1.3rem;
+  }
+  .modal-house-grid,
+  .modal-reviews-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .modal-grid-scrollable {
+    max-height: calc(92vh - 160px);
   }
 }
