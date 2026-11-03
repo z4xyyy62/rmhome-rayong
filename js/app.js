@@ -199,9 +199,77 @@ function initHeroSlider() {
    --------------------------------------------------------- */
 const DEFAULT_PORTFOLIO_HOUSES = [
   {
-    id: 'house_nordic_01',
+    id: 'house_contem_01',
+    title: 'RM-Contem Harmony',
+    category: 'Contem',
+    categorySlug: 'contem',
+    budget: '4.25 ล้านบาท',
+    type: 'แบบบ้าน (ยังไม่สร้าง)',
+    area: '260',
+    floors: '2',
+    bedrooms: '3',
+    bathrooms: '3',
+    parking: '2',
+    location: 'อ.บ้านค่าย จ.ระยอง',
+    cover: 'assets/images/hero-winter-villa.jpg',
+    gallery: [
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/plan-nordic-fl1.svg',
+      'assets/images/plan-nordic-fl2.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
+    description: 'แบบบ้านสไตล์คอนเทมโพรารี (Contemporary) ผสมผสานความร่วมสมัยและกลิ่นอายธรรมชาติเมืองระยอง อบอุ่น เรียบหรู ฟังก์ชันลงตัวคุ้มค่าทุกตารางเมตร',
+    features: [
+      'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
+      'หลังคา SCG Prestige พร้อมฉนวนสะท้อนความร้อน Stay Cool',
+      'แปลนชั้น 1: Living Area เพดานสูง + Dining + ครัวไทยแยกส่วน + ห้องนอนผู้สูงอายุ',
+      'แปลนชั้น 2: Master Bedroom กว้างขวางพร้อม Walk-in Closet และระเบียงรับลม',
+      'สุขภัณฑ์ Cotto / American Standard ประหยัดน้ำระดับพรีเมียม',
+      'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
+    ],
+    tall: false,
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'house_modern_02',
+    title: 'RM-Modern Villa Resort',
+    category: 'Modern',
+    categorySlug: 'modern',
+    budget: '4.95 ล้านบาท',
+    type: 'ผลงานสร้างเสร็จแล้ว',
+    area: '290',
+    floors: '1',
+    bedrooms: '3',
+    bathrooms: '3',
+    parking: '2',
+    location: 'อ.แกลง จ.ระยอง',
+    cover: 'assets/images/house-tropical.jpg',
+    gallery: [
+      'assets/images/house-tropical.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-tropical-fl1.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
+    description: 'บ้านพักตากอากาศสไตล์โมเดิร์น พร้อมสระว่ายน้ำระบบเกลือในตัว ออกแบบเส้นสายคมชัด โปร่งโล่ง เชื่อมต่อพื้นที่ใช้สอยภายในและภายนอกได้อย่างลงตัว',
+    features: [
+      'สระว่ายน้ำระบบเกลือ Overflow ขนาด 3.5 x 8 เมตร พร้อมระบบไฟ LED ใต้น้ำ',
+      'แปลนวิลล่าสไตล์รีสอร์ต: ทุกห้องนอนเปิดก้าวสู่ขอบสระว่ายน้ำได้โดยตรง',
+      'พื้นระเบียงไม้เทียม WPC เกรดพรีเมียม ทนแดด ทนฝน ไม่ผุกร่อน',
+      'ดีไซน์เชื่อมต่อ Indoor-Outdoor ด้วยประตูกระจกบานเลื่อนขนาดยักษ์',
+      'ระบบบำบัดน้ำเสียและระบายน้ำรอบตัวบ้าน ออกแบบป้องกันน้ำท่วมขัง',
+      'บริการยื่นขออนุญาตปลูกสร้างและขอน้ำ-ไฟให้ฟรีครบวงจร'
+    ],
+    tall: false,
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'house_nordic_03',
     title: 'RM-Nordic Grand',
-    category: 'นอร์ดิก',
+    category: 'Nordic',
     categorySlug: 'nordic',
     budget: '3.89 ล้านบาท',
     type: 'แบบบ้าน (ยังไม่สร้าง)',
@@ -228,7 +296,6 @@ const DEFAULT_PORTFOLIO_HOUSES = [
       'กระจกเขียวตัดแสงหนา 6 มม. กรอบอะลูมิเนียมเกรดพรีเมียม Powder Coat',
       'แปลนชั้น 1: โถง Living เพดานสูง 3.2 ม. + ครัวเปิดสไตล์ยุโรป + ห้องนอนผู้สูงอายุ',
       'แปลนชั้น 2: Master Penthouse Suite พร้อม Walk-in Closet + ระเบียงชมวิวหน้าบ้าน',
-      'สุขภัณฑ์ Cotto / American Standard ประหยัดน้ำระดับพรีเมียม',
       'ระบบไฟฟ้ารองรับ EV Charger และ Smart Home Control',
       'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
     ],
@@ -236,10 +303,10 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     createdAt: '2026-11-01'
   },
   {
-    id: 'house_mansion_02',
-    title: 'RM-Mansion Elite',
-    category: 'โมเดิร์นคฤหาสน์',
-    categorySlug: 'mansion',
+    id: 'house_luxury_04',
+    title: 'RM-Luxury Mansion Elite',
+    category: 'Luxury',
+    categorySlug: 'luxury',
     budget: '6.95 ล้านบาท',
     type: 'แบบบ้าน (ยังไม่สร้าง)',
     area: '380',
@@ -258,7 +325,7 @@ const DEFAULT_PORTFOLIO_HOUSES = [
       'assets/images/plan-mansion-fl2.svg',
       'assets/images/quality-engineer.jpg'
     ],
-    description: 'คฤหาสน์หรูระดับ High-End โดดเด่นด้วย Façade หินอ่อนและเส้นสายสีทองแชมเปญ โถง Double Volume สูง 6.5 เมตร พร้อมระเบียง Sky Terrace ชั้นบน ตอบโจทย์การใช้ชีวิตเหนือระดับในระยอง',
+    description: 'คฤหาสน์หรูระดับ Luxury โดดเด่นด้วย Façade หินอ่อนและเส้นสายสีทองแชมเปญ โถง Double Volume สูง 6.5 เมตร พร้อมระเบียง Sky Terrace ชั้นบน ตอบโจทย์การใช้ชีวิตเหนือระดับในระยอง',
     features: [
       'ฐานรากตอกเสาเข็มลึกถึงชั้นดินดาน วิศวกรสามัญเซ็นรับรองทุกจุด',
       'แปลนชั้น 1: โถง Grand Foyer สูง 6.5 ม. + Dining 10 ที่นั่ง + ครัวไทย & ครัวฝรั่ง + ห้องแม่บ้าน',
@@ -270,43 +337,27 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     ],
     tall: false,
     createdAt: '2026-11-01'
-  },
-  {
-    id: 'house_tropical_03',
-    title: 'RM-Tropical Pool Villa',
-    category: 'พูลวิลล่า',
-    categorySlug: 'tropical',
-    budget: '4.95 ล้านบาท',
-    type: 'ผลงานสร้างเสร็จแล้ว',
-    area: '290',
-    floors: '1',
-    bedrooms: '3',
-    bathrooms: '3',
-    parking: '2',
-    location: 'อ.แกลง จ.ระยอง',
-    cover: 'assets/images/house-tropical.jpg',
-    gallery: [
-      'assets/images/house-tropical.jpg',
-      'assets/images/hero-villa.jpg',
-      'assets/images/hero-winter-villa.jpg',
-      'assets/images/luxury-interior.jpg',
-      'assets/images/plan-tropical-fl1.svg',
-      'assets/images/quality-engineer.jpg'
-    ],
-    description: 'บ้านพักตากอากาศสไตล์โมเดิร์นทรอปิคอล พร้อมสระว่ายน้ำระบบเกลือในตัว ออกแบบระแนงไม้ธรรมชาติช่วยกรองแสงแดดเมืองระยอง ทุกห้องนอนเชื่อมต่อสู่สระว่ายน้ำได้โดยตรง เหมาะสำหรับอยู่อาศัยหรือปล่อยเช่าพูลวิลล่า',
-    features: [
-      'สระว่ายน้ำระบบเกลือ Overflow ขนาด 3.5 x 8 เมตร พร้อมระบบไฟ LED ใต้น้ำ',
-      'แปลนพูลวิลล่าสไตล์รีสอร์ต: ทุกห้องนอนเปิดก้าวสู่ขอบสระว่ายน้ำได้โดยตรง',
-      'พื้นระเบียงไม้เทียม WPC เกรดพรีเมียม ทนแดด ทนฝน ไม่ผุกร่อน',
-      'ดีไซน์เชื่อมต่อ Indoor-Outdoor ด้วยประตูกระจกบานเลื่อนขนาดยักษ์',
-      'ห้องน้ำสไตล์ Semi-Outdoor พร้อมอ่างอาบน้ำสั่งทำพิเศษ',
-      'ระบบบำบัดน้ำเสียและระบายน้ำรอบตัวบ้าน ออกแบบป้องกันน้ำท่วมขัง',
-      'บริการยื่นขออนุญาตประกอบกิจการวิลล่าตากอากาศให้ครบวงจร'
-    ],
-    tall: false,
-    createdAt: '2026-11-01'
   }
 ];
+
+function getCategorySlug(cat) {
+  if (!cat) return 'modern';
+  const c = cat.toLowerCase().trim();
+  if (c.includes('contem') || c.includes('คอนเทม')) return 'contem';
+  if (c.includes('nordic') || c.includes('นอร์ดิก')) return 'nordic';
+  if (c.includes('luxury') || c.includes('ลักชัวรี') || c.includes('mansion') || c.includes('คฤหาสน์')) return 'luxury';
+  if (c.includes('modern') || c.includes('โมเดิร์น') || c.includes('tropical') || c.includes('ทรอปิคอล') || c.includes('pool') || c.includes('พูลวิลล่า') || c.includes('minimal') || c.includes('มินิมอล')) return 'modern';
+  return 'modern';
+}
+
+function normalizeCategoryName(cat) {
+  const slug = getCategorySlug(cat);
+  if (slug === 'contem') return 'Contem';
+  if (slug === 'modern') return 'Modern';
+  if (slug === 'nordic') return 'Nordic';
+  if (slug === 'luxury') return 'Luxury';
+  return 'Modern';
+}
 
 function getStoredPortfolioForWeb() {
   try {
@@ -315,10 +366,31 @@ function getStoredPortfolioForWeb() {
       localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
       return DEFAULT_PORTFOLIO_HOUSES;
     }
-    const parsed = JSON.parse(raw);
+    let parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
       localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
       return DEFAULT_PORTFOLIO_HOUSES;
+    }
+    let updated = false;
+    parsed = parsed.map(item => {
+      const newSlug = getCategorySlug(item.categorySlug || item.category);
+      const newCat = normalizeCategoryName(item.category || item.categorySlug);
+      if (item.categorySlug !== newSlug || item.category !== newCat) {
+        updated = true;
+        return { ...item, categorySlug: newSlug, category: newCat };
+      }
+      return item;
+    });
+
+    // If contem is not present in stored items, unshift the default contem house so all 4 styles are represented
+    const hasContem = parsed.some(item => getCategorySlug(item.categorySlug || item.category) === 'contem');
+    if (!hasContem && DEFAULT_PORTFOLIO_HOUSES[0]) {
+      parsed.unshift(DEFAULT_PORTFOLIO_HOUSES[0]);
+      updated = true;
+    }
+
+    if (updated) {
+      try { localStorage.setItem('rm_portfolio_items', JSON.stringify(parsed)); } catch (e) {}
     }
     return parsed;
   } catch (e) {
@@ -331,7 +403,7 @@ let activeHouseFilter = 'all';
 function createHouseCardNode(item) {
   const card = document.createElement('article');
   card.className = `house-card ${item.tall ? 'tall-card' : ''}`;
-  card.setAttribute('data-category', item.categorySlug || 'modern');
+  card.setAttribute('data-category', getCategorySlug(item.categorySlug || item.category));
   card.setAttribute('data-id', item.id);
 
   const priceText = item.budget.includes('ล้าน') ? item.budget : `${item.budget} ล้านบาท`;
@@ -342,7 +414,7 @@ function createHouseCardNode(item) {
       <span class="house-tag-badge has-ribbon">${item.type || 'แบบบ้าน'}</span>
     </div>
     <div class="house-body">
-      <span class="house-meta-code">SERIES: ${(item.category || 'MODERN').toUpperCase()}</span>
+      <span class="house-meta-code">SERIES: ${normalizeCategoryName(item.category || item.categorySlug).toUpperCase()}</span>
       <h3 class="house-name">${item.title}</h3>
       <div class="house-specs-list">
         <div class="spec-pill">
@@ -394,8 +466,8 @@ function openAllHousesModal() {
   const allHouses = getStoredPortfolioForWeb();
   const filteredHouses = allHouses.filter(item => {
     if (activeHouseFilter === 'all') return true;
-    const cat = (item.categorySlug || 'modern').toLowerCase();
-    return cat === activeHouseFilter || cat.includes(activeHouseFilter);
+    const cat = getCategorySlug(item.categorySlug || item.category);
+    return cat === activeHouseFilter;
   });
 
   if (countText) {
@@ -420,8 +492,8 @@ function renderHouseGrid() {
   // Filter by category
   const filteredHouses = allHouses.filter(item => {
     if (activeHouseFilter === 'all') return true;
-    const cat = (item.categorySlug || 'modern').toLowerCase();
-    return cat === activeHouseFilter || cat.includes(activeHouseFilter);
+    const cat = getCategorySlug(item.categorySlug || item.category);
+    return cat === activeHouseFilter;
   });
 
   const totalFiltered = filteredHouses.length;
