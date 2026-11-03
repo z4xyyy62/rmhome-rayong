@@ -485,17 +485,27 @@ button, input, select, textarea {
 }
 
 .brand-emblem {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #0e3d29 0%, #062417 100%) !important;
+  width: 46px;
+  height: 46px;
+  background: #0c191d !important;
   border: 1.5px solid var(--color-gold-500) !important;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 16px rgba(212, 175, 55, 0.4), 0 0 8px rgba(14, 61, 41, 0.5) !important;
   position: relative;
   overflow: hidden;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.brand-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 9px;
+  display: block;
 }
 
 .brand-emblem::after {

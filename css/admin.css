@@ -64,20 +64,29 @@ body {
   border-bottom: 1px solid #e1ebe5;
 }
 
-/* Deep Green & Gold Brand Emblem */
+/* RM Home Official Brand Emblem */
 .brand-emblem {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #0e3d29 0%, #062417 100%);
-  border: 1.5px solid var(--admin-gold);
+  background: #0c191d !important;
+  border: 1.5px solid var(--admin-gold) !important;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(14, 61, 41, 0.35);
+  box-shadow: 0 4px 14px rgba(12, 25, 29, 0.4);
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  padding: 2px;
+}
+
+.brand-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 9px;
+  display: block;
 }
 
 .brand-emblem svg {
