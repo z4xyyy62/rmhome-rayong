@@ -46,7 +46,11 @@
           Object.keys(data).forEach(key => {
             if (data[key] !== undefined && data[key] !== null) {
               const val = typeof data[key] === 'object' ? JSON.stringify(data[key]) : String(data[key]);
-              originalSetItem(key, val);
+              try {
+                originalSetItem(key, val);
+              } catch (qErr) {
+                console.warn(`[CloudSync] LocalStorage quota skipped for ${key}`);
+              }
             }
           });
           return data;
@@ -65,7 +69,7 @@
       if (!baseUrl) return;
 
       try {
-        await fetch(`${baseUrl}/rmhome/${key}.json`, {
+        const res = await fetch(`${baseUrl}/rmhome/${key}.json`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(value)
@@ -74,7 +78,9 @@
         // อัปเดต timestamp กลาง เพื่อให้ทุกเครื่องที่เปิดเว็บอยู่รู้ว่ามีข้อมูลใหม่
         if (key !== 'rm_last_sync_timestamp') {
           const now = Date.now();
-          originalSetItem('rm_last_sync_timestamp', String(now));
+          try {
+            originalSetItem('rm_last_sync_timestamp', String(now));
+          } catch (e) {}
           await fetch(`${baseUrl}/rmhome/rm_last_sync_timestamp.json`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -83,6 +89,7 @@
         }
       } catch (err) {
         console.warn(`[CloudSync] Save failed for ${key}:`, err);
+        return false;
       }
     },
 
@@ -162,7 +169,11 @@
   // Auto-sync Interceptor: เมื่อมีการเซฟ rm_ ใดๆ จะส่งขึ้น Cloud อัตโนมัติทันที
   const originalSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function (key, value) {
-    originalSetItem(key, value);
+    try {
+      originalSetItem(key, value);
+    } catch (quotaErr) {
+      console.warn(`[CloudSync] LocalStorage quota skipped for ${key}, continuing Cloud DB sync.`);
+    }
     if (key && key.startsWith('rm_') && !key.includes('session') && !key.includes('cloud_db') && !key.includes('page_views') && !key.includes('sessions')) {
       if (CloudSync.isConnected()) {
         try {

@@ -326,15 +326,73 @@ function getStoredPortfolioForWeb() {
 }
 
 let activeHouseFilter = 'all';
+let isAllHousesExpanded = false;
 
 function renderHouseGrid() {
   const container = document.getElementById('houseGridContainer');
   if (!container) return;
 
-  const houses = getStoredPortfolioForWeb();
+  const allHouses = getStoredPortfolioForWeb();
+
+  // Filter by category
+  const filteredHouses = allHouses.filter(item => {
+    if (activeHouseFilter === 'all') return true;
+    const cat = (item.categorySlug || 'modern').toLowerCase();
+    return cat === activeHouseFilter || cat.includes(activeHouseFilter);
+  });
+
+  const totalFiltered = filteredHouses.length;
+
+  // 1. Dynamic Extra Houses Counter Badge & View All Button (เหมือนระบบรีวิว)
+  const badgeWrap = document.getElementById('housesCountBadgeWrap');
+  const moreCountText = document.getElementById('housesMoreCountText');
+  const toggleBtn = document.getElementById('btnToggleAllHouses');
+  const bottomWrap = document.getElementById('housesViewAllBottomWrap');
+  const btnBottom = document.getElementById('btnToggleAllHousesBottom');
+  const bottomCountText = document.getElementById('housesBottomCountText');
+
+  if (totalFiltered > 3) {
+    if (badgeWrap) badgeWrap.style.display = 'block';
+    if (bottomWrap) bottomWrap.style.display = 'block';
+    const remaining = totalFiltered - 3;
+
+    if (!isAllHousesExpanded) {
+      if (moreCountText) moreCountText.textContent = `ยังมีอีก ${remaining} แบบบ้าน/ผลงานจริง (คลิกเพื่อดูทั้งหมด ➔)`;
+      if (bottomCountText) bottomCountText.textContent = `อีก ${remaining} หลัง`;
+      if (btnBottom) btnBottom.innerHTML = `ดูแบบบ้าน &amp; ผลงานทั้งหมด (อีก ${remaining} หลัง) ➔`;
+    } else {
+      if (moreCountText) moreCountText.textContent = `▲ แสดงเฉพาะ 3 ผลงานเด่น (ย่อมุมมอง)`;
+      if (btnBottom) btnBottom.innerHTML = `▲ แสดงเฉพาะ 3 ผลงานเด่น (ย่อมุมมอง)`;
+    }
+  } else {
+    if (badgeWrap) badgeWrap.style.display = 'none';
+    if (bottomWrap) bottomWrap.style.display = 'none';
+  }
+
+  // Bind toggle clicks once
+  if (toggleBtn && !toggleBtn._hasToggleEvent) {
+    toggleBtn._hasToggleEvent = true;
+    toggleBtn.addEventListener('click', () => {
+      isAllHousesExpanded = !isAllHousesExpanded;
+      renderHouseGrid();
+    });
+  }
+  if (btnBottom && !btnBottom._hasToggleEvent) {
+    btnBottom._hasToggleEvent = true;
+    btnBottom.addEventListener('click', () => {
+      isAllHousesExpanded = !isAllHousesExpanded;
+      renderHouseGrid();
+    });
+  }
+
+  // 2. Slice items depending on expanded state
+  const displayedHouses = (!isAllHousesExpanded && totalFiltered > 3)
+    ? filteredHouses.slice(0, 3)
+    : filteredHouses;
+
   container.innerHTML = '';
 
-  houses.forEach((item) => {
+  displayedHouses.forEach((item) => {
     const card = document.createElement('article');
     card.className = `house-card ${item.tall ? 'tall-card' : ''}`;
     card.setAttribute('data-category', item.categorySlug || 'modern');
@@ -391,23 +449,6 @@ function renderHouseGrid() {
 
     container.appendChild(card);
   });
-
-  applyCurrentFilter();
-}
-
-function applyCurrentFilter() {
-  const houseCards = document.querySelectorAll('#houseGridContainer .house-card');
-  houseCards.forEach(card => {
-    const cardCategory = card.getAttribute('data-category') || '';
-    if (activeHouseFilter === 'all' || cardCategory === activeHouseFilter || cardCategory.includes(activeHouseFilter)) {
-      card.style.display = 'flex';
-      card.style.opacity = '1';
-      card.style.transform = 'translateY(0)';
-    } else {
-      card.style.display = 'none';
-      card.style.opacity = '0';
-    }
-  });
 }
 
 function initHouseFilter() {
@@ -419,7 +460,8 @@ function initHouseFilter() {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       activeHouseFilter = btn.getAttribute('data-filter') || 'all';
-      applyCurrentFilter();
+      isAllHousesExpanded = false;
+      renderHouseGrid();
     });
   });
 

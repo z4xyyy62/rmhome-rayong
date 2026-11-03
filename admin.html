@@ -500,7 +500,8 @@
 
           <!-- Form: เพิ่มผลงานใหม่ (ตามแบบ UI ที่ส่งมา) -->
           <form id="portfolioAddForm">
-            <h4 style="font-size:1.15rem; font-weight:700; color:#0f172a; margin-bottom:1.25rem;">เพิ่มผลงานใหม่</h4>
+            <h4 style="font-size:1.15rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem;">เพิ่มผลงานใหม่</h4>
+            <p style="font-size:0.82rem; color:#64748b; margin-bottom:1.25rem;">✨ เพิ่มผลงานสร้างจริงหรือแบบบ้านได้ไม่จำกัดจำนวน รูปภาพจะถูกบีบอัดให้โหลดไวและซิงค์ขึ้น Cloud อัตโนมัติ (บนหน้าเว็บหลักจะแสดง 3 หลังแรก และมีปุ่มให้ลูกค้ากดดูทั้งหมดเหมือนระบบรีวิว)</p>
 
             <div class="form-grid-2col">
               <!-- 1. ชื่อโปรเจกต์ -->
@@ -524,8 +525,8 @@
 
               <!-- 3. งบประมาณ -->
               <div class="form-group">
-                <label class="form-label" for="projBudget">งบประมาณ *</label>
-                <input type="text" id="projBudget" class="form-control" placeholder="4.5 ล้าน" required>
+                <label class="form-label" for="projBudget">งบประมาณ (เช่น 4.5 ล้าน)</label>
+                <input type="text" id="projBudget" class="form-control" placeholder="เช่น 4.5 ล้าน หรือ ตามงบประมาณลูกค้า">
               </div>
 
               <!-- 4. ประเภท -->
@@ -540,8 +541,8 @@
 
               <!-- 5. พื้นที่ใช้สอย (ตร.ม.) -->
               <div class="form-group">
-                <label class="form-label" for="projArea">พื้นที่ใช้สอย (ตร.ม.) *</label>
-                <input type="text" id="projArea" class="form-control" placeholder="180" required>
+                <label class="form-label" for="projArea">พื้นที่ใช้สอย (ตร.ม.)</label>
+                <input type="text" id="projArea" class="form-control" placeholder="เช่น 180 หรือตามแบบ">
               </div>
 
               <!-- 6. จำนวนชั้น -->
@@ -576,9 +577,9 @@
 
               <!-- 11. รูปปก (COVER) -->
               <div class="form-group full-width">
-                <label class="form-label" for="projCover">รูปปก (COVER) *</label>
+                <label class="form-label" for="projCover">รูปปก (COVER)</label>
                 <div class="input-with-button">
-                  <input type="text" id="projCover" class="form-control" placeholder="/images/house.jpg หรือเลือกไฟล์จากเครื่อง" required>
+                  <input type="text" id="projCover" class="form-control" placeholder="เลือกรูปภาพจากเครื่อง (กดปุ่ม ↑ อัพโหลด)">
                   <button type="button" class="btn-upload-file" id="btnUploadCover">
                     ↑ อัพโหลด
                   </button>
@@ -1338,7 +1339,7 @@
           <div class="form-group full-width">
             <label class="form-label" for="editProjCover">รูปหน้าปก (COVER) *</label>
             <div class="input-with-button">
-              <input type="text" id="editProjCover" class="form-control" required>
+              <input type="text" id="editProjCover" class="form-control" placeholder="เลือกรูปภาพจากเครื่อง หรือเลือกจากแกลเลอรีด้านล่าง">
               <button type="button" class="btn-upload-file" id="btnEditUploadCover">↑ อัพโหลดรูปปก</button>
               <input type="file" id="editCoverFileInput" accept="image/*" style="display:none;">
             </div>

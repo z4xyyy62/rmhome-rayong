@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.CloudSync && typeof window.CloudSync.startRealtimeListener === 'function') {
     window.CloudSync.startRealtimeListener(() => {
       try {
+        _cachedPortfolioItems = null;
         if (typeof renderMetrics === 'function') renderMetrics();
         if (typeof renderLeadsList === 'function') renderLeadsList();
         if (typeof renderAdminPortfolioList === 'function') renderAdminPortfolioList();
@@ -886,34 +887,53 @@ function getCategorySlug(cat) {
   return 'modern';
 }
 
+let _cachedPortfolioItems = null;
+
 function getStoredPortfolio() {
+  if (_cachedPortfolioItems && Array.isArray(_cachedPortfolioItems) && _cachedPortfolioItems.length > 0) {
+    return _cachedPortfolioItems;
+  }
   try {
     const raw = localStorage.getItem('rm_portfolio_items');
     if (!raw) {
-      localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
-      return DEFAULT_PORTFOLIO_HOUSES;
+      _cachedPortfolioItems = [...DEFAULT_PORTFOLIO_HOUSES];
+      try { localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES)); } catch (e) {}
+      return _cachedPortfolioItems;
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
-      return DEFAULT_PORTFOLIO_HOUSES;
+      _cachedPortfolioItems = [...DEFAULT_PORTFOLIO_HOUSES];
+      try { localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES)); } catch (e) {}
+      return _cachedPortfolioItems;
     }
+    _cachedPortfolioItems = parsed;
     return parsed;
   } catch (e) {
-    return DEFAULT_PORTFOLIO_HOUSES;
+    _cachedPortfolioItems = [...DEFAULT_PORTFOLIO_HOUSES];
+    return _cachedPortfolioItems;
   }
 }
 
-function savePortfolio(items) {
+async function savePortfolio(items) {
+  _cachedPortfolioItems = items;
   try {
     localStorage.setItem('rm_portfolio_items', JSON.stringify(items));
-    window.dispatchEvent(new Event('portfolioUpdated'));
   } catch (e) {
-    console.error('Failed to save portfolio items:', e);
+    console.warn('LocalStorage save warning, proceeding with cloud sync:', e);
+  }
+  window.dispatchEvent(new Event('portfolioUpdated'));
+
+  // Direct sync to Firebase Realtime Database
+  if (window.CloudSync && typeof window.CloudSync.saveItem === 'function') {
+    try {
+      await window.CloudSync.saveItem('rm_portfolio_items', items);
+    } catch (err) {
+      console.warn('CloudSync direct save failed:', err);
+    }
   }
 }
 
-function compressImageFile(file, maxDim = 1280, quality = 0.8) {
+function compressImageFile(file, maxDim = 900, quality = 0.72) {
   return new Promise((resolve) => {
     if (!file) return resolve('');
     if (file.type === 'image/svg+xml') {
@@ -941,12 +961,25 @@ function compressImageFile(file, maxDim = 1280, quality = 0.8) {
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        let result = canvas.toDataURL('image/jpeg', quality);
+        if (result.length > 180000) {
+          const smallCanvas = document.createElement('canvas');
+          const factor = 680 / Math.max(w, h);
+          smallCanvas.width = Math.max(1, Math.round(w * factor));
+          smallCanvas.height = Math.max(1, Math.round(h * factor));
+          const sCtx = smallCanvas.getContext('2d');
+          sCtx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+          result = smallCanvas.toDataURL('image/jpeg', 0.62);
+        }
+        resolve(result);
       };
-      img.onerror = () => resolve(e.target.result);
+      img.onerror = () => resolve(e.target.result || '');
       img.src = e.target.result;
     };
+    reader.onerror = () => resolve('');
     reader.readAsDataURL(file);
   });
 }
@@ -1063,20 +1096,42 @@ function initPortfolioManager() {
 
   // Handle Form Submission: เพิ่มผลงานใหม่
   if (addForm) {
-    addForm.addEventListener('submit', (e) => {
+    addForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const title = document.getElementById('projTitle').value.trim();
+      const btnSubmit = document.getElementById('btnSubmitPortfolio');
+      const origBtnText = btnSubmit ? btnSubmit.innerHTML : '+ เพิ่มผลงาน';
+
+      const titleInput = document.getElementById('projTitle');
+      const title = titleInput ? titleInput.value.trim() : '';
+      if (!title) {
+        alert('กรุณากรอกชื่อโปรเจกต์ / แบบบ้าน');
+        if (titleInput) titleInput.focus();
+        return;
+      }
+
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '⏳ กำลังบันทึกผลงานขึ้นระบบ...';
+      }
+
       const category = document.getElementById('projCategory').value;
-      const budget = document.getElementById('projBudget').value.trim();
+      const budgetRaw = document.getElementById('projBudget').value.trim();
+      const budget = budgetRaw 
+        ? (budgetRaw.includes('ล้าน') ? budgetRaw : budgetRaw + ' ล้านบาท')
+        : 'ตามงบประมาณลูกค้า';
       const type = document.getElementById('projType').value;
-      const area = document.getElementById('projArea').value.trim();
+      const area = document.getElementById('projArea').value.trim() || '200';
       const floors = document.getElementById('projFloors').value.trim() || '1';
       const bedrooms = document.getElementById('projBeds').value.trim() || '2';
       const bathrooms = document.getElementById('projBaths').value.trim() || '2';
       const parking = document.getElementById('projParking').value.trim() || '1';
       const location = document.getElementById('projLocation').value.trim() || 'จ.ระยอง';
+
       let cover = coverInput ? coverInput.value.trim() : '';
+      if (!cover && currentGalleryPhotos.length > 0) {
+        cover = currentGalleryPhotos[0];
+      }
       if (!cover) {
         cover = 'assets/images/house-nordic.jpg';
       }
@@ -1114,7 +1169,7 @@ function initPortfolioManager() {
         title,
         category,
         categorySlug: getCategorySlug(category),
-        budget: budget.includes('ล้าน') ? budget : budget + ' ล้านบาท',
+        budget,
         type,
         area,
         floors,
@@ -1130,9 +1185,14 @@ function initPortfolioManager() {
         createdAt: new Date().toLocaleDateString('th-TH')
       };
 
-      const items = getStoredPortfolio();
+      const items = [...getStoredPortfolio()];
       items.unshift(newHouse);
-      savePortfolio(items);
+      await savePortfolio(items);
+
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = origBtnText;
+      }
 
       // Reset form
       addForm.reset();
@@ -1141,7 +1201,7 @@ function initPortfolioManager() {
       if (coverPreviewBox) coverPreviewBox.style.display = 'none';
 
       renderAdminPortfolioList();
-      alert(`✅ เพิ่มผลงาน "${title}" เรียบร้อยแล้ว!\n\nผลงานใหม่พร้อมรูปแปลนทั้งหมดจะปรากฏบนหน้าแรกของเว็บไซต์ทันทีแบบเรียลไทม์`);
+      alert(`🎉 เพิ่มผลงาน "${title}" สำเร็จเรียบร้อยแล้ว!\n\nผลงานใหม่พร้อมรูปภาพจะแสดงผลบนหน้าเว็บหลักทันทีแบบเรียลไทม์ (สามารถเพิ่มกี่หลังก็ได้ไม่จำกัด)`);
     });
   }
 }
@@ -1226,13 +1286,13 @@ function renderAdminPortfolioList() {
     // Handle delete house
     const btnDel = card.querySelector('.btn-delete-house');
     if (btnDel) {
-      btnDel.addEventListener('click', () => {
+      btnDel.addEventListener('click', async () => {
         const targetId = btnDel.getAttribute('data-id');
         const targetTitle = btnDel.getAttribute('data-title');
         if (confirm(`คุณต้องการลบผลงาน "${targetTitle}" ออกจากเว็บไซต์ใช่หรือไม่?\n\n(ผลงานจะหายไปจากหน้าเว็บทันทีแบบเรียลไทม์)`)) {
           let currentItems = getStoredPortfolio();
           currentItems = currentItems.filter(h => h.id !== targetId);
-          savePortfolio(currentItems);
+          await savePortfolio(currentItems);
           renderAdminPortfolioList();
         }
       });
@@ -1452,8 +1512,15 @@ function initEditHouseModal() {
 
   // Handle Edit Form Submit
   if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const btnSave = form.querySelector('button[type="submit"]');
+      const origText = btnSave ? btnSave.innerHTML : '💾 บันทึกการแก้ไข';
+      if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = '⏳ กำลังบันทึกการแก้ไข...';
+      }
 
       const houseId = document.getElementById('editProjId').value;
       const title = document.getElementById('editProjTitle').value.trim();
@@ -1489,10 +1556,11 @@ function initEditHouseModal() {
         'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
       ];
 
-      const items = getStoredPortfolio();
+      const items = [...getStoredPortfolio()];
       const idx = items.findIndex(h => h.id === houseId);
       if (idx === -1) {
         alert('เกิดข้อผิดพลาด: ไม่พบแบบบ้านนี้ในระบบ');
+        if (btnSave) { btnSave.disabled = false; btnSave.innerHTML = origText; }
         return;
       }
 
@@ -1515,7 +1583,13 @@ function initEditHouseModal() {
         features
       };
 
-      savePortfolio(items);
+      await savePortfolio(items);
+
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.innerHTML = origText;
+      }
+
       closeModal();
       renderAdminPortfolioList();
 

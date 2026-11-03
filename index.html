@@ -284,6 +284,14 @@
       </div>
 
       <!-- House Grid Cards (รองรับการเพิ่ม-ลบผลงานจาก Admin Dashboard แบบ Real-time) -->
+      <!-- Dynamic Extra Houses Counter Badge (เหมือนระบบรีวิว) -->
+      <div id="housesCountBadgeWrap" class="reviews-badge-wrap" style="display:none; text-align:center; margin: 0 auto 1.5rem auto;">
+        <button type="button" id="btnToggleAllHouses" class="reviews-more-pill" title="คลิกสลับดูผลงานทั้งหมด">
+          <span class="pill-sparkle">✨</span>
+          <span id="housesMoreCountText">ยังมีอีก X แบบบ้าน/ผลงานจริง (คลิกเพื่อดูทั้งหมด ➔)</span>
+        </button>
+      </div>
+
       <div class="house-grid" id="houseGridContainer">
 
         <!-- Card 1: Nordic Grand -->
@@ -403,6 +411,13 @@
           </div>
         </article>
 
+      </div>
+
+      <!-- View All Houses Bottom Toggle Button (เหมือนระบบรีวิว) -->
+      <div id="housesViewAllBottomWrap" style="display:none; text-align:center; margin-top:2.5rem; margin-bottom:1rem;">
+        <button type="button" id="btnToggleAllHousesBottom" class="btn btn-gold" style="padding:0.85rem 2.2rem; font-size:1rem; border-radius:50px; box-shadow:0 6px 20px rgba(212,175,55,0.35); cursor:pointer;">
+          ดูแบบบ้าน &amp; ผลงานทั้งหมด (<span id="housesBottomCountText"></span>) ➔
+        </button>
       </div>
     </div>
   </section>
