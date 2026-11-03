@@ -640,7 +640,7 @@ function openLeadDetail(lead) {
 function promptAndAddTestLead() {
   const name = prompt('กรอกชื่อลูกค้าจำลอง:', 'คุณลูกค้าใหม่ (ระยอง)');
   if (!name) return;
-  const phone = prompt('กรอกเบอร์โทรศัพท์:', '082-945-8999');
+  const phone = prompt('กรอกเบอร์โทรศัพท์:', '091-299-8797');
   if (!phone) return;
 
   const leads = getStoredLeads();
@@ -2273,7 +2273,7 @@ function saveSingleWorkflow(card, wfId, isAutoSave = false) {
 const DEFAULT_SITE_INFO = {
   promoText: 'จองสร้างบ้านระยองวันนี้ ฟรี! ออกแบบ 3D + ค่าขออนุญาตก่อสร้าง + ส่วนลดสูงสุด 300,000 บ.',
   promoPill: 'PROMOTION 2026',
-  phone: '082-945-8999',
+  phone: '091-299-8797',
   hours: 'เปิดบริการ: จันทร์ - เสาร์ (09:00 - 18:00 น.)',
   heroBadge: 'บริษัทรับสร้างบ้านอันดับ 1 ในจังหวัดระยอง และพื้นที่เศรษฐกิจ EEC',
   heroTitle: 'สร้างบ้านในฝันของคุณ<br><span class="hero-brand-gold">สร้างบ้านระยอง RMHome</span>',
