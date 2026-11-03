@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 550" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #071e14; }
+      .grid { stroke: rgba(212, 175, 55, 0.12); stroke-width: 1; }
+      .wall { stroke: #d4af37; stroke-width: 4; fill: rgba(14, 61, 41, 0.6); }
+      .inner-wall { stroke: #c5a059; stroke-width: 2.5; fill: none; }
+      .window { stroke: #6ee7b7; stroke-width: 3; }
+      .text-room { font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600; fill: #ffffff; text-anchor: middle; }
+      .text-dim { font-family: 'Prompt', sans-serif; font-size: 12px; fill: #a7f3d0; text-anchor: middle; }
+      .text-title { font-family: 'Prompt', sans-serif; font-size: 20px; font-weight: 700; fill: #ffd700; letter-spacing: 1px; }
+      .text-sub { font-family: 'Prompt', sans-serif; font-size: 13px; fill: #cbd5e1; }
+    </style>
+  </defs>
+
+  <rect width="800" height="550" class="bg"/>
+
+  <g class="grid">
+    <line x1="50" y1="50" x2="750" y2="50"/>
+    <line x1="50" y1="150" x2="750" y2="150"/>
+    <line x1="50" y1="250" x2="750" y2="250"/>
+    <line x1="50" y1="350" x2="750" y2="350"/>
+    <line x1="50" y1="450" x2="750" y2="450"/>
+  </g>
+
+  <!-- Header Blueprint Info -->
+  <text x="60" y="45" class="text-title">RM-MANSION ELITE • แปลนชั้น 2 (2ND FLOOR PLAN)</text>
+  <text x="60" y="68" class="text-sub">สัดส่วนพื้นที่ 170 ตร.ม. • Penthouse Master Suite • Sky Terrace ระเบียงใหญ่ • 3 ห้องนอนพร้อมห้องน้ำในตัวทุกห้อง</text>
+
+  <!-- Mansion Upper Body -->
+  <rect x="150" y="90" width="590" height="400" class="wall" rx="4"/>
+
+  <!-- Master Penthouse Bedroom Suite (Left) -->
+  <rect x="150" y="90" width="310" height="240" class="inner-wall"/>
+  <text x="305" y="195" class="text-room">👑 PENTHOUSE MASTER SUITE</text>
+  <text x="305" y="220" class="text-dim">ห้องนอนใหญ่ระดับโรงแรม 6 ดาว (7.00 x 5.20 ม.)</text>
+  <text x="305" y="240" class="text-dim">Walk-in Closet ขนาดใหญ่แยกชาย-หญิง</text>
+
+  <!-- Luxury Master Bath & Spa (Bottom Left) -->
+  <rect x="150" y="330" width="190" height="160" class="inner-wall"/>
+  <text x="245" y="405" class="text-room">🛁 SPA MASTER BATH</text>
+  <text x="245" y="425" class="text-dim">Jacuzzi &amp; Smart TOTO</text>
+
+  <!-- Sky Terrace (Center Bottom) -->
+  <rect x="340" y="330" width="220" height="160" class="inner-wall" style="stroke-dasharray:4,3;"/>
+  <text x="450" y="405" class="text-room">✨ SKY TERRACE</text>
+  <text x="450" y="425" class="text-dim">ลานระเบียงดาดฟ้าปาร์ตี้บาร์บีคิว</text>
+
+  <!-- Junior Suite 1 (Top Right) -->
+  <rect x="460" y="90" width="280" height="200" class="inner-wall"/>
+  <text x="600" y="180" class="text-room">🛏️ JUNIOR SUITE 1</text>
+  <text x="600" y="205" class="text-dim">ห้องนอน 2 พร้อมห้องน้ำในตัว (5.00 x 4.00 ม.)</text>
+
+  <!-- Junior Suite 2 (Bottom Right) -->
+  <rect x="560" y="290" width="180" height="200" class="inner-wall"/>
+  <text x="650" y="380" class="text-room">🛏️ JUNIOR SUITE 2</text>
+  <text x="650" y="405" class="text-dim">ห้องนอน 3 วิวสวน (4.00 x 4.20 ม.)</text>
+
+  <!-- Windows -->
+  <line x1="200" y1="90" x2="420" y2="90" class="window"/>
+  <line x1="500" y1="90" x2="700" y2="90" class="window"/>
+  <line x1="740" y1="130" x2="740" y2="250" class="window"/>
+
+  <!-- Compass & Scale Footer -->
+  <circle cx="80" cy="510" r="18" stroke="#d4af37" fill="none" stroke-width="1.5"/>
+  <text x="80" y="506" font-size="11" fill="#ffd700" text-anchor="middle" font-weight="700">N</text>
+  <text x="110" y="515" class="text-dim" style="text-anchor:start;">SCALE 1:100 • STRUCTURAL WARRANTY 20 YEARS CERTIFIED</text>
+</svg>

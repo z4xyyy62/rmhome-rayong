@@ -211,12 +211,22 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '2 (EV)',
     location: 'อ.เมืองระยอง จ.ระยอง',
     cover: 'assets/images/house-nordic.jpg',
-    gallery: ['assets/images/house-nordic.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-nordic.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-nordic-fl1.svg',
+      'assets/images/plan-nordic-fl2.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'แบบบ้านสไตล์นอร์ดิกกลิ่นอายสแกนดิเนเวียน ดีไซน์หลังคาจั่วสูงโปร่ง โอ่โถง พร้อมกระจกบานใหญ่รับแสงธรรมชาติและวิวสวน เหมาะสำหรับครอบครัวคนรุ่นใหม่ในระยองที่ต้องการความสงบ อบอุ่น และฟังก์ชันครบครัน',
     features: [
       'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
       'หลังคา SCG Shingle Roof พร้อมฉนวนกันความร้อน Stay Cool 3 นิ้ว',
       'กระจกเขียวตัดแสงหนา 6 มม. กรอบอะลูมิเนียมเกรดพรีเมียม Powder Coat',
+      'แปลนชั้น 1: โถง Living เพดานสูง 3.2 ม. + ครัวเปิดสไตล์ยุโรป + ห้องนอนผู้สูงอายุ',
+      'แปลนชั้น 2: Master Penthouse Suite พร้อม Walk-in Closet + ระเบียงชมวิวหน้าบ้าน',
       'สุขภัณฑ์ Cotto / American Standard ประหยัดน้ำระดับพรีเมียม',
       'ระบบไฟฟ้ารองรับ EV Charger และ Smart Home Control',
       'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
@@ -238,12 +248,21 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '3',
     location: 'อ.บ้านฉาง จ.ระยอง',
     cover: 'assets/images/house-mansion.jpg',
-    gallery: ['assets/images/house-mansion.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-mansion.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-mansion-fl1.svg',
+      'assets/images/plan-mansion-fl2.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'คฤหาสน์หรูระดับ High-End โดดเด่นด้วย Façade หินอ่อนและเส้นสายสีทองแชมเปญ โถง Double Volume สูง 6.5 เมตร พร้อมระเบียง Sky Terrace ชั้นบน ตอบโจทย์การใช้ชีวิตเหนือระดับในระยอง',
     features: [
       'ฐานรากตอกเสาเข็มลึกถึงชั้นดินดาน วิศวกรสามัญเซ็นรับรองทุกจุด',
+      'แปลนชั้น 1: โถง Grand Foyer สูง 6.5 ม. + Dining 10 ที่นั่ง + ครัวไทย & ครัวฝรั่ง + ห้องแม่บ้าน',
+      'แปลนชั้น 2: Penthouse Master Suite + Sky Terrace ระเบียงใหญ่ + ทุกห้องนอนมีห้องน้ำในตัว',
       'ผนังอิฐมวลเบา Q-CON ป้องกันเสียงและความร้อน 2 ชั้น',
-      'โถง Living Room เพดานสูง Double Volume โปร่งโล่งสง่างาม',
       'ระบบ Smart Home ควบคุมไฟ แอร์ และความปลอดภัยผ่านสมาร์ตโฟน',
       'สุขภัณฑ์อัตโนมัติ TOTO Neorest ในห้อง Master Bedroom',
       'ฟรี จัดสวน Landscape สไตล์ Modern Luxury รอบบ้าน'
@@ -265,10 +284,18 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '2',
     location: 'อ.แกลง จ.ระยอง',
     cover: 'assets/images/house-tropical.jpg',
-    gallery: ['assets/images/house-tropical.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-tropical.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-tropical-fl1.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'บ้านพักตากอากาศสไตล์โมเดิร์นทรอปิคอล พร้อมสระว่ายน้ำระบบเกลือในตัว ออกแบบระแนงไม้ธรรมชาติช่วยกรองแสงแดดเมืองระยอง ทุกห้องนอนเชื่อมต่อสู่สระว่ายน้ำได้โดยตรง เหมาะสำหรับอยู่อาศัยหรือปล่อยเช่าพูลวิลล่า',
     features: [
       'สระว่ายน้ำระบบเกลือ Overflow ขนาด 3.5 x 8 เมตร พร้อมระบบไฟ LED ใต้น้ำ',
+      'แปลนพูลวิลล่าสไตล์รีสอร์ต: ทุกห้องนอนเปิดก้าวสู่ขอบสระว่ายน้ำได้โดยตรง',
       'พื้นระเบียงไม้เทียม WPC เกรดพรีเมียม ทนแดด ทนฝน ไม่ผุกร่อน',
       'ดีไซน์เชื่อมต่อ Indoor-Outdoor ด้วยประตูกระจกบานเลื่อนขนาดยักษ์',
       'ห้องน้ำสไตล์ Semi-Outdoor พร้อมอ่างอาบน้ำสั่งทำพิเศษ',
@@ -418,84 +445,183 @@ function openHouseModalById(houseId) {
   if (!house) return;
 
   const priceFormatted = house.budget.includes('ล้าน') ? house.budget : `${house.budget} ล้านบาท`;
-  const gallery = house.gallery && house.gallery.length > 0 ? house.gallery : [house.cover];
-  const features = house.features && house.features.length > 0 ? house.features : [
+  const gallery = (house.gallery && house.gallery.length > 0) ? house.gallery : [house.cover];
+  let currentIndex = 0;
+
+  function getImgTag(url, idx) {
+    if (!url) return 'ภาพตัวบ้าน';
+    const lower = url.toLowerCase();
+    if (lower.includes('plan-nordic-fl1') || lower.includes('fl1') || lower.includes('floor-1')) return 'แปลนชั้น 1';
+    if (lower.includes('plan-nordic-fl2') || lower.includes('fl2') || lower.includes('floor-2')) return 'แปลนชั้น 2';
+    if (lower.includes('plan') || lower.includes('แปลน') || lower.endsWith('.svg')) return 'แปลนสถาปัตยกรรม';
+    if (lower.includes('interior') || lower.includes('โถง') || lower.includes('ห้อง')) return 'ภายใน / ตกแต่ง';
+    if (lower.includes('engineer') || lower.includes('qc') || lower.includes('standard')) return 'มาตรฐานวิศวกรรม';
+    if (idx === 0) return 'รูปหน้าบ้าน';
+    return `มุมที่ ${idx + 1}`;
+  }
+
+  const features = (house.features && house.features.length > 0) ? house.features : [
     'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
     'ควบคุมงานก่อสร้างโดยทีมวิศวกร กว. ทุกขั้นตอน',
     'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
   ];
 
-  let galleryThumbsHtml = '';
-  if (gallery.length > 1) {
-    galleryThumbsHtml = `
-      <div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
-        ${gallery.map((imgUrl, i) => `
-          <img src="${imgUrl}" class="modal-gallery-thumb" data-src="${imgUrl}" style="width:75px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid ${i === 0 ? 'var(--color-gold-400)' : 'rgba(255,255,255,0.2)'};" alt="thumb ${i + 1}">
-        `).join('')}
-      </div>
-    `;
-  }
-
   modalContent.innerHTML = `
-    <div style="margin-bottom: 1.25rem; border-radius: 14px; overflow: hidden; height: 320px; border: 1px solid rgba(212,175,55,0.3); background:#051d14;">
-      <img id="modalMainCoverImg" src="${house.cover}" alt="${house.title}" style="width:100%; height:100%; object-fit:cover; transition:opacity 0.2s;">
+    <!-- 1. Hero Photo & Plan Viewer with Multi-angle Carousel -->
+    <div class="house-modal-hero">
+      <img id="modalMainCoverImg" src="${gallery[0]}" alt="${house.title}">
+      ${gallery.length > 1 ? `
+        <button class="gallery-nav-btn gallery-nav-prev" id="btnModalGalleryPrev" title="รูปก่อนหน้า">❮</button>
+        <button class="gallery-nav-btn gallery-nav-next" id="btnModalGalleryNext" title="รูปถัดไป">❯</button>
+      ` : ''}
+      <div class="gallery-counter-pill" id="modalGalleryCounter">
+        รูปที่ 1/${gallery.length} • ${getImgTag(gallery[0], 0)}
+      </div>
+      <div class="gallery-zoom-hint">
+        📐 คลิกภาพเพื่อสลับมุมมอง &amp; แปลน
+      </div>
     </div>
-    ${galleryThumbsHtml}
-    
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-top:1.25rem; margin-bottom:1rem;">
+
+    <!-- 2. Thumbnail Strip (Multi-angle photos & Floor plans) -->
+    <div class="modal-gallery-thumbs-wrap" id="modalThumbStrip">
+      ${gallery.map((imgUrl, i) => `
+        <div class="modal-gallery-thumb-item ${i === 0 ? 'active' : ''}" data-index="${i}" data-src="${imgUrl}">
+          <img src="${imgUrl}" alt="${house.title} thumb ${i + 1}" loading="lazy">
+          <span class="thumb-tag">${getImgTag(imgUrl, i)}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- 3. Title, Category & Pricing Header -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1.25rem; margin-top:1.5rem; margin-bottom:1.25rem; padding-bottom:1.25rem; border-bottom:1px solid rgba(212,175,55,0.2);">
       <div>
-        <span style="color:var(--color-gold-400); font-family:var(--font-serif); font-size:0.85rem; letter-spacing:1px;">
-          หมวดหมู่: ${house.category || 'โมเดิร์น'} • ${house.type || 'แบบบ้าน'}
-        </span>
-        <h2 style="font-size:1.6rem; color:#fff; font-weight:700; margin-top:0.25rem;">${house.title}</h2>
-        <span style="font-size:0.85rem; color:#94a3b8;">📍 ทำเล: ${house.location || 'จ.ระยอง'}</span>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+          <span style="background:linear-gradient(135deg, #0e3d29, #145338); color:#ffd700; border:1px solid #d4af37; padding:0.2rem 0.75rem; border-radius:9999px; font-size:0.78rem; font-weight:700;">
+            ${house.category || 'โมเดิร์น'}
+          </span>
+          <span style="background:rgba(212,175,55,0.15); color:#ffd700; border:1px solid rgba(212,175,55,0.4); padding:0.2rem 0.75rem; border-radius:9999px; font-size:0.78rem;">
+            ${house.type || 'แบบบ้านพร้อมสร้าง'}
+          </span>
+        </div>
+        <h2 style="font-size:1.85rem; color:#fff; font-weight:800; font-family:var(--font-serif); margin:0.35rem 0;">${house.title}</h2>
+        <div style="font-size:0.9rem; color:#a7f3d0; display:flex; align-items:center; gap:0.4rem;">
+          <span>📍 ทำเลรองรับ: ${house.location || 'จังหวัดระยอง และพื้นที่เศรษฐกิจ EEC'}</span>
+        </div>
       </div>
       <div style="text-align:right;">
-        <span style="font-size:0.8rem; color:var(--text-muted); display:block;">ราคาเริ่มต้นพร้อมก่อสร้าง</span>
-        <span style="font-size:1.6rem; font-weight:700; color:var(--color-gold-300); font-family:var(--font-serif);">฿ ${priceFormatted}</span>
-      </div>
-    </div>
-    
-    <p style="color:var(--text-muted); line-height:1.7; margin-bottom:1.5rem; font-size:0.95rem;">${house.description}</p>
-    
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem; background:rgba(7,31,22,0.8); border:1px solid rgba(212,175,55,0.2); border-radius:12px; padding:1rem; margin-bottom:1.5rem; text-align:center;">
-      <div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">พื้นที่ใช้สอย</div>
-        <strong style="font-size:0.95rem; color:#fff;">${house.area} ตร.ม.</strong>
-      </div>
-      <div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">ห้องนอน</div>
-        <strong style="font-size:0.95rem; color:#fff;">${house.bedrooms} ห้อง</strong>
-      </div>
-      <div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">ห้องน้ำ</div>
-        <strong style="font-size:0.95rem; color:#fff;">${house.bathrooms} ห้อง</strong>
-      </div>
-      <div>
-        <div style="font-size:0.75rem; color:var(--text-dim);">ที่จอดรถ</div>
-        <strong style="font-size:0.95rem; color:#fff;">${house.parking} คัน</strong>
+        <span style="font-size:0.8rem; color:var(--text-dim); display:block; text-transform:uppercase; letter-spacing:1px;">งบประมาณก่อสร้างเริ่มต้น</span>
+        <span style="font-size:1.85rem; font-weight:800; color:#ffd700; font-family:var(--font-serif); text-shadow:0 0 20px rgba(212,175,55,0.3);">฿ ${priceFormatted}</span>
       </div>
     </div>
 
-    <h4 style="color:var(--color-gold-400); font-size:1.1rem; margin-bottom:0.75rem;">จุดเด่น & สเปกมาตรฐาน RMHome:</h4>
-    <ul style="list-style:none; display:flex; flex-direction:column; gap:0.5rem; margin-bottom:2rem;">
-      ${features.map(f => `<li style="font-size:0.9rem; color:var(--text-main); display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:var(--color-gold-400);">✦</span> ${f}</li>`).join('')}
-    </ul>
+    <!-- 4. Quick Specifications Grid (4 Columns) -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.75rem; background:rgba(7,31,22,0.85); border:1px solid rgba(212,175,55,0.3); border-radius:14px; padding:1.15rem; margin-bottom:1.5rem; text-align:center;">
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">📐 พื้นที่ใช้สอย</div>
+        <strong style="font-size:1.1rem; color:#fff; font-weight:700;">${house.area} ตร.ม.</strong>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">🏢 จำนวนชั้น</div>
+        <strong style="font-size:1.1rem; color:#fff; font-weight:700;">${house.floors || '1'} ชั้น</strong>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">🛏️ ห้องนอน</div>
+        <strong style="font-size:1.1rem; color:#fff; font-weight:700;">${house.bedrooms} ห้อง</strong>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">🚿 ห้องน้ำ</div>
+        <strong style="font-size:1.1rem; color:#fff; font-weight:700;">${house.bathrooms} ห้อง</strong>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.2rem;">🚗 ที่จอดรถ</div>
+        <strong style="font-size:1.1rem; color:#fff; font-weight:700;">${house.parking} คัน</strong>
+      </div>
+    </div>
 
-    <div style="display:flex; gap:1rem; justify-content:flex-end; flex-wrap:wrap;">
-      <button class="btn btn-outline-gold" id="btnModalCloseSecondary">ปิดหน้าต่าง</button>
-      <a href="#contact" class="btn btn-gold" onclick="selectHouseToConsult('${house.title}')">ปรึกษาสร้างแบบนี้กับวิศวกร</a>
+    <!-- 5. Description written by Admin -->
+    <div style="margin-bottom:1.75rem; background:rgba(6,36,23,0.5); border-left:3px solid #d4af37; padding:1rem 1.25rem; border-radius:0 12px 12px 0;">
+      <h4 style="color:#ffd700; font-size:1rem; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;">
+        <span>📝</span> รายละเอียดโครงการ (RMHome Design):
+      </h4>
+      <p style="color:#e2e8f0; line-height:1.75; font-size:0.95rem; margin:0;">${house.description || 'แบบบ้านคุณภาพพรีเมียมจาก RMHome ระยอง ออกแบบฟังก์ชันครบครัน คุมงบได้จริง 100%'}</p>
+    </div>
+
+    <!-- 6. Features & Plan Specs written by Admin -->
+    <div style="margin-bottom:2rem;">
+      <h4 style="color:#ffd700; font-size:1.05rem; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.5rem;">
+        <span>✦</span> จุดเด่น สเปกวัสดุ &amp; แปลนฟังก์ชัน (Specs &amp; Floor Plans):
+      </h4>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.6rem;">
+        ${features.map(f => `
+          <div style="font-size:0.9rem; color:#cbd5e1; display:flex; align-items:flex-start; gap:0.5rem; background:rgba(255,255,255,0.03); border:1px solid rgba(212,175,55,0.15); padding:0.65rem 0.85rem; border-radius:8px;">
+            <span style="color:#ffd700; font-size:0.85rem; line-height:1.4;">✦</span>
+            <span style="line-height:1.5;">${f}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- 7. Action Buttons -->
+    <div style="display:flex; gap:0.85rem; justify-content:space-between; align-items:center; flex-wrap:wrap; padding-top:1.25rem; border-top:1px solid rgba(212,175,55,0.2);">
+      <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+        <a href="tel:0912998797" class="btn" style="background:linear-gradient(135deg, #0e3d29, #145338); color:#ffd700; border:1px solid #d4af37; padding:0.65rem 1.25rem; font-weight:700; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
+          <span>📞</span> โทรปรึกษาวิศวกร: 091-299-8797
+        </a>
+        <a href="https://line.me" target="_blank" rel="noopener" class="btn" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
+          <span>💬</span> ขอแปลนฉบับเต็มทาง LINE
+        </a>
+      </div>
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <button class="btn btn-outline-gold" id="btnModalCloseSecondary" style="padding:0.65rem 1.2rem; border-radius:8px;">ปิด</button>
+        <a href="#contact" class="btn btn-gold" onclick="selectHouseToConsult('${house.title}')" style="padding:0.65rem 1.35rem; border-radius:8px; font-weight:700;">
+          ปรึกษาสร้างแบบนี้ ➔
+        </a>
+      </div>
     </div>
   `;
 
-  // Setup gallery thumbnail click to change main cover
-  const thumbs = modalContent.querySelectorAll('.modal-gallery-thumb');
-  const mainCover = modalContent.getElementById('modalMainCoverImg');
-  thumbs.forEach(t => {
+  // Gallery Navigation Handlers
+  const mainCoverImg = modalContent.querySelector('#modalMainCoverImg');
+  const counterPill = modalContent.querySelector('#modalGalleryCounter');
+  const thumbItems = modalContent.querySelectorAll('.modal-gallery-thumb-item');
+  const btnPrev = modalContent.querySelector('#btnModalGalleryPrev');
+  const btnNext = modalContent.querySelector('#btnModalGalleryNext');
+
+  function updateGallery(newIndex) {
+    if (newIndex < 0) newIndex = gallery.length - 1;
+    if (newIndex >= gallery.length) newIndex = 0;
+    currentIndex = newIndex;
+
+    const currentUrl = gallery[currentIndex];
+    if (mainCoverImg) {
+      mainCoverImg.style.opacity = '0.3';
+      setTimeout(() => {
+        mainCoverImg.src = currentUrl;
+        mainCoverImg.style.opacity = '1';
+      }, 120);
+    }
+
+    if (counterPill) {
+      counterPill.innerHTML = `รูปที่ ${currentIndex + 1}/${gallery.length} • ${getImgTag(currentUrl, currentIndex)}`;
+    }
+
+    thumbItems.forEach((t, i) => {
+      if (i === currentIndex) {
+        t.classList.add('active');
+        t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } else {
+        t.classList.remove('active');
+      }
+    });
+  }
+
+  if (btnPrev) btnPrev.addEventListener('click', (e) => { e.stopPropagation(); updateGallery(currentIndex - 1); });
+  if (btnNext) btnNext.addEventListener('click', (e) => { e.stopPropagation(); updateGallery(currentIndex + 1); });
+
+  thumbItems.forEach(t => {
     t.addEventListener('click', () => {
-      thumbs.forEach(other => other.style.border = '2px solid rgba(255,255,255,0.2)');
-      t.style.border = '2px solid var(--color-gold-400)';
-      if (mainCover) mainCover.src = t.getAttribute('data-src');
+      const idx = parseInt(t.getAttribute('data-index'), 10);
+      updateGallery(idx);
     });
   });
 

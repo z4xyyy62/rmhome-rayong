@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 550" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #071e14; }
+      .grid { stroke: rgba(212, 175, 55, 0.12); stroke-width: 1; }
+      .wall { stroke: #d4af37; stroke-width: 4; fill: rgba(14, 61, 41, 0.6); }
+      .inner-wall { stroke: #c5a059; stroke-width: 2.5; fill: none; }
+      .window { stroke: #6ee7b7; stroke-width: 3; }
+      .text-room { font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600; fill: #ffffff; text-anchor: middle; }
+      .text-dim { font-family: 'Prompt', sans-serif; font-size: 12px; fill: #a7f3d0; text-anchor: middle; }
+      .text-title { font-family: 'Prompt', sans-serif; font-size: 20px; font-weight: 700; fill: #ffd700; letter-spacing: 1px; }
+      .text-sub { font-family: 'Prompt', sans-serif; font-size: 13px; fill: #cbd5e1; }
+      .car-slot { stroke: #d4af37; stroke-dasharray: 6,4; fill: rgba(20, 83, 56, 0.3); }
+    </style>
+  </defs>
+
+  <rect width="800" height="550" class="bg"/>
+
+  <g class="grid">
+    <line x1="50" y1="50" x2="750" y2="50"/>
+    <line x1="50" y1="150" x2="750" y2="150"/>
+    <line x1="50" y1="250" x2="750" y2="250"/>
+    <line x1="50" y1="350" x2="750" y2="350"/>
+    <line x1="50" y1="450" x2="750" y2="450"/>
+  </g>
+
+  <!-- Header Blueprint Info -->
+  <text x="60" y="45" class="text-title">RM-MANSION ELITE • แปลนชั้น 1 (1ST FLOOR PLAN)</text>
+  <text x="60" y="68" class="text-sub">สัดส่วนพื้นที่ 210 ตร.ม. • โถง Grand Foyer สูง 6.5 ม. • ครัวไทย-ฝรั่ง • ที่จอดรถ 3 คัน • ห้องแม่บ้านในตัว</text>
+
+  <!-- 3-Car Port (Left) -->
+  <rect x="60" y="110" width="230" height="360" class="car-slot" rx="8"/>
+  <text x="175" y="275" class="text-room">🚗 ที่จอดรถ 3 คัน (SUPERCAR / SUV)</text>
+  <text x="175" y="300" class="text-dim">8.00 x 6.50 ม. • EV Fast Charge</text>
+
+  <!-- Mansion Main Body -->
+  <rect x="290" y="90" width="450" height="400" class="wall" rx="4"/>
+
+  <!-- Grand Foyer & Double Volume Living -->
+  <rect x="290" y="90" width="280" height="260" class="inner-wall"/>
+  <text x="430" y="200" class="text-room">🏛️ GRAND DOUBLE VOLUME FOYER</text>
+  <text x="430" y="225" class="text-dim">โถงรับรองเพดานสูง 6.5 เมตร (6.00 x 6.80 ม.)</text>
+  <text x="430" y="245" class="text-dim">บันไดวนสไตล์โมเดิร์นลักชูรี่</text>
+
+  <!-- Formal Dining & Island Bar -->
+  <rect x="570" y="90" width="170" height="260" class="inner-wall"/>
+  <text x="655" y="200" class="text-room">🍷 DINING ROOM</text>
+  <text x="655" y="225" class="text-dim">โต๊ะทานข้าว 10 ที่นั่ง</text>
+  <text x="655" y="245" class="text-dim">ครัวฝรั่ง &amp; Wine Cellar</text>
+
+  <!-- Guest Suite (Bottom Left) -->
+  <rect x="290" y="350" width="230" height="140" class="inner-wall"/>
+  <text x="405" y="415" class="text-room">🛏️ VIP GUEST SUITE</text>
+  <text x="405" y="435" class="text-dim">ห้องน้ำในตัว (5.00 x 3.80 ม.)</text>
+
+  <!-- Thai Kitchen & Maid Room (Bottom Right) -->
+  <rect x="520" y="350" width="220" height="140" class="inner-wall"/>
+  <text x="630" y="415" class="text-room">🍳 ครัวไทย + ห้องแม่บ้าน</text>
+  <text x="630" y="435" class="text-dim">แยกโซนชัดเจน มีห้องน้ำแยก</text>
+
+  <!-- Windows -->
+  <line x1="330" y1="90" x2="520" y2="90" class="window"/>
+  <line x1="600" y1="90" x2="710" y2="90" class="window"/>
+  <line x1="740" y1="120" x2="740" y2="300" class="window"/>
+
+  <!-- Compass & Scale Footer -->
+  <circle cx="100" cy="510" r="18" stroke="#d4af37" fill="none" stroke-width="1.5"/>
+  <text x="100" y="506" font-size="11" fill="#ffd700" text-anchor="middle" font-weight="700">N</text>
+  <text x="135" y="515" class="text-dim" style="text-anchor:start;">SCALE 1:100 • HIGH-END ENGINEERING BY RMHOME</text>
+</svg>

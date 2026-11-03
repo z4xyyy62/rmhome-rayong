@@ -592,22 +592,35 @@
                 </div>
               </div>
 
-              <!-- 12. รูปภาพเพิ่มเติม (GALLERY) -->
+              <!-- 12. รูปภาพเพิ่มเติม & แปลนบ้าน (GALLERY & PLANS) -->
               <div class="form-group full-width">
-                <label class="form-label">รูปภาพเพิ่มเติม (GALLERY)</label>
-                <div>
+                <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span>รูปภาพหลายมุม & แปลนบ้าน (GALLERY &amp; FLOOR PLANS) - ใส่ได้ 6-7 รูปหรือมากกว่า</span>
+                  <span style="font-size:0.75rem; color:#64748b;">(รูปบ้านมุมต่างๆ, ภายใน, แปลนชั้น 1, แปลนชั้น 2)</span>
+                </label>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
                   <button type="button" class="btn-add-photos-dashed" id="btnAddGalleryPhotos">
-                    + เพิ่มรูปภาพ
+                    + อัปโหลดรูปภาพ / แปลนบ้านจากเครื่อง
+                  </button>
+                  <button type="button" class="btn-action-outline" id="btnQuickAddPlans" style="border:1px dashed #0e3d29; color:#0e3d29; font-size:0.8rem; background:#f0fdf4;">
+                    📐 + ใส่ชุดแปลนสถาปัตยกรรมมาตรฐาน RMHome อัตโนมัติ (ชั้น 1 & 2)
                   </button>
                   <input type="file" id="galleryFileInput" accept="image/*" multiple style="display:none;">
                 </div>
-                <div class="gallery-preview-strip" id="galleryPreviewStrip"></div>
+                <div class="gallery-editor-grid" id="galleryPreviewStrip"></div>
               </div>
 
               <!-- 13. รายละเอียดหน้า PORTFOLIO -->
               <div class="form-group full-width">
-                <label class="form-label" for="projDescription">รายละเอียดหน้า PORTFOLIO</label>
-                <textarea id="projDescription" class="form-control" rows="3" placeholder="รายละเอียดงานก่อสร้าง จุดเด่น งบประมาณ หรือสิ่งที่อยากให้ลูกค้าเห็นเมื่อกดเข้าหน้ารายละเอียด"></textarea>
+                <label class="form-label" for="projDescription">รายละเอียดผลงาน (เขียนโดยแอดมิน)</label>
+                <textarea id="projDescription" class="form-control" rows="3" placeholder="เขียนอธิบายจุดเด่นของบ้านหลังนี้ เช่น บรรยากาศ การจัดวางทิศทางลม แสงแดด สเปกที่ลูกค้าประทับใจ"></textarea>
+              </div>
+
+              <!-- 13.1 จุดเด่น & สเปกแปลนเพิ่มเติม -->
+              <div class="form-group full-width">
+                <label class="form-label" for="projFeatures">จุดเด่น สเปกวัสดุ &amp; แปลนฟังก์ชัน (1 ข้อต่อ 1 บรรทัด)</label>
+                <textarea id="projFeatures" class="form-control" rows="4" placeholder="โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.&#10;แปลนชั้น 1: โถง Living เพดานสูง + ครัวเปิด&#10;แปลนชั้น 2: Master Bedroom พร้อม Walk-in Closet&#10;รับประกันโครงสร้าง 20 ปีเต็ม"></textarea>
+                <span style="font-size:0.75rem; color:#64748b; margin-top:0.25rem; display:block;">💡 ข้อความในช่องนี้จะแสดงเป็นสเปกแปลนพร้อมเครื่องหมาย ✦ บนหน้าเว็บเมื่อลูกค้ากด 'ดูสเปก &amp; แปลน'</span>
               </div>
             </div>
 
@@ -1241,6 +1254,146 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit House Modal (แก้ไขสเปก, แปลนบ้าน และรูปหลายมุม) -->
+  <div class="modal-admin-overlay" id="editHouseModal">
+    <div class="modal-admin-box xlarge">
+      <div class="modal-admin-header">
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:700; color:#0e3d29; display:flex; align-items:center; gap:0.5rem;">
+            ✏️ แก้ไขข้อมูลแบบบ้าน, สเปกแปลน และรูปภาพหลายมุม
+          </h3>
+          <p style="font-size:0.83rem; color:#64748b; margin-top:2px;">
+            เมื่อบันทึกแล้ว รายละเอียดและรูปแปลนทั้งหมดจะอัปเดตไปแสดงผลบนหน้าแรกทันทีแบบ Real-time
+          </p>
+        </div>
+        <button class="modal-admin-close" id="closeEditHouseModal">&times;</button>
+      </div>
+
+      <form id="editHouseForm" style="margin-top:1rem;">
+        <input type="hidden" id="editProjId">
+
+        <div class="form-grid-2col">
+          <div class="form-group">
+            <label class="form-label" for="editProjTitle">ชื่อโปรเจกต์ / แบบบ้าน *</label>
+            <input type="text" id="editProjTitle" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjCategory">หมวดหมู่ *</label>
+            <select id="editProjCategory" class="form-control" required>
+              <option value="โมเดิร์น">โมเดิร์น</option>
+              <option value="พูลวิลล่า">พูลวิลล่า</option>
+              <option value="นอร์ดิก">นอร์ดิก</option>
+              <option value="ทรอปิคอล">ทรอปิคอล</option>
+              <option value="มินิมอล">มินิมอล</option>
+              <option value="โมเดิร์นคฤหาสน์">โมเดิร์นคฤหาสน์</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjBudget">งบประมาณพร้อมสร้าง *</label>
+            <input type="text" id="editProjBudget" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjType">ประเภท *</label>
+            <select id="editProjType" class="form-control" required>
+              <option value="แบบบ้าน (ยังไม่สร้าง)">แบบบ้าน (ยังไม่สร้าง)</option>
+              <option value="ผลงานสร้างเสร็จแล้ว">ผลงานสร้างเสร็จแล้ว</option>
+              <option value="กำลังก่อสร้าง">กำลังก่อสร้าง</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjArea">พื้นที่ใช้สอย (ตร.ม.) *</label>
+            <input type="text" id="editProjArea" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjFloors">จำนวนชั้น</label>
+            <input type="text" id="editProjFloors" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjBeds">ห้องนอน</label>
+            <input type="text" id="editProjBeds" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjBaths">ห้องน้ำ</label>
+            <input type="text" id="editProjBaths" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjParking">ที่จอดรถ</label>
+            <input type="text" id="editProjParking" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="editProjLocation">ทำเล / จังหวัด</label>
+            <input type="text" id="editProjLocation" class="form-control">
+          </div>
+
+          <!-- Cover Image -->
+          <div class="form-group full-width">
+            <label class="form-label" for="editProjCover">รูปหน้าปก (COVER) *</label>
+            <div class="input-with-button">
+              <input type="text" id="editProjCover" class="form-control" required>
+              <button type="button" class="btn-upload-file" id="btnEditUploadCover">↑ อัพโหลดรูปปก</button>
+              <input type="file" id="editCoverFileInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="cover-preview-box" id="editCoverPreviewBox" style="margin-top:0.5rem; max-height:160px; overflow:hidden; border-radius:8px;">
+              <img id="editCoverPreviewImg" src="" alt="Cover preview" style="width:100%; height:160px; object-fit:cover;">
+            </div>
+          </div>
+
+          <!-- Gallery Images & Floor Plans (6-7 photos) -->
+          <div class="form-group full-width">
+            <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>รูปภาพหลายมุม & แปลนบ้าน (GALLERY &amp; FLOOR PLANS)</span>
+              <span id="editGalleryCountBadge" style="font-size:0.8rem; color:#0e3d29; font-weight:700;"></span>
+            </label>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+              <button type="button" class="btn-add-photos-dashed" id="btnEditAddGallery">
+                + เพิ่มรูปภาพ / แปลนจากเครื่อง
+              </button>
+              <button type="button" class="btn-action-outline" id="btnEditAddUrlPrompt" style="font-size:0.8rem;">
+                🔗 + ใส่ลิงก์รูป/แปลน
+              </button>
+              <button type="button" class="btn-action-outline" id="btnEditQuickAddPlans" style="border:1px dashed #0e3d29; color:#0e3d29; font-size:0.8rem; background:#f0fdf4;">
+                📐 + ใส่ชุดแปลนมาตรฐาน RMHome (ชั้น 1 & 2)
+              </button>
+              <input type="file" id="editGalleryFileInput" accept="image/*" multiple style="display:none;">
+            </div>
+            <div class="gallery-editor-grid" id="editGalleryGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Description by Admin -->
+          <div class="form-group full-width">
+            <label class="form-label" for="editProjDescription">รายละเอียดผลงาน (เขียนโดยแอดมิน)</label>
+            <textarea id="editProjDescription" class="form-control" rows="3" placeholder="เขียนอธิบายจุดเด่นของบ้านหลังนี้ เช่น บรรยากาศ การจัดวางทิศทางลม แสงแดด"></textarea>
+          </div>
+
+          <!-- Features & Plan Specs -->
+          <div class="form-group full-width">
+            <label class="form-label" for="editProjFeatures">จุดเด่น สเปกวัสดุ &amp; แปลนฟังก์ชัน (1 ข้อต่อ 1 บรรทัด)</label>
+            <textarea id="editProjFeatures" class="form-control" rows="5" placeholder="โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.&#10;แปลนชั้น 1: โถง Living เพดานสูง + ครัวเปิด&#10;แปลนชั้น 2: Master Bedroom พร้อม Walk-in Closet&#10;รับประกันโครงสร้าง 20 ปีเต็ม"></textarea>
+            <span style="font-size:0.75rem; color:#64748b; margin-top:0.25rem; display:block;">💡 ข้อความในช่องนี้จะแสดงเป็นสเปกแปลนพร้อมเครื่องหมาย ✦ บนหน้าเว็บเมื่อลูกค้ากด 'ดูสเปก &amp; แปลน'</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.25rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
+          <button type="button" class="btn-action-outline" id="btnCancelEditHouse">ยกเลิก</button>
+          <button type="submit" class="btn-green-submit" id="btnSaveEditHouse" style="font-weight:700;">
+            💾 บันทึกการแก้ไข (อัปเดตหน้าเว็บ &amp; Cloud ทันที)
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

@@ -429,6 +429,7 @@ function initDashboard() {
   initActionButtons();
   initFilterButtons();
   initPortfolioManager();
+  initEditHouseModal();
   initTabNavigation();
   initReviewsCMS();
   initServicesCMS();
@@ -779,12 +780,22 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '2 (EV)',
     location: 'อ.เมืองระยอง จ.ระยอง',
     cover: 'assets/images/house-nordic.jpg',
-    gallery: ['assets/images/house-nordic.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-nordic.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-nordic-fl1.svg',
+      'assets/images/plan-nordic-fl2.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'แบบบ้านสไตล์นอร์ดิกกลิ่นอายสแกนดิเนเวียน ดีไซน์หลังคาจั่วสูงโปร่ง โอ่โถง พร้อมกระจกบานใหญ่รับแสงธรรมชาติและวิวสวน เหมาะสำหรับครอบครัวคนรุ่นใหม่ในระยองที่ต้องการความสงบ อบอุ่น และฟังก์ชันครบครัน',
     features: [
       'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
       'หลังคา SCG Shingle Roof พร้อมฉนวนกันความร้อน Stay Cool 3 นิ้ว',
       'กระจกเขียวตัดแสงหนา 6 มม. กรอบอะลูมิเนียมเกรดพรีเมียม Powder Coat',
+      'แปลนชั้น 1: โถง Living เพดานสูง 3.2 ม. + ครัวเปิดสไตล์ยุโรป + ห้องนอนผู้สูงอายุ',
+      'แปลนชั้น 2: Master Penthouse Suite พร้อม Walk-in Closet + ระเบียงชมวิวหน้าบ้าน',
       'สุขภัณฑ์ Cotto / American Standard ประหยัดน้ำระดับพรีเมียม',
       'ระบบไฟฟ้ารองรับ EV Charger และ Smart Home Control',
       'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
@@ -806,12 +817,21 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '3',
     location: 'อ.บ้านฉาง จ.ระยอง',
     cover: 'assets/images/house-mansion.jpg',
-    gallery: ['assets/images/house-mansion.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-mansion.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-mansion-fl1.svg',
+      'assets/images/plan-mansion-fl2.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'คฤหาสน์หรูระดับ High-End โดดเด่นด้วย Façade หินอ่อนและเส้นสายสีทองแชมเปญ โถง Double Volume สูง 6.5 เมตร พร้อมระเบียง Sky Terrace ชั้นบน ตอบโจทย์การใช้ชีวิตเหนือระดับในระยอง',
     features: [
       'ฐานรากตอกเสาเข็มลึกถึงชั้นดินดาน วิศวกรสามัญเซ็นรับรองทุกจุด',
+      'แปลนชั้น 1: โถง Grand Foyer สูง 6.5 ม. + Dining 10 ที่นั่ง + ครัวไทย & ครัวฝรั่ง + ห้องแม่บ้าน',
+      'แปลนชั้น 2: Penthouse Master Suite + Sky Terrace ระเบียงใหญ่ + ทุกห้องนอนมีห้องน้ำในตัว',
       'ผนังอิฐมวลเบา Q-CON ป้องกันเสียงและความร้อน 2 ชั้น',
-      'โถง Living Room เพดานสูง Double Volume โปร่งโล่งสง่างาม',
       'ระบบ Smart Home ควบคุมไฟ แอร์ และความปลอดภัยผ่านสมาร์ตโฟน',
       'สุขภัณฑ์อัตโนมัติ TOTO Neorest ในห้อง Master Bedroom',
       'ฟรี จัดสวน Landscape สไตล์ Modern Luxury รอบบ้าน'
@@ -833,10 +853,18 @@ const DEFAULT_PORTFOLIO_HOUSES = [
     parking: '2',
     location: 'อ.แกลง จ.ระยอง',
     cover: 'assets/images/house-tropical.jpg',
-    gallery: ['assets/images/house-tropical.jpg', 'assets/images/luxury-interior.jpg'],
+    gallery: [
+      'assets/images/house-tropical.jpg',
+      'assets/images/hero-villa.jpg',
+      'assets/images/hero-winter-villa.jpg',
+      'assets/images/luxury-interior.jpg',
+      'assets/images/plan-tropical-fl1.svg',
+      'assets/images/quality-engineer.jpg'
+    ],
     description: 'บ้านพักตากอากาศสไตล์โมเดิร์นทรอปิคอล พร้อมสระว่ายน้ำระบบเกลือในตัว ออกแบบระแนงไม้ธรรมชาติช่วยกรองแสงแดดเมืองระยอง ทุกห้องนอนเชื่อมต่อสู่สระว่ายน้ำได้โดยตรง เหมาะสำหรับอยู่อาศัยหรือปล่อยเช่าพูลวิลล่า',
     features: [
       'สระว่ายน้ำระบบเกลือ Overflow ขนาด 3.5 x 8 เมตร พร้อมระบบไฟ LED ใต้น้ำ',
+      'แปลนพูลวิลล่าสไตล์รีสอร์ต: ทุกห้องนอนเปิดก้าวสู่ขอบสระว่ายน้ำได้โดยตรง',
       'พื้นระเบียงไม้เทียม WPC เกรดพรีเมียม ทนแดด ทนฝน ไม่ผุกร่อน',
       'ดีไซน์เชื่อมต่อ Indoor-Outdoor ด้วยประตูกระจกบานเลื่อนขนาดยักษ์',
       'ห้องน้ำสไตล์ Semi-Outdoor พร้อมอ่างอาบน้ำสั่งทำพิเศษ',
@@ -885,6 +913,44 @@ function savePortfolio(items) {
   }
 }
 
+function compressImageFile(file, maxDim = 1280, quality = 0.8) {
+  return new Promise((resolve) => {
+    if (!file) return resolve('');
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function initPortfolioManager() {
   const addForm = document.getElementById('portfolioAddForm');
   const coverInput = document.getElementById('projCover');
@@ -894,10 +960,34 @@ function initPortfolioManager() {
   const coverPreviewImg = document.getElementById('coverPreviewImg');
 
   const btnAddGalleryPhotos = document.getElementById('btnAddGalleryPhotos');
+  const btnQuickAddPlans = document.getElementById('btnQuickAddPlans');
   const galleryFileInput = document.getElementById('galleryFileInput');
   const galleryPreviewStrip = document.getElementById('galleryPreviewStrip');
 
   let currentGalleryPhotos = [];
+
+  function renderAddGalleryPreview() {
+    if (!galleryPreviewStrip) return;
+    galleryPreviewStrip.innerHTML = '';
+    currentGalleryPhotos.forEach((src, idx) => {
+      const isPlan = src.toLowerCase().includes('plan') || src.toLowerCase().includes('แปลน') || src.toLowerCase().endsWith('.svg');
+      const card = document.createElement('div');
+      card.className = 'gallery-editor-card';
+      card.innerHTML = `
+        <img src="${src}" alt="preview ${idx + 1}">
+        <button type="button" class="btn-remove-photo" data-idx="${idx}" title="ลบรูปนี้">✕</button>
+        <span class="badge-plan-tag">${isPlan ? '📐 แปลนบ้าน' : `📷 รูปที่ ${idx + 1}`}</span>
+      `;
+      const btnDel = card.querySelector('.btn-remove-photo');
+      if (btnDel) {
+        btnDel.addEventListener('click', () => {
+          currentGalleryPhotos.splice(idx, 1);
+          renderAddGalleryPreview();
+        });
+      }
+      galleryPreviewStrip.appendChild(card);
+    });
+  }
 
   // Initial render
   renderAdminPortfolioList();
@@ -908,19 +998,17 @@ function initPortfolioManager() {
       coverFileInput.click();
     });
 
-    coverFileInput.addEventListener('change', (e) => {
+    coverFileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const dataUrl = event.target.result;
-          if (coverInput) coverInput.value = dataUrl;
-          if (coverPreviewImg && coverPreviewBox) {
-            coverPreviewImg.src = dataUrl;
-            coverPreviewBox.style.display = 'block';
-          }
-        };
-        reader.readAsDataURL(file);
+        btnUploadCover.textContent = '⏳ กำลังประมวลผล...';
+        const dataUrl = await compressImageFile(file);
+        if (coverInput) coverInput.value = dataUrl;
+        if (coverPreviewImg && coverPreviewBox) {
+          coverPreviewImg.src = dataUrl;
+          coverPreviewBox.style.display = 'block';
+        }
+        btnUploadCover.textContent = '↑ อัพโหลด';
       }
     });
   }
@@ -942,23 +1030,34 @@ function initPortfolioManager() {
       galleryFileInput.click();
     });
 
-    galleryFileInput.addEventListener('change', (e) => {
+    galleryFileInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const dataUrl = event.target.result;
-          currentGalleryPhotos.push(dataUrl);
+      if (files.length === 0) return;
 
-          if (galleryPreviewStrip) {
-            const img = document.createElement('img');
-            img.src = dataUrl;
-            img.className = 'gallery-thumb';
-            galleryPreviewStrip.appendChild(img);
-          }
-        };
-        reader.readAsDataURL(file);
+      btnAddGalleryPhotos.textContent = '⏳ กำลังอัปโหลด...';
+      for (const file of files) {
+        const dataUrl = await compressImageFile(file);
+        currentGalleryPhotos.push(dataUrl);
+      }
+      btnAddGalleryPhotos.textContent = '+ อัปโหลดรูปภาพ / แปลนบ้านจากเครื่อง';
+      renderAddGalleryPreview();
+    });
+  }
+
+  // Quick Preset: ใส่แปลนมาตรฐาน RMHome อัตโนมัติ
+  if (btnQuickAddPlans) {
+    btnQuickAddPlans.addEventListener('click', () => {
+      const defaultPlans = [
+        'assets/images/plan-nordic-fl1.svg',
+        'assets/images/plan-nordic-fl2.svg'
+      ];
+      defaultPlans.forEach(p => {
+        if (!currentGalleryPhotos.includes(p)) {
+          currentGalleryPhotos.push(p);
+        }
       });
+      renderAddGalleryPreview();
+      alert('📐 เพิ่มชุดแปลนสถาปัตยกรรมมาตรฐาน RMHome (ชั้น 1 & 2) เรียบร้อยแล้ว!');
     });
   }
 
@@ -982,9 +1081,33 @@ function initPortfolioManager() {
         cover = 'assets/images/house-nordic.jpg';
       }
       const description = document.getElementById('projDescription').value.trim() || 'ผลงานสร้างบ้านคุณภาพโดย RMHome ระยอง ฟังก์ชันครบครัน คุมงบได้จริง';
+      
+      const featuresRaw = document.getElementById('projFeatures') ? document.getElementById('projFeatures').value.trim() : '';
+      let features = featuresRaw ? featuresRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      if (features.length === 0) {
+        features = [
+          'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
+          'วัสดุมาตรฐาน มอก. แบรนด์ชั้นนำ SCG / Cotto',
+          'ควบคุมงานโดยวิศวกร กว. ทุกขั้นตอน',
+          'รับประกันงานโครงสร้าง 20 ปี และสถาปัตยกรรม 2 ปี'
+        ];
+      }
+
       const tall = document.getElementById('projTallCard') ? document.getElementById('projTallCard').checked : false;
 
-      const gallery = currentGalleryPhotos.length > 0 ? [...currentGalleryPhotos] : [cover, 'assets/images/luxury-interior.jpg'];
+      let gallery = currentGalleryPhotos.length > 0 ? [...currentGalleryPhotos] : [
+        cover,
+        'assets/images/hero-winter-villa.jpg',
+        'assets/images/luxury-interior.jpg',
+        'assets/images/plan-nordic-fl1.svg',
+        'assets/images/plan-nordic-fl2.svg',
+        'assets/images/quality-engineer.jpg'
+      ];
+
+      // Ensure cover is in gallery
+      if (!gallery.includes(cover)) {
+        gallery.unshift(cover);
+      }
 
       const newHouse = {
         id: 'house_' + Date.now(),
@@ -1002,12 +1125,7 @@ function initPortfolioManager() {
         cover,
         gallery,
         description,
-        features: [
-          'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
-          'วัสดุมาตรฐาน มอก. แบรนด์ชั้นนำ SCG / Cotto',
-          'ควบคุมงานโดยวิศวกร กว. ทุกขั้นตอน',
-          'รับประกันงานโครงสร้าง 20 ปี และสถาปัตยกรรม 2 ปี'
-        ],
+        features,
         tall,
         createdAt: new Date().toLocaleDateString('th-TH')
       };
@@ -1023,7 +1141,7 @@ function initPortfolioManager() {
       if (coverPreviewBox) coverPreviewBox.style.display = 'none';
 
       renderAdminPortfolioList();
-      alert(`✅ เพิ่มผลงาน "${title}" เรียบร้อยแล้ว!\n\nผลงานใหม่จะปรากฏบนหน้าแรกของเว็บไซต์ทันทีแบบเรียลไทม์`);
+      alert(`✅ เพิ่มผลงาน "${title}" เรียบร้อยแล้ว!\n\nผลงานใหม่พร้อมรูปแปลนทั้งหมดจะปรากฏบนหน้าแรกของเว็บไซต์ทันทีแบบเรียลไทม์`);
     });
   }
 }
@@ -1055,6 +1173,7 @@ function renderAdminPortfolioList() {
   items.forEach((house) => {
     const card = document.createElement('div');
     card.className = 'admin-house-card';
+    const galleryCount = (house.gallery && house.gallery.length) || 1;
 
     card.innerHTML = `
       <div class="admin-house-img-wrap">
@@ -1063,7 +1182,12 @@ function renderAdminPortfolioList() {
         <span class="admin-house-category">${escapeHtml(house.category || 'โมเดิร์น')}</span>
       </div>
       <div class="admin-house-body">
-        <div class="admin-house-title">${escapeHtml(house.title)}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+          <div class="admin-house-title" style="margin-bottom:0;">${escapeHtml(house.title)}</div>
+          <span style="font-size:0.75rem; color:#0e3d29; background:#dcfce7; padding:0.2rem 0.5rem; border-radius:4px; font-weight:700;">
+            🖼️ ${galleryCount} รูป &amp; แปลน
+          </span>
+        </div>
         <div class="admin-house-price">฿ ${escapeHtml(house.budget)}</div>
         <div class="admin-house-specs-grid">
           <div>📐 พื้นที่: ${escapeHtml(house.area)} ตร.ม.</div>
@@ -1074,16 +1198,30 @@ function renderAdminPortfolioList() {
           <div>📍 ${escapeHtml(house.location || 'ระยอง')}</div>
         </div>
         <div class="admin-house-desc">${escapeHtml(house.description || '')}</div>
-        <div class="admin-house-footer">
+        <div class="admin-house-footer" style="display:flex; gap:0.5rem; justify-content:space-between; align-items:center; flex-wrap:wrap;">
           <a href="index.html#models" target="_blank" style="font-size:0.78rem; color:#0d5c3a; text-decoration:none; font-weight:600;">
             ดูบนหน้าเว็บ ↗
           </a>
-          <button class="btn-delete-house" data-id="${escapeHtml(house.id)}" data-title="${escapeHtml(house.title)}">
-            🗑️ ลบผลงาน
-          </button>
+          <div style="display:flex; gap:0.4rem;">
+            <button class="btn-action-outline btn-edit-house" data-id="${escapeHtml(house.id)}" style="background:#0e3d29; color:#fff; border:1px solid #d4af37; padding:0.4rem 0.85rem; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer;" title="แก้ไขสเปก แปลนบ้าน และรูปหลายมุม">
+              ✏️ แก้ไขสเปก &amp; รูป/แปลน
+            </button>
+            <button class="btn-delete-house" data-id="${escapeHtml(house.id)}" data-title="${escapeHtml(house.title)}">
+              🗑️ ลบ
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    // Handle Edit house click
+    const btnEdit = card.querySelector('.btn-edit-house');
+    if (btnEdit) {
+      btnEdit.addEventListener('click', () => {
+        const targetId = btnEdit.getAttribute('data-id');
+        openEditHouseModal(targetId);
+      });
+    }
 
     // Handle delete house
     const btnDel = card.querySelector('.btn-delete-house');
@@ -1102,6 +1240,288 @@ function renderAdminPortfolioList() {
 
     grid.appendChild(card);
   });
+}
+
+/* ==========================================================================
+   4.1 Edit House Modal Logic (จัดการสเปก, แปลนบ้าน และรูปภาพหลายมุม)
+   ========================================================================== */
+let currentEditGallery = [];
+
+function openEditHouseModal(houseId) {
+  const modal = document.getElementById('editHouseModal');
+  if (!modal) return;
+
+  const items = getStoredPortfolio();
+  const house = items.find(h => h.id === houseId);
+  if (!house) {
+    alert('ไม่พบข้อมูลแบบบ้านนี้ในระบบ');
+    return;
+  }
+
+  document.getElementById('editProjId').value = house.id;
+  document.getElementById('editProjTitle').value = house.title || '';
+  document.getElementById('editProjCategory').value = house.category || 'โมเดิร์น';
+  document.getElementById('editProjBudget').value = house.budget || '';
+  document.getElementById('editProjType').value = house.type || 'แบบบ้าน (ยังไม่สร้าง)';
+  document.getElementById('editProjArea').value = house.area || '';
+  document.getElementById('editProjFloors').value = house.floors || '1';
+  document.getElementById('editProjBeds').value = house.bedrooms || '2';
+  document.getElementById('editProjBaths').value = house.bathrooms || '2';
+  document.getElementById('editProjParking').value = house.parking || '1';
+  document.getElementById('editProjLocation').value = house.location || 'จ.ระยอง';
+  
+  const coverInput = document.getElementById('editProjCover');
+  const coverPreviewImg = document.getElementById('editCoverPreviewImg');
+  const coverVal = house.cover || 'assets/images/house-nordic.jpg';
+  if (coverInput) coverInput.value = coverVal;
+  if (coverPreviewImg) coverPreviewImg.src = coverVal;
+
+  document.getElementById('editProjDescription').value = house.description || '';
+  
+  const features = house.features && Array.isArray(house.features) ? house.features : [];
+  document.getElementById('editProjFeatures').value = features.join('\n');
+
+  currentEditGallery = (house.gallery && Array.isArray(house.gallery) && house.gallery.length > 0) 
+    ? [...house.gallery] 
+    : [coverVal];
+
+  renderEditGalleryGrid();
+
+  modal.classList.add('open');
+}
+
+function renderEditGalleryGrid() {
+  const grid = document.getElementById('editGalleryGrid');
+  const badge = document.getElementById('editGalleryCountBadge');
+  const coverInput = document.getElementById('editProjCover');
+  const currentCover = coverInput ? coverInput.value.trim() : '';
+
+  if (badge) badge.textContent = `มี ${currentEditGallery.length} รูป & แปลนในหลังนี้`;
+  if (!grid) return;
+
+  grid.innerHTML = '';
+
+  if (currentEditGallery.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:1.5rem;">ยังไม่มีรูปภาพเพิ่มเติม กรุณากดปุ่มด้านบนเพื่อเพิ่มรูปภาพหรือแปลนบ้าน</div>';
+    return;
+  }
+
+  currentEditGallery.forEach((src, idx) => {
+    const isPlan = src.toLowerCase().includes('plan') || src.toLowerCase().includes('แปลน') || src.toLowerCase().endsWith('.svg');
+    const isCover = (src === currentCover);
+
+    const card = document.createElement('div');
+    card.className = 'gallery-editor-card';
+    if (isCover) {
+      card.style.borderColor = '#d4af37';
+      card.style.boxShadow = '0 0 10px rgba(212,175,55,0.6)';
+    }
+
+    card.innerHTML = `
+      <img src="${src}" alt="photo ${idx + 1}">
+      <button type="button" class="btn-set-cover" data-idx="${idx}" title="ตั้งรูปนี้เป็นรูปหน้าปก">
+        ${isCover ? '★ หน้าปก' : '☆ ตั้งเป็นปก'}
+      </button>
+      <button type="button" class="btn-remove-photo" data-idx="${idx}" title="ลบรูปนี้">✕</button>
+      <span class="badge-plan-tag">${isPlan ? '📐 แปลนบ้าน' : `📷 มุมที่ ${idx + 1}`}</span>
+    `;
+
+    // Handle delete photo
+    const btnRemove = card.querySelector('.btn-remove-photo');
+    if (btnRemove) {
+      btnRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentEditGallery.splice(idx, 1);
+        renderEditGalleryGrid();
+      });
+    }
+
+    // Handle set as cover
+    const btnSetCover = card.querySelector('.btn-set-cover');
+    if (btnSetCover) {
+      btnSetCover.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (coverInput) coverInput.value = src;
+        const previewImg = document.getElementById('editCoverPreviewImg');
+        if (previewImg) previewImg.src = src;
+        renderEditGalleryGrid();
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function initEditHouseModal() {
+  const modal = document.getElementById('editHouseModal');
+  const btnClose = document.getElementById('closeEditHouseModal');
+  const btnCancel = document.getElementById('btnCancelEditHouse');
+  const form = document.getElementById('editHouseForm');
+
+  const btnUploadCover = document.getElementById('btnEditUploadCover');
+  const fileInputCover = document.getElementById('editCoverFileInput');
+  const coverInput = document.getElementById('editProjCover');
+  const coverPreviewImg = document.getElementById('editCoverPreviewImg');
+
+  const btnAddGallery = document.getElementById('btnEditAddGallery');
+  const fileInputGallery = document.getElementById('editGalleryFileInput');
+  const btnAddUrl = document.getElementById('btnEditAddUrlPrompt');
+  const btnQuickPlans = document.getElementById('btnEditQuickAddPlans');
+
+  function closeModal() {
+    if (modal) modal.classList.remove('open');
+  }
+
+  if (btnClose) btnClose.addEventListener('click', closeModal);
+  if (btnCancel) btnCancel.addEventListener('click', closeModal);
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
+
+  // Cover image upload
+  if (btnUploadCover && fileInputCover) {
+    btnUploadCover.addEventListener('click', () => fileInputCover.click());
+    fileInputCover.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        btnUploadCover.textContent = '⏳ กำลังประมวลผล...';
+        const dataUrl = await compressImageFile(file);
+        if (coverInput) coverInput.value = dataUrl;
+        if (coverPreviewImg) coverPreviewImg.src = dataUrl;
+        if (!currentEditGallery.includes(dataUrl)) {
+          currentEditGallery.unshift(dataUrl);
+        }
+        renderEditGalleryGrid();
+        btnUploadCover.textContent = '↑ อัพโหลดรูปปก';
+      }
+    });
+  }
+
+  // Gallery multi-upload
+  if (btnAddGallery && fileInputGallery) {
+    btnAddGallery.addEventListener('click', () => fileInputGallery.click());
+    fileInputGallery.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      btnAddGallery.textContent = '⏳ กำลังอัปโหลด...';
+      for (const file of files) {
+        const dataUrl = await compressImageFile(file);
+        currentEditGallery.push(dataUrl);
+      }
+      btnAddGallery.textContent = '+ เพิ่มรูปภาพ / แปลนจากเครื่อง';
+      renderEditGalleryGrid();
+    });
+  }
+
+  // Add via URL Prompt
+  if (btnAddUrl) {
+    btnAddUrl.addEventListener('click', () => {
+      const url = prompt('วางลิงก์รูปภาพหรือไฟล์แปลนบ้าน (URL):');
+      if (url && url.trim()) {
+        currentEditGallery.push(url.trim());
+        renderEditGalleryGrid();
+      }
+    });
+  }
+
+  // Add default RMHome architectural plan set
+  if (btnQuickPlans) {
+    btnQuickPlans.addEventListener('click', () => {
+      const cat = document.getElementById('editProjCategory').value || '';
+      let plansToAdd = [];
+      if (cat.includes('คฤหาสน์') || cat.includes('mansion')) {
+        plansToAdd = ['assets/images/plan-mansion-fl1.svg', 'assets/images/plan-mansion-fl2.svg'];
+      } else if (cat.includes('พูลวิลล่า') || cat.includes('ทรอปิคอล')) {
+        plansToAdd = ['assets/images/plan-tropical-fl1.svg'];
+      } else {
+        plansToAdd = ['assets/images/plan-nordic-fl1.svg', 'assets/images/plan-nordic-fl2.svg'];
+      }
+
+      plansToAdd.forEach(p => {
+        if (!currentEditGallery.includes(p)) {
+          currentEditGallery.push(p);
+        }
+      });
+      renderEditGalleryGrid();
+      alert('📐 เพิ่มชุดแปลนสถาปัตยกรรมมาตรฐาน RMHome เรียบร้อยแล้ว!');
+    });
+  }
+
+  // Handle Edit Form Submit
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const houseId = document.getElementById('editProjId').value;
+      const title = document.getElementById('editProjTitle').value.trim();
+      const category = document.getElementById('editProjCategory').value;
+      const budget = document.getElementById('editProjBudget').value.trim();
+      const type = document.getElementById('editProjType').value;
+      const area = document.getElementById('editProjArea').value.trim();
+      const floors = document.getElementById('editProjFloors').value.trim() || '1';
+      const bedrooms = document.getElementById('editProjBeds').value.trim() || '2';
+      const bathrooms = document.getElementById('editProjBaths').value.trim() || '2';
+      const parking = document.getElementById('editProjParking').value.trim() || '1';
+      const location = document.getElementById('editProjLocation').value.trim() || 'จ.ระยอง';
+      let cover = coverInput ? coverInput.value.trim() : '';
+
+      if (currentEditGallery.length > 0 && !cover) {
+        cover = currentEditGallery[0];
+      }
+      if (!cover) {
+        cover = 'assets/images/house-nordic.jpg';
+      }
+
+      // Ensure cover is in gallery
+      if (!currentEditGallery.includes(cover)) {
+        currentEditGallery.unshift(cover);
+      }
+
+      const description = document.getElementById('editProjDescription').value.trim() || 'ผลงานสร้างบ้านคุณภาพโดย RMHome ระยอง ฟังก์ชันครบครัน คุมงบได้จริง';
+      
+      const featuresRaw = document.getElementById('editProjFeatures').value.trim();
+      const features = featuresRaw ? featuresRaw.split('\n').map(s => s.trim()).filter(Boolean) : [
+        'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
+        'ควบคุมงานก่อสร้างโดยทีมวิศวกร กว. ทุกขั้นตอน',
+        'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
+      ];
+
+      const items = getStoredPortfolio();
+      const idx = items.findIndex(h => h.id === houseId);
+      if (idx === -1) {
+        alert('เกิดข้อผิดพลาด: ไม่พบแบบบ้านนี้ในระบบ');
+        return;
+      }
+
+      items[idx] = {
+        ...items[idx],
+        title,
+        category,
+        categorySlug: getCategorySlug(category),
+        budget: budget.includes('ล้าน') ? budget : budget + ' ล้านบาท',
+        type,
+        area,
+        floors,
+        bedrooms,
+        bathrooms,
+        parking,
+        location,
+        cover,
+        gallery: [...currentEditGallery],
+        description,
+        features
+      };
+
+      savePortfolio(items);
+      closeModal();
+      renderAdminPortfolioList();
+
+      alert(`✅ บันทึกการแก้ไขแบบบ้าน "${title}" เรียบร้อยแล้ว!\n\nรายละเอียด สเปก และรูปแปลนทั้งหมดอัปเดตไปแสดงผลบนหน้าแรกทันทีแบบเรียลไทม์`);
+    });
+  }
 }
 
 function escapeHtml(text) {

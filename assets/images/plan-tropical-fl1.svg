@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 550" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #071e14; }
+      .grid { stroke: rgba(212, 175, 55, 0.12); stroke-width: 1; }
+      .wall { stroke: #d4af37; stroke-width: 4; fill: rgba(14, 61, 41, 0.6); }
+      .inner-wall { stroke: #c5a059; stroke-width: 2.5; fill: none; }
+      .pool { fill: #0284c7; stroke: #38bdf8; stroke-width: 3; }
+      .deck { stroke: #d4af37; stroke-dasharray: 4,3; fill: rgba(212, 175, 55, 0.15); }
+      .window { stroke: #6ee7b7; stroke-width: 3; }
+      .text-room { font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600; fill: #ffffff; text-anchor: middle; }
+      .text-dim { font-family: 'Prompt', sans-serif; font-size: 12px; fill: #a7f3d0; text-anchor: middle; }
+      .text-title { font-family: 'Prompt', sans-serif; font-size: 20px; font-weight: 700; fill: #ffd700; letter-spacing: 1px; }
+      .text-sub { font-family: 'Prompt', sans-serif; font-size: 13px; fill: #cbd5e1; }
+    </style>
+  </defs>
+
+  <rect width="800" height="550" class="bg"/>
+
+  <g class="grid">
+    <line x1="50" y1="50" x2="750" y2="50"/>
+    <line x1="50" y1="150" x2="750" y2="150"/>
+    <line x1="50" y1="250" x2="750" y2="250"/>
+    <line x1="50" y1="350" x2="750" y2="350"/>
+    <line x1="50" y1="450" x2="750" y2="450"/>
+  </g>
+
+  <!-- Header Blueprint Info -->
+  <text x="60" y="45" class="text-title">RM-TROPICAL POOL VILLA • แปลนพูลวิลล่า (VILLA FLOOR PLAN)</text>
+  <text x="60" y="68" class="text-sub">สัดส่วนพื้นที่ 290 ตร.ม. • สระว่ายน้ำระบบเกลือ 3.5x8 ม. • ทุกห้องนอนเชื่อมต่อสระน้ำ • กึ่ง Semi-Outdoor ระบายลม</text>
+
+  <!-- Central Salt Pool & Sun Deck -->
+  <rect x="250" y="110" width="300" height="240" class="deck" rx="6"/>
+  <rect x="290" y="140" width="220" height="180" class="pool" rx="4"/>
+  <text x="400" y="225" font-family="'Prompt', sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">🏊‍♂️ สระว่ายน้ำระบบเกลือ OVERFLOW</text>
+  <text x="400" y="250" class="text-dim">3.50 x 8.00 ม. ลึก 1.30 ม. พร้อมไฟ LED ใต้น้ำ</text>
+
+  <!-- Living & Open Kitchen (Top Wing) -->
+  <rect x="250" y="370" width="300" height="120" class="wall" rx="4"/>
+  <text x="400" y="425" class="text-room">🍹 POOLSIDE LIVING &amp; ISLAND BAR</text>
+  <text x="400" y="450" class="text-dim">โถงพักผ่อนเปิดรับลมและวิวสระ 180 องศา (8.00 x 4.00 ม.)</text>
+
+  <!-- Master Suite (Left Wing) -->
+  <rect x="60" y="110" width="170" height="380" class="wall" rx="4"/>
+  <text x="145" y="270" class="text-room">👑 MASTER VILLA</text>
+  <text x="145" y="295" class="text-dim">ห้องนอนมาสเตอร์</text>
+  <text x="145" y="315" class="text-dim">ก้าวลงสระได้โดยตรง</text>
+  <text x="145" y="340" class="text-dim">อ่างอาบน้ำ Semi-Outdoor</text>
+
+  <!-- Guest Suite 1 & 2 (Right Wing) -->
+  <rect x="570" y="110" width="170" height="180" class="wall" rx="4"/>
+  <text x="655" y="195" class="text-room">🛏️ POOL SUITE 1</text>
+  <text x="655" y="220" class="text-dim">ห้องนอน 2 วิวสระ</text>
+
+  <rect x="570" y="310" width="170" height="180" class="wall" rx="4"/>
+  <text x="655" y="395" class="text-room">🛏️ POOL SUITE 2</text>
+  <text x="655" y="420" class="text-dim">ห้องนอน 3 วิวสวน</text>
+
+  <!-- Compass & Scale Footer -->
+  <circle cx="90" cy="515" r="16" stroke="#d4af37" fill="none" stroke-width="1.5"/>
+  <text x="90" y="511" font-size="10" fill="#ffd700" text-anchor="middle" font-weight="700">N</text>
+  <text x="120" y="520" class="text-dim" style="text-anchor:start;">SCALE 1:100 • RESORT &amp; VILLA ARCHITECTURE BY RMHOME</text>
+</svg>
