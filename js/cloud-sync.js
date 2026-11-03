@@ -5,9 +5,10 @@
 
 (function () {
   const CLOUD_CONFIG_KEY = 'rm_cloud_db_url';
+  const DEFAULT_CLOUD_URL = 'https://rmhome-35591-default-rtdb.asia-southeast1.firebasedatabase.app';
   
-  // URL เริ่มต้น
-  let cloudDbUrl = localStorage.getItem(CLOUD_CONFIG_KEY) || '';
+  // URL เริ่มต้นเชื่อมต่อกับ Firebase Realtime Database ของคุณอัตโนมัติ
+  let cloudDbUrl = localStorage.getItem(CLOUD_CONFIG_KEY) || DEFAULT_CLOUD_URL;
 
   function cleanUrl(url) {
     if (!url) return '';
@@ -16,11 +17,11 @@
 
   const CloudSync = {
     getUrl: function () {
-      return cleanUrl(cloudDbUrl || localStorage.getItem(CLOUD_CONFIG_KEY) || '');
+      return cleanUrl(cloudDbUrl || localStorage.getItem(CLOUD_CONFIG_KEY) || DEFAULT_CLOUD_URL);
     },
 
     setUrl: function (url) {
-      cloudDbUrl = cleanUrl(url);
+      cloudDbUrl = cleanUrl(url) || DEFAULT_CLOUD_URL;
       localStorage.setItem(CLOUD_CONFIG_KEY, cloudDbUrl);
     },
 
@@ -69,9 +70,47 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(value)
         });
+
+        // อัปเดต timestamp กลาง เพื่อให้ทุกเครื่องที่เปิดเว็บอยู่รู้ว่ามีข้อมูลใหม่
+        if (key !== 'rm_last_sync_timestamp') {
+          const now = Date.now();
+          originalSetItem('rm_last_sync_timestamp', String(now));
+          await fetch(`${baseUrl}/rmhome/rm_last_sync_timestamp.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(now)
+          });
+        }
       } catch (err) {
         console.warn(`[CloudSync] Save failed for ${key}:`, err);
       }
+    },
+
+    /**
+     * ฟังการเปลี่ยนแปลงข้อมูลแบบ Real-time ข้ามทุกเครื่อง (Polling Timestamp แบบประหยัดเน็ต)
+     */
+    startRealtimeListener: function (callback) {
+      const baseUrl = this.getUrl();
+      if (!baseUrl) return;
+
+      let lastTs = parseInt(localStorage.getItem('rm_last_sync_timestamp') || '0', 10);
+
+      setInterval(async () => {
+        try {
+          const res = await fetch(`${baseUrl}/rmhome/rm_last_sync_timestamp.json?_t=${Date.now()}`);
+          if (!res.ok) return;
+          const cloudTs = await res.json();
+          if (cloudTs && typeof cloudTs === 'number' && cloudTs > lastTs) {
+            lastTs = cloudTs;
+            const updatedData = await CloudSync.fetchAll();
+            if (updatedData && typeof callback === 'function') {
+              callback(updatedData);
+            }
+          }
+        } catch (e) {
+          // ignore network hiccups
+        }
+      }, 7000);
     },
 
     /**

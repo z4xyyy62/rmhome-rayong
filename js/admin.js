@@ -19,10 +19,32 @@ const DEFAULT_LEADS = [];
 
 let currentFilter = 'all';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.CloudSync && window.CloudSync.isConnected()) {
+    try {
+      await window.CloudSync.fetchAll();
+    } catch (e) {}
+  }
   purgeLegacyDummyData();
   initAuth();
   initDashboard();
+
+  // ฟังสัญญาณเมื่อมี Lead ใหม่ส่งมาจากหน้าเว็บ หรือมีการแก้ไขจากเครื่องอื่น
+  if (window.CloudSync && typeof window.CloudSync.startRealtimeListener === 'function') {
+    window.CloudSync.startRealtimeListener(() => {
+      try {
+        if (typeof renderMetrics === 'function') renderMetrics();
+        if (typeof renderLeadsList === 'function') renderLeadsList();
+        if (typeof renderAdminPortfolioList === 'function') renderAdminPortfolioList();
+        if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
+        if (typeof renderAdminReviewsList === 'function') renderAdminReviewsList();
+        if (typeof renderAdminServicesList === 'function') renderAdminServicesList();
+        if (typeof renderAdminStandardsList === 'function') renderAdminStandardsList();
+        if (typeof renderAdminWhyUsList === 'function') renderAdminWhyUsList();
+        if (typeof renderAdminWorkflowList === 'function') renderAdminWorkflowList();
+      } catch (err) {}
+    });
+  }
 });
 
 /* ---------------------------------------------------------

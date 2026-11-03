@@ -1906,17 +1906,29 @@ function renderSiteInfo() {
 // CloudSync Global Realtime Listener for All Visitors & Devices
 // ==========================================================================
 (function initCloudRealtime() {
+  function refreshAllUI() {
+    if (typeof renderHouseGrid === 'function') renderHouseGrid();
+    if (typeof renderReviews === 'function') renderReviews();
+    if (typeof renderServices === 'function') renderServices();
+    if (typeof renderStandards === 'function') renderStandards();
+    if (typeof renderWhyUs === 'function') renderWhyUs();
+    if (typeof renderWorkflow === 'function') renderWorkflow();
+    if (typeof renderSiteInfo === 'function') renderSiteInfo();
+  }
+
   if (window.CloudSync && window.CloudSync.isConnected()) {
+    // 1. โหลดข้อมูลสดจาก Cloud ทันทีที่เปิดหน้าเว็บ
     window.CloudSync.fetchAll().then(cloudData => {
       if (cloudData) {
-        if (typeof renderPortfolioGrid === 'function') renderPortfolioGrid();
-        if (typeof renderDynamicReviews === 'function') renderDynamicReviews();
-        if (typeof renderDynamicServices === 'function') renderDynamicServices();
-        if (typeof renderDynamicStandards === 'function') renderDynamicStandards();
-        if (typeof renderDynamicWhyUs === 'function') renderDynamicWhyUs();
-        if (typeof renderDynamicWorkflow === 'function') renderDynamicWorkflow();
-        if (typeof applySiteInfo === 'function') applySiteInfo();
+        refreshAllUI();
       }
     });
+
+    // 2. ฟังการอัปเดตแบบเรียลไทม์จากแดชบอร์ด (เมื่อแอดมินแก้ไขปุ๊บ หน้าเว็บผู้ใช้จะอัปเดตปั๊บ)
+    if (typeof window.CloudSync.startRealtimeListener === 'function') {
+      window.CloudSync.startRealtimeListener(() => {
+        refreshAllUI();
+      });
+    }
   }
 })();
