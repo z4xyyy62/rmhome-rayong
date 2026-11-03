@@ -561,6 +561,59 @@ function openHouseModalById(houseId) {
       </div>
     </div>
 
+    <!-- 6.5 Interactive 3D Virtual House Model (คลิกเพื่อเปิดดูแบบบ้าน 3 มิติ 360 องศา) -->
+    <div class="box-3d-model-wrapper" id="box3DModelWrapper">
+      <button type="button" class="btn-toggle-3d-model" id="btnToggle3DModel" aria-expanded="false">
+        <div class="btn-toggle-3d-left">
+          <div class="cube-icon-3d">🏛️</div>
+          <div style="text-align:left;">
+            <div class="btn-toggle-3d-title">
+              <span>ดูบ้าน 3 มิติ (Interactive 3D Virtual Tour)</span>
+              <span class="gold-pulse-tag">✨ 360° หมุนดูรอบทิศ</span>
+            </div>
+            <div class="btn-toggle-3d-sub">
+              แบบจำลอง 3 มิติเสมือนจริง คลิกค้างหมุนดูได้รอบทิศ 360° ซูมเข้า-ออก และสลับแสงไฟกลางคืน
+            </div>
+          </div>
+        </div>
+        <div class="btn-toggle-3d-badge">
+          <span class="badge-3d-text" id="toggle3DText">กดเพื่อเปิดดู 3D</span>
+          <span class="badge-3d-arrow" id="toggle3DArrow">▼</span>
+        </div>
+      </button>
+
+      <!-- 3D Canvas Container (Hidden by default, expands when clicked) -->
+      <div class="container-3d-model" id="container3DModel" style="display:none;">
+        <!-- Top Toolbar Controls -->
+        <div class="controls-3d-bar">
+          <div class="controls-3d-left">
+            <button type="button" class="ctrl-3d-btn active" id="btn3DAutoRotate" title="เปิด/ปิดการหมุนอัตโนมัติ">
+              🔄 หมุนอัตโนมัติ: เปิด
+            </button>
+            <button type="button" class="ctrl-3d-btn" id="btn3DDayNight" title="สลับโหมดกลางวัน / แสงไฟกลางคืน">
+              🌙 แสงไฟกลางคืน
+            </button>
+          </div>
+          <div class="controls-3d-right">
+            <button type="button" class="ctrl-3d-btn" id="btn3DViewFront" title="มุมมองหน้าบ้าน">หน้าบ้าน</button>
+            <button type="button" class="ctrl-3d-btn" id="btn3DViewTop" title="มุมมองมุมสูง Bird's Eye">มุมสูง</button>
+            <button type="button" class="ctrl-3d-btn" id="btn3DViewPool" title="มุมมองสระว่ายน้ำ">สระว่ายน้ำ</button>
+            <button type="button" class="ctrl-3d-btn" id="btn3DReset" title="รีเซ็ตมุมมองเดิม">รีเซ็ต ⟲</button>
+          </div>
+        </div>
+
+        <!-- 3D WebGL Canvas Mount -->
+        <div id="webgl3DCanvasMount" class="webgl-canvas-mount"></div>
+
+        <!-- Bottom Gesture Hints -->
+        <div class="hint-3d-overlay">
+          <span>🖱️ <strong>คลิกเมาส์ค้างแล้วลาก</strong> เพื่อหมุนดู 360°</span>
+          <span>• <strong>หมุนลูกกลิ้ง</strong> หรือจีบนิ้วเพื่อซูมเข้า-ออก</span>
+          <span>• <strong>คลิกขวา</strong> เพื่อเลื่อนมุมมอง (Pan)</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 7. Action Buttons -->
     <div style="display:flex; gap:0.85rem; justify-content:space-between; align-items:center; flex-wrap:wrap; padding-top:1.25rem; border-top:1px solid rgba(212,175,55,0.2);">
       <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
@@ -625,9 +678,49 @@ function openHouseModalById(houseId) {
     });
   });
 
+  // 3D Model Box Toggle Handlers
+  const btnToggle3D = modalContent.querySelector('#btnToggle3DModel');
+  const container3D = modalContent.querySelector('#container3DModel');
+  const toggle3DText = modalContent.querySelector('#toggle3DText');
+  const toggle3DArrow = modalContent.querySelector('#toggle3DArrow');
+  const canvasMount = modalContent.querySelector('#webgl3DCanvasMount');
+
+  let is3DOpen = false;
+
+  if (btnToggle3D && container3D) {
+    btnToggle3D.addEventListener('click', () => {
+      is3DOpen = !is3DOpen;
+      if (is3DOpen) {
+        container3D.style.display = 'block';
+        btnToggle3D.classList.add('active');
+        btnToggle3D.setAttribute('aria-expanded', 'true');
+        if (toggle3DText) toggle3DText.textContent = 'ย่อเก็บ 3D';
+        if (toggle3DArrow) toggle3DArrow.textContent = '▲';
+
+        // Initialize Three.js 3D Virtual Tour
+        setTimeout(() => {
+          if (window.RMHome3D && canvasMount) {
+            window.RMHome3D.init(canvasMount, house);
+          }
+        }, 50);
+      } else {
+        container3D.style.display = 'none';
+        btnToggle3D.classList.remove('active');
+        btnToggle3D.setAttribute('aria-expanded', 'false');
+        if (toggle3DText) toggle3DText.textContent = 'กดเพื่อเปิดดู 3D';
+        if (toggle3DArrow) toggle3DArrow.textContent = '▼';
+
+        if (window.RMHome3D) {
+          window.RMHome3D.destroy();
+        }
+      }
+    });
+  }
+
   const secondaryClose = modalContent.querySelector('#btnModalCloseSecondary');
   if (secondaryClose) {
     secondaryClose.addEventListener('click', () => {
+      if (window.RMHome3D) window.RMHome3D.destroy();
       modalBackdrop.classList.remove('open');
       document.body.style.overflow = '';
     });
@@ -646,6 +739,9 @@ function initHouseModal() {
   function closeModal() {
     modalBackdrop.classList.remove('open');
     document.body.style.overflow = '';
+    if (window.RMHome3D && typeof window.RMHome3D.destroy === 'function') {
+      window.RMHome3D.destroy();
+    }
   }
 
   window.closeModal = closeModal;

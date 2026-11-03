@@ -2853,6 +2853,265 @@ textarea.form-control {
   }
 }
 
+/* ==========================================================================
+   3D Interactive House Viewer Components (Three.js Virtual Tour)
+   ========================================================================== */
+.box-3d-model-wrapper {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 14px;
+}
+
+.btn-toggle-3d-model {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(14, 61, 41, 0.95) 0%, rgba(3, 20, 14, 0.98) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  border-radius: 14px;
+  padding: 1.1rem 1.4rem;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-toggle-3d-model:hover {
+  border-color: #ffd700;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(212, 175, 55, 0.3);
+  background: linear-gradient(135deg, rgba(20, 83, 56, 0.98) 0%, rgba(5, 30, 20, 1) 100%);
+}
+
+.btn-toggle-3d-model.active {
+  border-color: #ffd700;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn-toggle-3d-left {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.cube-icon-3d {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #ffd700 0%, #b8972e 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.45);
+  flex-shrink: 0;
+  animation: floatCube 3s infinite ease-in-out;
+}
+
+@keyframes floatCube {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.btn-toggle-3d-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.gold-pulse-tag {
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.65rem;
+  border-radius: 9999px;
+  animation: goldPulse 2s infinite ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+@keyframes goldPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5)); }
+}
+
+.btn-toggle-3d-sub {
+  font-size: 0.84rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.btn-toggle-3d-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #ffd700;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle-3d-model:hover .btn-toggle-3d-badge {
+  background: #ffd700;
+  color: #03140e;
+  border-color: #ffd700;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+.badge-3d-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.25s ease;
+}
+
+/* 3D Canvas Box Container */
+.container-3d-model {
+  margin-top: 0.85rem;
+  background: #09261a;
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.webgl-canvas-mount {
+  width: 100%;
+  height: 480px;
+  cursor: grab;
+  display: block;
+  background: radial-gradient(circle at 50% 50%, #0d3826 0%, #051910 100%);
+}
+
+.webgl-canvas-mount:active {
+  cursor: grabbing;
+}
+
+/* 3D Overlay Toolbar (Top) */
+.controls-3d-bar {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.controls-3d-left,
+.controls-3d-right {
+  display: flex;
+  gap: 0.45rem;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.ctrl-3d-btn {
+  background: rgba(3, 20, 14, 0.88);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #ffd700;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ctrl-3d-btn:hover {
+  background: rgba(14, 61, 41, 0.95);
+  border-color: #ffd700;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ctrl-3d-btn.active {
+  background: linear-gradient(135deg, #0e3d29, #145338);
+  border-color: #ffd700;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+/* Bottom Gesture Hints */
+.hint-3d-overlay {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 1rem;
+  right: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: rgba(3, 20, 14, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .webgl-canvas-mount {
+    height: 360px;
+  }
+  .btn-toggle-3d-left {
+    gap: 0.75rem;
+  }
+  .cube-icon-3d {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  .btn-toggle-3d-title {
+    font-size: 0.98rem;
+  }
+  .btn-toggle-3d-badge {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+  }
+  .controls-3d-bar {
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+  }
+  .ctrl-3d-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
+  }
+  .hint-3d-overlay {
+    bottom: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
 /* Toast Notification */
 .toast-notice {
   position: fixed;
