@@ -1,602 +1,460 @@
 /**
- * RM Home 3D Interactive House Viewer
- * Powered by Three.js & OrbitControls
- * Procedural Luxury Architectural Villa (Nordic & Tropical Modern)
+ * RM Home 3D Interactive Virtual Tour
+ * Photorealistic Architectural Villa Viewer
+ * Powered by Three.js, OrbitControls & GLTFLoader
  */
 
 (function () {
   let scene, camera, renderer, controls;
   let animFrameId = null;
-  let houseGroup = null;
-  let poolWaterMesh = null;
+  let currentModelGroup = null;
+  let sunLight, hemiLight, ambientLight;
   let interiorLights = [];
   let poolLights = [];
-  let sunLight, hemiLight, ambientLight;
+  let poolWaterMesh = null;
   let isNightMode = false;
   let isAutoRotate = true;
   let isInitialized = false;
-  let currentHouseData = null;
+  let envMapTexture = null;
 
-  // Tween helper for smooth camera transitions
-  let cameraTween = null;
+  // ==========================================
+  // 1. Procedural HDR-Style Architectural Environment Map
+  // ==========================================
+  function createArchitecturalEnvMap(renderer) {
+    if (envMapTexture) return envMapTexture;
 
-  function create3DHouseModel(houseData) {
+    // Generate a high-quality panoramic sky gradient canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Sky to ground architectural gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, 512);
+    grad.addColorStop(0.0, '#3a7bd5'); // Deep sky blue
+    grad.addColorStop(0.35, '#8bc34a'); // Horizon soft tint
+    grad.addColorStop(0.48, '#fff3e0'); // Warm golden sun bounce
+    grad.addColorStop(0.52, '#d7ccc8'); // Horizon stone
+    grad.addColorStop(0.70, '#1b4d3e'); // Emerald lawn reflection
+    grad.addColorStop(1.0, '#0a2318'); // Ground ambient deep tone
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 512);
+
+    // Warm Sun Highlight on horizon
+    const sunGrad = ctx.createRadialGradient(512, 240, 10, 512, 240, 180);
+    sunGrad.addColorStop(0, 'rgba(255, 255, 230, 0.9)');
+    sunGrad.addColorStop(0.3, 'rgba(255, 220, 150, 0.4)');
+    sunGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+    ctx.fillStyle = sunGrad;
+    ctx.fillRect(0, 0, 1024, 512);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+
+    if (typeof THREE.PMREMGenerator === 'function') {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      pmrem.compileEquirectangularShader();
+      envMapTexture = pmrem.fromEquirectangular(texture).texture;
+      pmrem.dispose();
+      texture.dispose();
+    } else {
+      envMapTexture = texture;
+    }
+
+    return envMapTexture;
+  }
+
+  // ==========================================
+  // 2. High-Resolution PBR Canvas Textures (Eliminates flat play-doh look)
+  // ==========================================
+  function createWoodTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Base warm teak tone
+    ctx.fillStyle = '#b87c4c';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Realistic horizontal wood grain lines & plank grooves
+    for (let y = 0; y < 512; y += 32) {
+      // Plank seam
+      ctx.fillStyle = 'rgba(40, 20, 10, 0.55)';
+      ctx.fillRect(0, y, 512, 2.5);
+
+      // Wood grain variations
+      for (let i = 0; i < 20; i++) {
+        const grainY = y + Math.random() * 30;
+        ctx.fillStyle = (Math.random() > 0.5) ? 'rgba(80, 45, 20, 0.18)' : 'rgba(240, 190, 140, 0.18)';
+        ctx.fillRect(0, grainY, 512, 1.2);
+      }
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    return tex;
+  }
+
+  function createMarbleTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Off-white travertine base
+    ctx.fillStyle = '#f4f2ee';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Subtle stone veining
+    ctx.strokeStyle = 'rgba(180, 170, 155, 0.25)';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 8; i++) {
+      ctx.beginPath();
+      let x = Math.random() * 512;
+      let y = 0;
+      ctx.moveTo(x, y);
+      while (y < 512) {
+        x += (Math.random() - 0.5) * 40;
+        y += Math.random() * 50;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 3);
+    return tex;
+  }
+
+  function createPaverTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#cfd8dc';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Paver grid grooves
+    ctx.fillStyle = 'rgba(70, 80, 90, 0.4)';
+    for (let x = 0; x < 512; x += 64) {
+      ctx.fillRect(x, 0, 3, 512);
+    }
+    for (let y = 0; y < 512; y += 64) {
+      ctx.fillRect(0, y, 512, 3);
+    }
+
+    // Speckled concrete noise
+    for (let n = 0; n < 3000; n++) {
+      ctx.fillStyle = (Math.random() > 0.5) ? 'rgba(255,255,255,0.2)' : 'rgba(40,50,60,0.15)';
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 4);
+    return tex;
+  }
+
+  function createGrassTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#225d31';
+    ctx.fillRect(0, 0, 256, 256);
+
+    for (let i = 0; i < 4000; i++) {
+      ctx.fillStyle = (Math.random() > 0.4) ? '#2e7d32' : '#1b5e20';
+      ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 3);
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8);
+    return tex;
+  }
+
+  // ==========================================
+  // 3. Fallback High-Detail Procedural PBR Model
+  // ==========================================
+  function createHighDetailProceduralVilla(houseData) {
     const group = new THREE.Group();
-    const isNordic = houseData && (
-      (houseData.category && houseData.category.includes('นอร์ดิก')) ||
-      (houseData.title && houseData.title.toLowerCase().includes('nordic')) ||
-      (houseData.id && houseData.id.includes('nordic'))
-    );
+    const woodTex = createWoodTexture();
+    const marbleTex = createMarbleTexture();
+    const paverTex = createPaverTexture();
+    const grassTex = createGrassTexture();
 
-    // ==========================================
-    // 1. Materials (Architectural Palette)
-    // ==========================================
-    // Concrete / White Render Wall
     const wallWhiteMat = new THREE.MeshStandardMaterial({
-      color: 0xf8f9fa,
+      color: 0xffffff,
+      map: marbleTex,
       roughness: 0.35,
-      metalness: 0.05
+      metalness: 0.05,
+      envMapIntensity: 1.2
     });
 
-    // Dark Charcoal Accent Wall / Feature Stone
-    const wallDarkMat = new THREE.MeshStandardMaterial({
-      color: 0x242a30,
+    const wallCharcoalMat = new THREE.MeshStandardMaterial({
+      color: 0x212529,
+      roughness: 0.45,
+      metalness: 0.25,
+      envMapIntensity: 1.0
+    });
+
+    const woodSlatMat = new THREE.MeshStandardMaterial({
+      color: 0xb37644,
+      map: woodTex,
       roughness: 0.5,
-      metalness: 0.15
+      metalness: 0.08,
+      envMapIntensity: 1.1
     });
 
-    // Warm Teak / Oak Wood Slat Texture
-    const woodMat = new THREE.MeshStandardMaterial({
-      color: 0xb57843,
+    const darkWoodMat = new THREE.MeshStandardMaterial({
+      color: 0x4a2e18,
+      map: woodTex,
       roughness: 0.6,
       metalness: 0.05
     });
 
-    // Dark Wood / Cedar Siding
-    const darkWoodMat = new THREE.MeshStandardMaterial({
-      color: 0x4a2e18,
-      roughness: 0.65,
-      metalness: 0.05
-    });
-
-    // Architectural Glass (Reflective & Transparent)
     const glassMat = new THREE.MeshStandardMaterial({
-      color: 0xa5d8eb,
-      roughness: 0.05,
-      metalness: 0.2,
+      color: 0xaee2f7,
+      roughness: 0.04,
+      metalness: 0.15,
       transparent: true,
-      opacity: 0.4
+      opacity: 0.35,
+      envMapIntensity: 2.5
     });
 
-    // Dark Aluminum Window Frame
-    const frameMat = new THREE.MeshStandardMaterial({
-      color: 0x1a202c,
-      roughness: 0.3,
-      metalness: 0.8
-    });
-
-    // Pool Water Surface (Cyan Tropical Shimmer)
-    const waterMat = new THREE.MeshStandardMaterial({
-      color: 0x00bcd4,
-      roughness: 0.1,
-      metalness: 0.1,
-      transparent: true,
-      opacity: 0.75
-    });
-
-    // Pool Basin (Mosaic Turquoise Tile)
-    const poolBasinMat = new THREE.MeshStandardMaterial({
-      color: 0x00838f,
-      roughness: 0.4,
-      metalness: 0.1
-    });
-
-    // Lush Emerald Lawn
-    const grassMat = new THREE.MeshStandardMaterial({
-      color: 0x2e7d32,
-      roughness: 0.9,
-      metalness: 0.0
-    });
-
-    // Concrete Paver / Terrace Stone
-    const paverMat = new THREE.MeshStandardMaterial({
-      color: 0xd8dde1,
-      roughness: 0.45,
-      metalness: 0.05
-    });
-
-    // Warm Interior Glow Floor
-    const interiorFloorMat = new THREE.MeshStandardMaterial({
-      color: 0xddae7e,
-      roughness: 0.3,
-      metalness: 0.1
-    });
-
-    // Metal Roof / Zinc Fascia
-    const roofMat = new THREE.MeshStandardMaterial({
-      color: 0x2b3238,
-      roughness: 0.4,
-      metalness: 0.5
-    });
-
-    // Gold Luxury Trim (RM Home Signature)
     const goldMat = new THREE.MeshStandardMaterial({
       color: 0xd4af37,
       roughness: 0.25,
-      metalness: 0.85
+      metalness: 0.88,
+      envMapIntensity: 2.2
     });
 
-    // ==========================================
-    // 2. Base Ground & Landscaping
-    // ==========================================
-    // Main Ground Podium (Stone foundation)
-    const groundGeom = new THREE.BoxGeometry(32, 0.4, 26);
-    const groundMesh = new THREE.Mesh(groundGeom, paverMat);
-    groundMesh.position.y = -0.2;
-    groundMesh.receiveShadow = true;
-    group.add(groundMesh);
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: 0x11161b,
+      roughness: 0.3,
+      metalness: 0.75,
+      envMapIntensity: 1.5
+    });
 
-    // Green Lawn Sections
-    const lawnLeftGeom = new THREE.BoxGeometry(9, 0.45, 24);
-    const lawnLeft = new THREE.Mesh(lawnLeftGeom, grassMat);
-    lawnLeft.position.set(-10.5, -0.15, 0);
-    lawnLeft.receiveShadow = true;
-    group.add(lawnLeft);
+    const waterMat = new THREE.MeshStandardMaterial({
+      color: 0x00bcd4,
+      roughness: 0.08,
+      metalness: 0.15,
+      transparent: true,
+      opacity: 0.8,
+      envMapIntensity: 2.8
+    });
 
-    const lawnFrontGeom = new THREE.BoxGeometry(18, 0.45, 6);
-    const lawnFront = new THREE.Mesh(lawnFrontGeom, grassMat);
-    lawnFront.position.set(4, -0.15, 9);
-    lawnFront.receiveShadow = true;
-    group.add(lawnFront);
+    const grassMat = new THREE.MeshStandardMaterial({
+      color: 0x2e7d32,
+      map: grassTex,
+      roughness: 0.85,
+      metalness: 0.0
+    });
 
-    // Stepping Stones Walkway (Stone pavers leading to entry)
-    for (let i = 0; i < 5; i++) {
-      const paver = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.48, 0.85), wallWhiteMat);
-      paver.position.set(-2.5, -0.12, 4.5 + i * 1.5);
-      paver.receiveShadow = true;
-      group.add(paver);
-    }
+    const paverMat = new THREE.MeshStandardMaterial({
+      color: 0xdde2e6,
+      map: paverTex,
+      roughness: 0.45,
+      metalness: 0.1
+    });
 
-    // ==========================================
-    // 3. Swimming Pool & Pool Terrace
-    // ==========================================
-    // Wooden Deck around Pool
-    const deckGeom = new THREE.BoxGeometry(8.5, 0.46, 11);
-    const deckMesh = new THREE.Mesh(deckGeom, woodMat);
-    deckMesh.position.set(9.5, -0.14, 0.5);
-    deckMesh.receiveShadow = true;
-    group.add(deckMesh);
+    // Foundation & Landscape
+    const ground = new THREE.Mesh(new THREE.BoxGeometry(32, 0.4, 26), paverMat);
+    ground.position.y = -0.2;
+    ground.receiveShadow = true;
+    group.add(ground);
 
-    // Pool Basin (Hollow inside deck)
-    const poolBasin = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.7, 8.5), poolBasinMat);
+    const lawnL = new THREE.Mesh(new THREE.BoxGeometry(9, 0.45, 24), grassMat);
+    lawnL.position.set(-10.5, -0.15, 0);
+    lawnL.receiveShadow = true;
+    group.add(lawnL);
+
+    const lawnF = new THREE.Mesh(new THREE.BoxGeometry(18, 0.45, 6), grassMat);
+    lawnF.position.set(4, -0.15, 9);
+    lawnF.receiveShadow = true;
+    group.add(lawnF);
+
+    // Pool & Deck
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.46, 11), woodSlatMat);
+    deck.position.set(9.5, -0.14, 0.5);
+    deck.receiveShadow = true;
+    group.add(deck);
+
+    const poolBasin = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.7, 8.5), new THREE.MeshStandardMaterial({ color: 0x00838f }));
     poolBasin.position.set(9.5, -0.2, 0.5);
     group.add(poolBasin);
 
-    // Pool Water Surface
-    const waterGeom = new THREE.PlaneGeometry(5.6, 8.3);
-    poolWaterMesh = new THREE.Mesh(waterGeom, waterMat);
+    poolWaterMesh = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 8.3), waterMat);
     poolWaterMesh.rotation.x = -Math.PI / 2;
     poolWaterMesh.position.set(9.5, 0.1, 0.5);
     group.add(poolWaterMesh);
 
-    // Minimal Sun Loungers on Pool Deck
-    for (let s = -1; s <= 1; s += 2) {
-      const lounger = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.35, 2.2), wallWhiteMat);
-      lounger.position.set(12.5, 0.25, s * 2.2);
-      lounger.castShadow = true;
-      group.add(lounger);
-
-      // Lounger cushion pillow
-      const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.6), goldMat);
-      pillow.position.set(12.5, 0.32, s * 2.2 - 0.8);
-      group.add(pillow);
-    }
-
-    // ==========================================
-    // 4. Ground Floor Architecture
-    // ==========================================
-    // Ground Floor Main Box (Living & Dining)
-    const gFloorWidth = 10;
-    const gFloorHeight = 3.0;
-    const gFloorDepth = 9;
-
-    // Floor slab with warm interior parquet
-    const floorSlab = new THREE.Mesh(new THREE.BoxGeometry(gFloorWidth, 0.2, gFloorDepth), interiorFloorMat);
+    // Ground Floor
+    const floorSlab = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 9), woodSlatMat);
     floorSlab.position.set(0, 0.1, 0);
     floorSlab.receiveShadow = true;
     group.add(floorSlab);
 
-    // Rear & Side Solid Walls (White architectural concrete)
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(gFloorWidth, gFloorHeight, 0.35), wallWhiteMat);
-    backWall.position.set(0, gFloorHeight / 2, -gFloorDepth / 2 + 0.175);
+    const backWall = new THREE.Mesh(new THREE.BoxGeometry(10, 3.0, 0.35), wallWhiteMat);
+    backWall.position.set(0, 1.5, -4.5 + 0.175);
     backWall.castShadow = true;
     backWall.receiveShadow = true;
     group.add(backWall);
 
-    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, gFloorHeight, gFloorDepth), wallWhiteMat);
-    leftWall.position.set(-gFloorWidth / 2 + 0.175, gFloorHeight / 2, 0);
+    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 3.0, 9), wallWhiteMat);
+    leftWall.position.set(-5 + 0.175, 1.5, 0);
     leftWall.castShadow = true;
     leftWall.receiveShadow = true;
     group.add(leftWall);
 
-    // Dark Accent Feature Wall (TV / Living Room Partition)
-    const featureWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, gFloorHeight - 0.4, 4.5), wallDarkMat);
-    featureWall.position.set(1.5, (gFloorHeight - 0.4) / 2 + 0.2, -0.5);
-    group.add(featureWall);
-
-    // Front Architectural Glass Curtain Wall (Facing Pool & Garden)
-    const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(gFloorWidth - 3, gFloorHeight - 0.2, 0.1), glassMat);
-    frontGlass.position.set(1.2, gFloorHeight / 2, gFloorDepth / 2 - 0.05);
+    const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(7, 2.8, 0.1), glassMat);
+    frontGlass.position.set(1.2, 1.5, 4.45);
     group.add(frontGlass);
 
-    // Right Glass Wall facing Pool
-    const poolGlass = new THREE.Mesh(new THREE.BoxGeometry(0.1, gFloorHeight - 0.2, gFloorDepth - 2), glassMat);
-    poolGlass.position.set(gFloorWidth / 2 - 0.05, gFloorHeight / 2, 0);
+    const poolGlass = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.8, 7), glassMat);
+    poolGlass.position.set(4.95, 1.5, 0);
     group.add(poolGlass);
 
-    // Black Aluminum Glass Mullions / Grid Frames
-    for (let gx = -2.5; gx <= 3.5; gx += 2) {
-      const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.08, gFloorHeight, 0.15), frameMat);
-      mullion.position.set(gx, gFloorHeight / 2, gFloorDepth / 2);
-      group.add(mullion);
-    }
-    for (let gz = -3; gz <= 3; gz += 2) {
-      const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.15, gFloorHeight, 0.08), frameMat);
-      mullion.position.set(gFloorWidth / 2, gFloorHeight / 2, gz);
-      group.add(mullion);
-    }
+    // Door & Canopy
+    const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.5, 0.15), darkWoodMat);
+    door.position.set(-3.5, 1.25, 4.6);
+    door.castShadow = true;
+    group.add(door);
 
-    // Grand Entrance Door (Dark timber + gold vertical handle)
-    const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.7, 0.3), wallDarkMat);
-    doorFrame.position.set(-3.5, 1.35, gFloorDepth / 2);
-    group.add(doorFrame);
-
-    const doorWood = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.5, 0.15), darkWoodMat);
-    doorWood.position.set(-3.5, 1.25, gFloorDepth / 2 + 0.1);
-    group.add(doorWood);
-
-    const doorHandle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 0.08), goldMat);
-    doorHandle.position.set(-2.9, 1.25, gFloorDepth / 2 + 0.22);
-    group.add(doorHandle);
-
-    // Entrance Floating Canopy
-    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.2, 2.5), roofMat);
-    canopy.position.set(-3.5, 2.8, gFloorDepth / 2 + 1.2);
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.2, 2.5), wallCharcoalMat);
+    canopy.position.set(-3.5, 2.8, 5.7);
     canopy.castShadow = true;
     group.add(canopy);
 
-    // Interior Furniture Silhouettes (Sofa, Coffee Table, Dining)
-    const sofaMain = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.65, 1.4), wallDarkMat);
-    sofaMain.position.set(1.5, 0.5, 1.2);
-    group.add(sofaMain);
-
-    const sofaChaise = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.65, 2.0), wallDarkMat);
-    sofaChaise.position.set(3.2, 0.5, 0.9);
-    group.add(sofaChaise);
-
-    const coffeeTable = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.35, 0.9), woodMat);
-    coffeeTable.position.set(1.5, 0.35, -0.2);
-    group.add(coffeeTable);
-
-    // ==========================================
-    // 5. Second Floor Cantilever & Master Suite
-    // ==========================================
-    const sFloorWidth = 10.5;
-    const sFloorHeight = 2.8;
-    const sFloorDepth = 9.5;
-    const sElevation = gFloorHeight + 0.1; // 3.1m
-
-    // Cantilever Floor Slab (Extending forward over terrace)
-    const sFloorSlab = new THREE.Mesh(new THREE.BoxGeometry(sFloorWidth, 0.3, sFloorDepth), wallWhiteMat);
-    sFloorSlab.position.set(0.5, sElevation + 0.15, 0.6);
+    // Second Floor Cantilever & Master Suite
+    const sFloorSlab = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.3, 9.5), wallWhiteMat);
+    sFloorSlab.position.set(0.5, 3.25, 0.6);
     sFloorSlab.castShadow = true;
     sFloorSlab.receiveShadow = true;
     group.add(sFloorSlab);
 
-    // Master Bedroom Volume (Warm wood vertical slats / Dark Charcoal)
-    const masterBoxMat = isNordic ? woodMat : wallWhiteMat;
-    const masterBox = new THREE.Mesh(new THREE.BoxGeometry(sFloorWidth - 2.8, sFloorHeight, sFloorDepth - 2), masterBoxMat);
-    masterBox.position.set(-0.8, sElevation + sFloorHeight / 2 + 0.3, 0);
+    const masterBox = new THREE.Mesh(new THREE.BoxGeometry(7.5, 2.8, 7.5), woodSlatMat);
+    masterBox.position.set(-0.8, 4.75, 0);
     masterBox.castShadow = true;
     masterBox.receiveShadow = true;
     group.add(masterBox);
 
-    // Vertical Timber Slats on Accent Box (Nordic aesthetic)
-    for (let sl = -3.8; sl <= 2.2; sl += 0.45) {
-      const slat = new THREE.Mesh(new THREE.BoxGeometry(0.12, sFloorHeight, 0.12), darkWoodMat);
-      slat.position.set(sl, sElevation + sFloorHeight / 2 + 0.3, (sFloorDepth - 2) / 2 + 0.08);
-      group.add(slat);
-    }
+    // Floating Architectural Roof
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(12.5, 0.45, 11.5), wallCharcoalMat);
+    roof.position.set(0.5, 6.4, 0.6);
+    roof.castShadow = true;
+    group.add(roof);
 
-    // Master Suite Panoramic Balcony (Right side cantilever over pool)
-    const balconyWidth = 4.0;
-    const balconyDepth = 4.5;
-    const balconyX = 4.0;
-    const balconyZ = 2.0;
+    const fascia = new THREE.Mesh(new THREE.BoxGeometry(12.55, 0.08, 11.55), goldMat);
+    fascia.position.set(0.5, 6.6, 0.6);
+    group.add(fascia);
 
-    // Balcony Glass Railing
-    const railFront = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth, 1.0, 0.06), glassMat);
-    railFront.position.set(balconyX, sElevation + 0.8, balconyZ + balconyDepth / 2);
+    // Balcony Glass
+    const railFront = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.0, 0.06), glassMat);
+    railFront.position.set(4.0, 3.9, 4.25);
     group.add(railFront);
 
-    const railSide = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.0, balconyDepth), glassMat);
-    railSide.position.set(balconyX + balconyWidth / 2, sElevation + 0.8, balconyZ);
-    group.add(railSide);
-
-    // Gold Railing Handrail
-    const handrailFront = new THREE.Mesh(new THREE.BoxGeometry(balconyWidth + 0.1, 0.08, 0.12), goldMat);
-    handrailFront.position.set(balconyX, sElevation + 1.35, balconyZ + balconyDepth / 2);
-    group.add(handrailFront);
-
-    const handrailSide = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, balconyDepth + 0.1), goldMat);
-    handrailSide.position.set(balconyX + balconyWidth / 2, sElevation + 1.35, balconyZ);
-    group.add(handrailSide);
-
-    // Second Floor Sliding Glass Window to Balcony
-    const upperGlass = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.3, 3.8), glassMat);
-    upperGlass.position.set(balconyX - balconyWidth / 2 + 0.05, sElevation + 1.45, balconyZ);
-    group.add(upperGlass);
-
-    // Upper Front Bedroom Window
-    const upperFrontGlass = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.8, 0.1), glassMat);
-    upperFrontGlass.position.set(-0.5, sElevation + 1.6, (sFloorDepth - 2) / 2 + 0.1);
-    group.add(upperFrontGlass);
-
-    // ==========================================
-    // 6. Roof Structure (Nordic A-Frame vs Modern Floating Roof)
-    // ==========================================
-    const totalTopY = sElevation + sFloorHeight + 0.3;
-
-    if (isNordic) {
-      // Nordic High-Pitch Gabled Roof Prism
-      const roofLength = sFloorDepth + 1.0;
-      const roofSpan = sFloorWidth + 0.6;
-      const roofPitchH = 2.4;
-
-      const roofShape = new THREE.Shape();
-      roofShape.moveTo(-roofSpan / 2, 0);
-      roofShape.lineTo(0, roofPitchH);
-      roofShape.lineTo(roofSpan / 2, 0);
-      roofShape.closePath();
-
-      const extrudeSettings = {
-        steps: 1,
-        depth: roofLength,
-        bevelEnabled: true,
-        bevelThickness: 0.15,
-        bevelSize: 0.15,
-        bevelSegments: 2
-      };
-
-      const roofGeom = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
-      const nordicRoof = new THREE.Mesh(roofGeom, roofMat);
-      nordicRoof.position.set(0, totalTopY, -roofLength / 2);
-      nordicRoof.castShadow = true;
-      group.add(nordicRoof);
-
-      // Warm Timber Under-Eaves (Gable facade)
-      const gableFacade = new THREE.Mesh(roofGeom, woodMat);
-      gableFacade.scale.set(0.96, 0.96, 0.02);
-      gableFacade.position.set(0, totalTopY, roofLength / 2 - 0.05);
-      group.add(gableFacade);
-    } else {
-      // Modern Minimalist Floating Flat Roof with Overhangs & Wood Soffit
-      const roofSlab = new THREE.Mesh(new THREE.BoxGeometry(sFloorWidth + 2.0, 0.45, sFloorDepth + 2.0), roofMat);
-      roofSlab.position.set(0.5, totalTopY + 0.22, 0.6);
-      roofSlab.castShadow = true;
-      group.add(roofSlab);
-
-      // Warm Timber Soffit (Under-ceiling)
-      const soffit = new THREE.Mesh(new THREE.BoxGeometry(sFloorWidth + 1.8, 0.08, sFloorDepth + 1.8), woodMat);
-      soffit.position.set(0.5, totalTopY - 0.04, 0.6);
-      group.add(soffit);
-
-      // Gold Fascia Trim
-      const fasciaTrim = new THREE.Mesh(new THREE.BoxGeometry(sFloorWidth + 2.05, 0.1, sFloorDepth + 2.05), goldMat);
-      fasciaTrim.position.set(0.5, totalTopY + 0.4, 0.6);
-      group.add(fasciaTrim);
-    }
-
-    // ==========================================
-    // 7. Modern Carport / Pergola (Left Side)
-    // ==========================================
-    const carportX = -10.5;
-    const carportZ = 3.5;
-    const carportW = 5.5;
-    const carportD = 6.0;
-    const carportH = 2.8;
-
-    // Steel Pergola Posts
-    for (let px of [-carportW / 2 + 0.2, carportW / 2 - 0.2]) {
-      for (let pz of [-carportD / 2 + 0.2, carportD / 2 - 0.2]) {
-        const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, carportH, 0.18), frameMat);
-        post.position.set(carportX + px, carportH / 2, carportZ + pz);
-        post.castShadow = true;
-        group.add(post);
-      }
-    }
-
-    // Roof Louvers / Horizontal Beams
-    for (let b = -carportD / 2; b <= carportD / 2; b += 0.8) {
-      const louver = new THREE.Mesh(new THREE.BoxGeometry(carportW, 0.12, 0.25), woodMat);
-      louver.position.set(carportX, carportH + 0.1, carportZ + b);
-      louver.castShadow = true;
-      group.add(louver);
-    }
-
-    // Perimeter Frame
-    const carportRoofFrame = new THREE.Mesh(new THREE.BoxGeometry(carportW + 0.2, 0.2, carportD + 0.2), frameMat);
-    carportRoofFrame.position.set(carportX, carportH + 0.25, carportZ);
-    group.add(carportRoofFrame);
-
-    // ==========================================
-    // 8. Architectural Landscaping (Trees & Planters)
-    // ==========================================
-    // Modern Concrete Planter Boxes
-    const planter1 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.7, 1.0), wallDarkMat);
-    planter1.position.set(-6.5, 0.35, 7.5);
-    group.add(planter1);
-
-    const hedge1 = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.9, 0.8), grassMat);
-    hedge1.position.set(-6.5, 0.9, 7.5);
-    group.add(hedge1);
-
-    // Modern Minimalist Sculptural Tree (Nordic / Tropical Silhouette)
-    function createTree(tx, tz, scale = 1) {
-      const treeGroup = new THREE.Group();
-      // Trunk
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * scale, 0.18 * scale, 3.2 * scale, 8), darkWoodMat);
-      trunk.position.y = 1.6 * scale;
-      trunk.castShadow = true;
-      treeGroup.add(trunk);
-
-      // Foliage layers (Clean conical / rounded architectural foliage)
-      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x1e5631, roughness: 0.8 });
-      for (let l = 0; l < 3; l++) {
-        const foliage = new THREE.Mesh(
-          new THREE.ConeGeometry((1.4 - l * 0.3) * scale, (1.6 - l * 0.2) * scale, 7),
-          foliageMat
-        );
-        foliage.position.y = (2.2 + l * 0.9) * scale;
-        foliage.castShadow = true;
-        treeGroup.add(foliage);
-      }
-      treeGroup.position.set(tx, 0, tz);
-      return treeGroup;
-    }
-
-    group.add(createTree(-11.5, -7.5, 1.1));
-    group.add(createTree(-12.5, -4.5, 0.85));
-    group.add(createTree(-11.0, 9.5, 0.95));
-
-    // RM HOME 3D Acrylic Logo Plaque on Entrance Wall
-    const plaque = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 0.08), wallDarkMat);
-    plaque.position.set(-3.5, 3.4, gFloorDepth / 2 + 0.15);
-    group.add(plaque);
-
-    const logoTrim = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.68, 0.04), goldMat);
-    logoTrim.position.set(-3.5, 3.4, gFloorDepth / 2 + 0.12);
-    group.add(logoTrim);
+    const handrail = new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.08, 0.12), goldMat);
+    handrail.position.set(4.0, 4.45, 4.25);
+    group.add(handrail);
 
     return group;
   }
 
   // ==========================================
-  // Lighting & Night Mode Controller
+  // 4. Lighting & Night Mode
   // ==========================================
   function setupLighting(scene) {
-    // 1. Sunlight (DirectionalLight with Soft PCF Shadows)
-    sunLight = new THREE.DirectionalLight(0xfff5e6, 1.4);
-    sunLight.position.set(22, 30, 20);
+    sunLight = new THREE.DirectionalLight(0xfff8eb, 1.6);
+    sunLight.position.set(24, 32, 22);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.camera.near = 5;
-    sunLight.shadow.camera.far = 70;
-    const d = 22;
+    sunLight.shadow.camera.far = 80;
+    const d = 20;
     sunLight.shadow.camera.left = -d;
     sunLight.shadow.camera.right = d;
     sunLight.shadow.camera.top = d;
     sunLight.shadow.camera.bottom = -d;
-    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.bias = -0.0003;
     scene.add(sunLight);
 
-    // 2. Hemispheric Sky Light
-    hemiLight = new THREE.HemisphereLight(0xddeeff, 0x1b4d3e, 0.65);
+    hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x1b4d3e, 0.7);
     hemiLight.position.set(0, 40, 0);
     scene.add(hemiLight);
 
-    // 3. Soft Ambient Fill
-    ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambientLight);
 
-    // 4. Warm Interior Golden Glow Lights (Visible at night & daytime)
     interiorLights = [];
-    const lightGFloor = new THREE.PointLight(0xffb347, 1.2, 12, 1.5);
-    lightGFloor.position.set(0, 1.8, 0);
-    scene.add(lightGFloor);
-    interiorLights.push(lightGFloor);
+    const lightG = new THREE.PointLight(0xffb84d, 1.5, 14, 1.5);
+    lightG.position.set(0, 2.0, 0);
+    scene.add(lightG);
+    interiorLights.push(lightG);
 
-    const lightMaster = new THREE.PointLight(0xffcc66, 1.0, 10, 1.5);
-    lightMaster.position.set(-0.5, 4.5, 0.5);
-    scene.add(lightMaster);
-    interiorLights.push(lightMaster);
+    const lightM = new THREE.PointLight(0xffcc66, 1.2, 12, 1.5);
+    lightM.position.set(-0.5, 4.5, 0.5);
+    scene.add(lightM);
+    interiorLights.push(lightM);
 
-    const lightEntrance = new THREE.PointLight(0xffd700, 0.8, 6, 2);
-    lightEntrance.position.set(-3.5, 2.6, 5.0);
-    scene.add(lightEntrance);
-    interiorLights.push(lightEntrance);
-
-    // 5. Swimming Pool Underwater Glow Lights (Cyan / Aqua)
     poolLights = [];
-    const poolLight1 = new THREE.PointLight(0x00e5ff, 1.2, 8, 1.8);
-    poolLight1.position.set(9.5, -0.1, -1.5);
-    scene.add(poolLight1);
-    poolLights.push(poolLight1);
-
-    const poolLight2 = new THREE.PointLight(0x00e5ff, 1.2, 8, 1.8);
-    poolLight2.position.set(9.5, -0.1, 2.5);
-    scene.add(poolLight2);
-    poolLights.push(poolLight2);
+    const poolL = new THREE.PointLight(0x00e5ff, 1.5, 9, 1.8);
+    poolL.position.set(9.5, 0.0, 0.5);
+    scene.add(poolL);
+    poolLights.push(poolL);
   }
 
   function applyDayNightMode(night) {
     isNightMode = night;
-    const btn = document.getElementById('btn3DDayNight');
+    const btn = document.getElementById('btn3DFullDayNight');
 
     if (night) {
-      // Night / Dusk Architecture Look
-      scene.background = new THREE.Color(0x061118);
-      scene.fog = new THREE.FogExp2(0x061118, 0.015);
+      scene.background = new THREE.Color(0x040d12);
+      scene.fog = new THREE.FogExp2(0x040d12, 0.016);
 
       sunLight.intensity = 0.2;
-      sunLight.color.setHex(0x446688); // Cool moonlight
+      sunLight.color.setHex(0x335577);
 
       hemiLight.intensity = 0.2;
-      hemiLight.color.setHex(0x223355);
-      hemiLight.groundColor.setHex(0x0a1a12);
+      hemiLight.color.setHex(0x1a2838);
 
       ambientLight.intensity = 0.15;
-      ambientLight.color.setHex(0x223344);
+      ambientLight.color.setHex(0x1a2838);
 
-      interiorLights.forEach(l => {
-        l.intensity = 2.5;
-        l.distance = 15;
-      });
-
-      poolLights.forEach(l => {
-        l.intensity = 3.0;
-        l.distance = 10;
-      });
+      interiorLights.forEach(l => { l.intensity = 3.0; l.distance = 18; });
+      poolLights.forEach(l => { l.intensity = 3.5; l.distance = 12; });
 
       if (btn) {
         btn.innerHTML = '☀️ แสงแดดกลางวัน';
         btn.classList.add('active');
       }
     } else {
-      // Crisp Daylight Luxury Architecture
-      scene.background = new THREE.Color(0x09261a); // Rich Emerald Dark Backdrop
-      scene.fog = new THREE.FogExp2(0x09261a, 0.012);
+      scene.background = new THREE.Color(0x072217);
+      scene.fog = new THREE.FogExp2(0x072217, 0.012);
 
-      sunLight.intensity = 1.4;
-      sunLight.color.setHex(0xfff5e6);
+      sunLight.intensity = 1.6;
+      sunLight.color.setHex(0xfff8eb);
 
-      hemiLight.intensity = 0.65;
-      hemiLight.color.setHex(0xddeeff);
-      hemiLight.groundColor.setHex(0x1b4d3e);
+      hemiLight.intensity = 0.7;
+      hemiLight.color.setHex(0xe0f2fe);
 
-      ambientLight.intensity = 0.35;
+      ambientLight.intensity = 0.45;
       ambientLight.color.setHex(0xffffff);
 
-      interiorLights.forEach(l => {
-        l.intensity = 0.9;
-        l.distance = 10;
-      });
-
-      poolLights.forEach(l => {
-        l.intensity = 1.2;
-        l.distance = 7;
-      });
+      interiorLights.forEach(l => { l.intensity = 1.0; l.distance = 12; });
+      poolLights.forEach(l => { l.intensity = 1.2; l.distance = 8; });
 
       if (btn) {
         btn.innerHTML = '🌙 แสงไฟกลางคืน';
@@ -606,61 +464,71 @@
   }
 
   // ==========================================
-  // Camera Tween Helper (Smooth View Angle Shifts)
+  // 5. Camera Animation Helper
   // ==========================================
-  function smoothMoveCamera(targetPos, targetLookAt = new THREE.Vector3(0, 2.5, 0), duration = 900) {
+  function smoothMoveCamera(targetPos, targetLookAt = new THREE.Vector3(0, 2.5, 0), duration = 850) {
     if (!camera || !controls) return;
-
     const startPos = camera.position.clone();
     const startTarget = controls.target.clone();
     const startTime = performance.now();
 
-    function easeInOutCubic(t) {
+    function ease(t) {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    cameraTween = function (now) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeInOutCubic(progress);
-
-      camera.position.lerpVectors(startPos, targetPos, eased);
-      controls.target.lerpVectors(startTarget, targetLookAt, eased);
+    function tween(now) {
+      const p = Math.min((now - startTime) / duration, 1);
+      const e = ease(p);
+      camera.position.lerpVectors(startPos, targetPos, e);
+      controls.target.lerpVectors(startTarget, targetLookAt, e);
       controls.update();
-
-      if (progress < 1) {
-        requestAnimationFrame(cameraTween);
-      } else {
-        cameraTween = null;
-      }
-    };
-
-    requestAnimationFrame(cameraTween);
+      if (p < 1) requestAnimationFrame(tween);
+    }
+    requestAnimationFrame(tween);
   }
 
   // ==========================================
-  // Public Viewer Initialization
+  // 6. Launch 3D Centered Modal & Load Model
   // ==========================================
-  function init3DHouseViewer(mountElement, houseData) {
-    if (!mountElement) return;
+  function launch3DHouseModal(houseData) {
+    const modal = document.getElementById('house3DFullscreenModal');
+    const mount = document.getElementById('webglFullscreenCanvasMount');
+    const titleEl = document.getElementById('modal3DHouseTitle');
+    const loadingEl = document.getElementById('modal3DLoading');
+    const loadingText = document.getElementById('modal3DLoadingText');
 
-    // Destroy existing instance cleanly if already mounted
+    if (!modal || !mount) return;
+
+    if (titleEl && houseData) {
+      titleEl.textContent = `แบบบ้าน 3 มิติ: ${houseData.title || 'นอร์ดิก พรีเมียม วิลล่า'}`;
+    }
+
+    // Show Loading Ring
+    if (loadingEl) {
+      loadingEl.classList.remove('hidden');
+      if (loadingText) loadingText.textContent = 'กำลังโหลดโมเดลสถาปัตยกรรม 3D ความละเอียดสูง... 0%';
+    }
+
+    // Open Modal with Centered Pop Animation
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Initialize WebGL Scene
     destroy3DHouseViewer();
-    currentHouseData = houseData;
 
-    const width = mountElement.clientWidth || 800;
-    const height = mountElement.clientHeight || 460;
+    const width = mount.clientWidth || window.innerWidth * 0.92;
+    const height = mount.clientHeight || window.innerHeight * 0.85;
 
     // 1. Scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x09261a);
-    scene.fog = new THREE.FogExp2(0x09261a, 0.012);
+    scene.background = new THREE.Color(0x072217);
+    scene.fog = new THREE.FogExp2(0x072217, 0.012);
 
     // 2. Camera
-    camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+    camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     camera.position.set(16, 11, 20);
 
-    // 3. Renderer with High-Performance PCF Soft Shadows
+    // 3. Renderer with ACES Filmic Tone Mapping (Photorealistic color grading)
     renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -671,70 +539,165 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.15;
     renderer.outputEncoding = THREE.sRGBEncoding;
 
-    mountElement.innerHTML = '';
-    mountElement.appendChild(renderer.domElement);
+    mount.innerHTML = '';
+    mount.appendChild(renderer.domElement);
 
-    // 4. OrbitControls
+    // 4. Environment Reflection Map (PMREM)
+    scene.environment = createArchitecturalEnvMap(renderer);
+
+    // 5. OrbitControls
     if (typeof THREE.OrbitControls === 'function') {
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.target.set(0, 2.5, 0);
-      controls.minDistance = 8;
-      controls.maxDistance = 45;
-      controls.maxPolarAngle = Math.PI / 2 - 0.03; // Prevent dipping beneath foundation
+      controls.minDistance = 7;
+      controls.maxDistance = 50;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02;
       controls.autoRotate = isAutoRotate;
-      controls.autoRotateSpeed = 0.6; // Gentle, elegant rotation speed
+      controls.autoRotateSpeed = 0.65;
     }
 
-    // 5. Lighting
+    // 6. Lighting
     setupLighting(scene);
 
-    // 6. Build Procedural House Model
-    houseGroup = create3DHouseModel(houseData);
-    scene.add(houseGroup);
+    // 7. Load GLTF / GLB Real 3D Model
+    let modelLoaded = false;
+    const modelPath = 'assets/models/luxury_villa.glb';
 
-    // 7. Initial Lighting State
-    applyDayNightMode(false);
+    function finalizeModel(group) {
+      if (modelLoaded) return;
+      modelLoaded = true;
+
+      currentModelGroup = group;
+      scene.add(currentModelGroup);
+
+      // Hide Loading Spinner
+      if (loadingEl) {
+        loadingEl.classList.add('hidden');
+      }
+
+      // Smooth Intro Camera Glide
+      smoothMoveCamera(new THREE.Vector3(14, 9, 18), new THREE.Vector3(0, 2.0, 0), 1200);
+    }
+
+    if (typeof THREE.GLTFLoader === 'function') {
+      const loader = new THREE.GLTFLoader();
+      loader.load(
+        modelPath,
+        (gltf) => {
+          const root = gltf.scene;
+          // Traverse and upgrade materials for photorealism
+          root.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              if (child.material) {
+                child.material.envMapIntensity = 1.4;
+                const matName = (child.material.name || '').toLowerCase();
+                if (matName.includes('glass')) {
+                  child.material.transparent = true;
+                  child.material.opacity = 0.38;
+                  child.material.roughness = 0.04;
+                  child.material.metalness = 0.12;
+                  child.material.envMapIntensity = 2.4;
+                } else if (matName.includes('metal') || matName.includes('aluminum')) {
+                  child.material.metalness = 0.85;
+                  child.material.roughness = 0.22;
+                  child.material.envMapIntensity = 2.0;
+                }
+              }
+            }
+          });
+
+          // Center and scale to majestic dimensions
+          const box = new THREE.Box3().setFromObject(root);
+          const size = box.getSize(new THREE.Vector3());
+          const center = box.getCenter(new THREE.Vector3());
+
+          root.position.x -= center.x;
+          root.position.y -= box.min.y; // Sit flat on ground
+          root.position.z -= center.z;
+
+          const maxDim = Math.max(size.x, size.y, size.z);
+          if (maxDim > 0) {
+            const scaleFactor = 20 / maxDim;
+            root.scale.setScalar(scaleFactor);
+          }
+
+          // Add elegant landscaped podium beneath CAD model
+          const groundPlatform = new THREE.Mesh(
+            new THREE.BoxGeometry(30, 0.3, 26),
+            new THREE.MeshStandardMaterial({
+              color: 0xdce2e6,
+              roughness: 0.45,
+              metalness: 0.1,
+              envMapIntensity: 1.0
+            })
+          );
+          groundPlatform.position.y = -0.15;
+          groundPlatform.receiveShadow = true;
+
+          const combinedGroup = new THREE.Group();
+          combinedGroup.add(groundPlatform);
+          combinedGroup.add(root);
+
+          finalizeModel(combinedGroup);
+        },
+        (progress) => {
+          if (progress.lengthComputable && loadingText) {
+            const pct = Math.round((progress.loaded / progress.total) * 100);
+            loadingText.textContent = `กำลังโหลดแบบจำลอง 3 มิติ ความคมชัดสูง... ${pct}%`;
+          }
+        },
+        (err) => {
+          console.warn('[3D Viewer] GLB fetch failed, switching to Procedural PBR:', err);
+          const fallback = createHighDetailProceduralVilla(houseData);
+          finalizeModel(fallback);
+        }
+      );
+
+      // Safety timeout: if GLB takes more than 4s on slow connections, load procedural immediately
+      setTimeout(() => {
+        if (!modelLoaded) {
+          const fallback = createHighDetailProceduralVilla(houseData);
+          finalizeModel(fallback);
+        }
+      }, 3500);
+    } else {
+      const fallback = createHighDetailProceduralVilla(houseData);
+      finalizeModel(fallback);
+    }
 
     // 8. Animation Loop
     let clock = new THREE.Clock();
-
     function animate() {
       animFrameId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
       const time = clock.getElapsedTime();
 
-      // Subtle water ripple animation
       if (poolWaterMesh) {
         poolWaterMesh.position.y = 0.1 + Math.sin(time * 2.2) * 0.02;
       }
 
-      if (controls) {
-        controls.update();
-      }
-
+      if (controls) controls.update();
       renderer.render(scene, camera);
     }
-
     animate();
     isInitialized = true;
 
-    // 9. Resize Handling
+    // 9. Resize & Toolbar Buttons
     window.addEventListener('resize', onWindowResize);
-
-    // 10. Wire UI Control Buttons
-    wireControlButtons();
+    wireFullscreenToolbar();
   }
 
   function onWindowResize() {
-    const mount = document.getElementById('webgl3DCanvasMount');
+    const mount = document.getElementById('webglFullscreenCanvasMount');
     if (!mount || !renderer || !camera) return;
     const width = mount.clientWidth;
-    const height = mount.clientHeight || 460;
+    const height = mount.clientHeight;
     if (width === 0 || height === 0) return;
 
     camera.aspect = width / height;
@@ -742,13 +705,24 @@
     renderer.setSize(width, height);
   }
 
-  function wireControlButtons() {
-    const btnAutoRotate = document.getElementById('btn3DAutoRotate');
-    const btnDayNight = document.getElementById('btn3DDayNight');
-    const btnViewFront = document.getElementById('btn3DViewFront');
-    const btnViewTop = document.getElementById('btn3DViewTop');
-    const btnViewPool = document.getElementById('btn3DViewPool');
-    const btnReset = document.getElementById('btn3DReset');
+  function wireFullscreenToolbar() {
+    const btnAutoRotate = document.getElementById('btn3DFullAutoRotate');
+    const btnDayNight = document.getElementById('btn3DFullDayNight');
+    const btnViewFront = document.getElementById('btn3DFullViewFront');
+    const btnViewTop = document.getElementById('btn3DFullViewTop');
+    const btnViewPool = document.getElementById('btn3DFullViewPool');
+    const btnReset = document.getElementById('btn3DFullReset');
+    const btnClose = document.getElementById('btnClose3DFullscreen');
+    const modal = document.getElementById('house3DFullscreenModal');
+
+    function pauseAutoRotate() {
+      isAutoRotate = false;
+      if (controls) controls.autoRotate = false;
+      if (btnAutoRotate) {
+        btnAutoRotate.classList.remove('active');
+        btnAutoRotate.innerHTML = '⏸️ หมุนอัตโนมัติ: ปิด';
+      }
+    }
 
     if (btnAutoRotate) {
       btnAutoRotate.onclick = () => {
@@ -765,52 +739,56 @@
     }
 
     if (btnDayNight) {
-      btnDayNight.onclick = () => {
-        applyDayNightMode(!isNightMode);
-      };
+      btnDayNight.onclick = () => applyDayNightMode(!isNightMode);
     }
 
     if (btnViewFront) {
       btnViewFront.onclick = () => {
-        if (controls) controls.autoRotate = false;
-        if (btnAutoRotate) {
-          isAutoRotate = false;
-          btnAutoRotate.classList.remove('active');
-          btnAutoRotate.innerHTML = '⏸️ หมุนอัตโนมัติ: ปิด';
-        }
-        smoothMoveCamera(new THREE.Vector3(0, 4.5, 22), new THREE.Vector3(0, 2.5, 0));
+        pauseAutoRotate();
+        smoothMoveCamera(new THREE.Vector3(0, 4.5, 22), new THREE.Vector3(0, 2.0, 0));
       };
     }
 
     if (btnViewTop) {
       btnViewTop.onclick = () => {
-        if (controls) controls.autoRotate = false;
-        if (btnAutoRotate) {
-          isAutoRotate = false;
-          btnAutoRotate.classList.remove('active');
-          btnAutoRotate.innerHTML = '⏸️ หมุนอัตโนมัติ: ปิด';
-        }
+        pauseAutoRotate();
         smoothMoveCamera(new THREE.Vector3(0.5, 26, 16), new THREE.Vector3(0, 1.5, 0));
       };
     }
 
     if (btnViewPool) {
       btnViewPool.onclick = () => {
-        if (controls) controls.autoRotate = false;
-        if (btnAutoRotate) {
-          isAutoRotate = false;
-          btnAutoRotate.classList.remove('active');
-          btnAutoRotate.innerHTML = '⏸️ หมุนอัตโนมัติ: ปิด';
-        }
-        smoothMoveCamera(new THREE.Vector3(19, 5.5, 8), new THREE.Vector3(5, 2.0, 0));
+        pauseAutoRotate();
+        smoothMoveCamera(new THREE.Vector3(18, 5.0, 8), new THREE.Vector3(4, 2.0, 0));
       };
     }
 
     if (btnReset) {
       btnReset.onclick = () => {
-        smoothMoveCamera(new THREE.Vector3(16, 11, 20), new THREE.Vector3(0, 2.5, 0));
+        smoothMoveCamera(new THREE.Vector3(14, 9, 18), new THREE.Vector3(0, 2.0, 0));
       };
     }
+
+    function close3DModal() {
+      if (modal) modal.classList.remove('open');
+      document.body.style.overflow = '';
+      destroy3DHouseViewer();
+    }
+
+    if (btnClose) btnClose.onclick = close3DModal;
+    if (modal) {
+      modal.onclick = (e) => {
+        if (e.target === modal) close3DModal();
+      };
+    }
+
+    // ESC Key to close
+    window.addEventListener('keydown', function escHandler(e) {
+      if (e.key === 'Escape' && modal && modal.classList.contains('open')) {
+        close3DModal();
+        window.removeEventListener('keydown', escHandler);
+      }
+    });
   }
 
   function destroy3DHouseViewer() {
@@ -827,7 +805,7 @@
     }
 
     if (scene) {
-      scene.traverse(obj => {
+      scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
           if (Array.isArray(obj.material)) {
@@ -851,9 +829,9 @@
     isInitialized = false;
   }
 
-  // Export to Global Scope
+  // Global Exports
   window.RMHome3D = {
-    init: init3DHouseViewer,
+    openModal: launch3DHouseModal,
     destroy: destroy3DHouseViewer,
     resize: onWindowResize,
     setDayNight: applyDayNightMode
