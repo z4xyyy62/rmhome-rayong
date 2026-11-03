@@ -2321,6 +2321,12 @@ function renderSiteInfo() {
       const el = document.getElementById('siteHoursText');
       if (el) el.textContent = info.hours;
     }
+    if (info.address) {
+      const elMain = document.getElementById('siteAddressMain');
+      if (elMain) elMain.textContent = info.address;
+      const elFooter = document.getElementById('siteAddressFooter');
+      if (elFooter) elFooter.textContent = `📍 ${info.address}`;
+    }
     if (info.navModelsLabel) {
       const el = document.getElementById('navLinkModels');
       if (el) el.textContent = info.navModelsLabel;
