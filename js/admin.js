@@ -1,0 +1,2587 @@
+/**
+ * RM Home Admin Dashboard & Multi-Admin Auth Logic
+ * Supports Master Admin (z4xy123) and dynamically adding more admin accounts
+ * Fully deploy-ready: Cleans old dummy data, waits for live website reports
+ */
+
+// Master Admin initial account (ไม่แสดงข้อมูลนี้บนหน้าจอทั่วไป)
+const INITIAL_ADMINS = [
+  {
+    username: 'z4xy123',
+    password: '321z4xy',
+    role: 'ผู้ดูแลระบบ',
+    isMaster: true,
+    createdAt: '2026-11-02'
+  }
+];
+
+const DEFAULT_LEADS = [];
+
+let currentFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', () => {
+  purgeLegacyDummyData();
+  initAuth();
+  initDashboard();
+});
+
+/* ---------------------------------------------------------
+   0. Purge Legacy Dummy Data (ลบข้อมูลเก่าและข้อมูลตัวอย่างออก)
+   --------------------------------------------------------- */
+function purgeLegacyDummyData() {
+  try {
+    const isCleaned = localStorage.getItem('rm_deploy_clean_v2');
+    if (!isCleaned) {
+      // First clean run: reset leads and demo counters cleanly
+      localStorage.removeItem('rm_leads');
+      localStorage.setItem('rm_page_views', '0');
+      localStorage.setItem('rm_sessions', '0');
+      localStorage.setItem('rm_deploy_clean_v2', 'true');
+    } else {
+      // Remove any leftover test items with QA/dummy names or dummy phone numbers
+      const raw = localStorage.getItem('rm_leads');
+      if (raw) {
+        let leads = JSON.parse(raw);
+        if (Array.isArray(leads)) {
+          const filtered = leads.filter(l => {
+            const name = (l.name || '').toLowerCase();
+            const phone = (l.phone || '');
+            return !(name.includes('qa') || name === 'test' || phone === '0899999999' || phone === '0999999999');
+          });
+          if (filtered.length !== leads.length) {
+            localStorage.setItem('rm_leads', JSON.stringify(filtered));
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error purging legacy data:', e);
+  }
+}
+
+/* ---------------------------------------------------------
+   1. Multi-Admin Authentication & Account Management
+   --------------------------------------------------------- */
+function getAdminUsers() {
+  try {
+    const raw = localStorage.getItem('rm_admin_users');
+    if (!raw) {
+      localStorage.setItem('rm_admin_users', JSON.stringify(INITIAL_ADMINS));
+      return INITIAL_ADMINS;
+    }
+    const parsed = JSON.parse(raw);
+    let hasMaster = false;
+    parsed.forEach(u => {
+      // Auto-sanitize existing localStorage items
+      if (u.username.toLowerCase() === 'z4xy123' || u.isMaster) {
+        hasMaster = true;
+        u.role = 'ผู้ดูแลระบบ';
+        u.isMaster = true;
+      }
+    });
+    if (!hasMaster) {
+      parsed.unshift(INITIAL_ADMINS[0]);
+    }
+    localStorage.setItem('rm_admin_users', JSON.stringify(parsed));
+    return parsed;
+  } catch (e) {
+    return INITIAL_ADMINS;
+  }
+}
+
+function saveAdminUsers(users) {
+  try {
+    localStorage.setItem('rm_admin_users', JSON.stringify(users));
+  } catch (e) {
+    console.error('Failed to save admin users:', e);
+  }
+}
+
+function getActiveSession() {
+  try {
+    const raw = localStorage.getItem('rm_admin_session') || sessionStorage.getItem('rm_admin_session');
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    if (user && (user.username.toLowerCase() === 'z4xy123' || user.isMaster)) {
+      user.role = 'ผู้ดูแลระบบ';
+    }
+    return user;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setActiveSession(user) {
+  try {
+    const safeUser = { ...user, role: user.isMaster ? 'ผู้ดูแลระบบ' : (user.role || 'ผู้ดูแลระบบ') };
+    const str = JSON.stringify(safeUser);
+    localStorage.setItem('rm_admin_session', str);
+    sessionStorage.setItem('rm_admin_session', str);
+  } catch (e) {}
+}
+
+function clearActiveSession() {
+  try {
+    localStorage.removeItem('rm_admin_session');
+    sessionStorage.removeItem('rm_admin_session');
+  } catch (e) {}
+}
+
+function initAuth() {
+  const loginScreen = document.getElementById('adminLoginScreen');
+  const loginForm = document.getElementById('loginForm');
+  const usernameInput = document.getElementById('loginUsername');
+  const passwordInput = document.getElementById('loginPassword');
+  const errorMsg = document.getElementById('loginErrorMsg');
+  const togglePwBtn = document.getElementById('togglePasswordBtn');
+  const btnLogout = document.getElementById('btnLogout');
+
+  // Toggle Password visibility
+  if (togglePwBtn && passwordInput) {
+    togglePwBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      togglePwBtn.textContent = isPassword ? '🙈 ซ่อน' : '👁️ ดู';
+    });
+  }
+
+  // Check current session
+  const currentSession = getActiveSession();
+  if (currentSession) {
+    if (loginScreen) {
+      loginScreen.classList.add('hidden');
+      loginScreen.style.display = 'none';
+    }
+    updateUserInterface(currentSession);
+  } else {
+    if (loginScreen) {
+      loginScreen.classList.remove('hidden');
+      loginScreen.style.display = 'flex';
+    }
+  }
+
+  function doLogin() {
+    const username = (usernameInput ? usernameInput.value : '').trim();
+    const password = (passwordInput ? passwordInput.value : '').trim();
+
+    if (!username || !password) {
+      if (errorMsg) {
+        errorMsg.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่านให้ครบถ้วน';
+        errorMsg.classList.add('show');
+      }
+      return;
+    }
+
+    const users = getAdminUsers();
+    // Direct match for master credentials or registered admin
+    const isMasterMatch = (username.toLowerCase() === 'z4xy123' && password === '321z4xy');
+    const matchedUser = isMasterMatch
+      ? (users.find(u => u.username.toLowerCase() === 'z4xy123') || INITIAL_ADMINS[0])
+      : users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+
+    if (matchedUser) {
+      if (errorMsg) errorMsg.classList.remove('show');
+      setActiveSession(matchedUser);
+      updateUserInterface(matchedUser);
+
+      // Instant & reliable transition to dashboard
+      if (loginScreen) {
+        loginScreen.classList.add('hidden');
+        loginScreen.style.display = 'none';
+      }
+
+      // Refresh metrics and leads on dashboard
+      renderMetrics();
+      renderLeadsList();
+    } else {
+      if (errorMsg) {
+        errorMsg.textContent = '❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง';
+        errorMsg.classList.add('show');
+      }
+      if (passwordInput) {
+        passwordInput.focus();
+        passwordInput.select();
+      }
+    }
+  }
+
+  // Handle Login submission
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      doLogin();
+    });
+  }
+
+  const submitBtn = document.getElementById('btnLoginSubmit');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', (e) => {
+      if (e.target.type !== 'submit') {
+        e.preventDefault();
+        doLogin();
+      }
+    });
+  }
+
+  // Handle Logout
+  if (btnLogout) {
+    btnLogout.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('คุณต้องการออกจากระบบผู้ดูแลใช่หรือไม่?')) {
+        clearActiveSession();
+        if (passwordInput) passwordInput.value = '';
+        if (loginScreen) {
+          loginScreen.classList.remove('hidden');
+          loginScreen.style.display = 'flex';
+        }
+      }
+    });
+  }
+
+  initUsersManagement();
+}
+
+function updateUserInterface(user) {
+  const greetingEl = document.getElementById('adminUserGreeting');
+  const sidebarEmailEl = document.getElementById('sidebarUserEmail');
+
+  const roleText = user.role || 'ผู้ดูแลระบบ';
+  if (greetingEl) {
+    greetingEl.textContent = `สวัสดี, ${user.username} (${roleText})`;
+  }
+  if (sidebarEmailEl) {
+    sidebarEmailEl.textContent = `${user.username} • ${roleText}`;
+    sidebarEmailEl.title = `${user.username} (${roleText})`;
+  }
+}
+
+/* ---------------------------------------------------------
+   2. Admin Users Management Modal (+เพิ่มรหัสแอดมินได้เรื่อยๆ)
+   --------------------------------------------------------- */
+function initUsersManagement() {
+  const btnOpenUsers = document.getElementById('btnManageUsers');
+  const navUsers = document.getElementById('navUsers');
+  const modalUsers = document.getElementById('adminUsersModal');
+  const btnCloseUsers = document.getElementById('modalUsersCloseBtn');
+  const addUserForm = document.getElementById('addNewAdminForm');
+
+  function openModal() {
+    switchAdminTab('users');
+  }
+
+  if (btnOpenUsers) btnOpenUsers.addEventListener('click', openModal);
+  if (navUsers) {
+    navUsers.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchAdminTab('users');
+    });
+  }
+
+  if (btnCloseUsers && modalUsers) {
+    btnCloseUsers.addEventListener('click', () => modalUsers.classList.remove('open'));
+    modalUsers.addEventListener('click', (e) => {
+      if (e.target === modalUsers) modalUsers.classList.remove('open');
+    });
+  }
+
+  // Handle Adding New Admin Account
+  if (addUserForm) {
+    addUserForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newUsername = document.getElementById('newAdminUsername').value.trim();
+      const newPassword = document.getElementById('newAdminPassword').value.trim();
+      const newRole = document.getElementById('newAdminRole').value.trim() || 'แอดมินทั่วไป';
+
+      if (!newUsername || !newPassword) {
+        alert('กรุณากรอกชื่อบัญชีและรหัสผ่านให้ครบถ้วน');
+        return;
+      }
+
+      const users = getAdminUsers();
+      if (users.some(u => u.username.toLowerCase() === newUsername.toLowerCase())) {
+        alert(`ชื่อผู้ใช้ "${newUsername}" มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น`);
+        return;
+      }
+
+      users.push({
+        username: newUsername,
+        password: newPassword,
+        role: newRole,
+        isMaster: false,
+        createdAt: new Date().toLocaleDateString('th-TH')
+      });
+
+      saveAdminUsers(users);
+      addUserForm.reset();
+      renderAdminUsersList();
+      alert(`✅ เพิ่มบัญชีแอดมิน "${newUsername}" เรียบร้อยแล้ว! สามารถใช้ล็อกอินได้ทันที`);
+    });
+  }
+}
+
+function renderAdminUsersList() {
+  const tbody = document.getElementById('adminUsersTableBody');
+  if (!tbody) return;
+
+  const users = getAdminUsers();
+  tbody.innerHTML = '';
+
+  users.forEach((user, idx) => {
+    const tr = document.createElement('tr');
+
+    const roleBadge = user.isMaster
+      ? `<span class="user-role-badge super">ผู้ดูแลระบบ</span>`
+      : `<span class="user-role-badge normal">👤 ${escapeHtml(user.role || 'แอดมินทั่วไป')}</span>`;
+
+    const actionHtml = user.isMaster
+      ? `<span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">🔒 บัญชีหลัก</span>`
+      : `<button class="btn-delete-user" data-username="${escapeHtml(user.username)}">🗑️ ลบ</button>`;
+
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(user.username)}</strong></td>
+      <td>
+        <span class="pw-masked" data-pw="${escapeHtml(user.password)}">••••••••</span>
+        <button class="btn-show-single-pw" style="background:none; border:none; color:#64748b; font-size:0.75rem; cursor:pointer; margin-left:0.35rem;" title="แสดงรหัสผ่าน">👁️</button>
+      </td>
+      <td>${roleBadge}</td>
+      <td>${actionHtml}</td>
+    `;
+
+    // Toggle reveal password
+    const btnToggle = tr.querySelector('.btn-show-single-pw');
+    const maskedSpan = tr.querySelector('.pw-masked');
+    if (btnToggle && maskedSpan) {
+      btnToggle.onclick = () => {
+        if (maskedSpan.textContent === '••••••••') {
+          maskedSpan.textContent = maskedSpan.getAttribute('data-pw');
+          btnToggle.textContent = '🙈';
+        } else {
+          maskedSpan.textContent = '••••••••';
+          btnToggle.textContent = '👁️';
+        }
+      };
+    }
+
+    // Delete user button
+    const btnDelete = tr.querySelector('.btn-delete-user');
+    if (btnDelete) {
+      btnDelete.onclick = () => {
+        const targetUsername = btnDelete.getAttribute('data-username');
+        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีแอดมิน "${targetUsername}" ?`)) {
+          let currentUsers = getAdminUsers();
+          currentUsers = currentUsers.filter(u => u.username !== targetUsername);
+          saveAdminUsers(currentUsers);
+          renderAdminUsersList();
+        }
+      };
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---------------------------------------------------------
+   3. Dashboard Metrics, Live Reports & Leads Functionality
+   --------------------------------------------------------- */
+function getStoredLeads() {
+  try {
+    const raw = localStorage.getItem('rm_leads');
+    if (!raw) return [];
+    return JSON.parse(raw) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLeads(leads) {
+  try {
+    localStorage.setItem('rm_leads', JSON.stringify(leads));
+  } catch (e) {
+    console.error('Failed to save leads:', e);
+  }
+}
+
+function initDashboard() {
+  renderMetrics();
+  renderLeadsList();
+  initActionButtons();
+  initFilterButtons();
+  initPortfolioManager();
+  initTabNavigation();
+  initReviewsCMS();
+  initServicesCMS();
+  initStandardsCMS();
+  initWhyUsCMS();
+  initWorkflowCMS();
+  initSiteContentCMS();
+  initCalculatorCMS();
+  initAreasCMS();
+  initTabAdminUsers();
+  initTabLeads();
+}
+
+function renderMetrics() {
+  const views = parseInt(localStorage.getItem('rm_page_views') || '0', 10);
+  const pageViewsEl = document.getElementById('metricPageViews');
+  if (pageViewsEl) pageViewsEl.textContent = views;
+
+  const leads = getStoredLeads();
+  const leadsCountEl = document.getElementById('metricTotalLeads');
+  if (leadsCountEl) leadsCountEl.textContent = leads.length;
+
+  const sidebarBadge = document.getElementById('sidebarLeadsBadge');
+  if (sidebarBadge) sidebarBadge.textContent = leads.length;
+
+  const newLeads = leads.filter(l => l.status === 'new').length;
+  const newLeadsText = document.getElementById('metricNewLeadsText');
+  if (newLeadsText) {
+    newLeadsText.textContent = leads.length > 0 ? `ใหม่ ${newLeads} รายการ` : 'รอรับรายงานสด';
+  }
+
+  const badgeLeadsStatus = document.getElementById('badgeLeadsStatus');
+  if (badgeLeadsStatus) {
+    badgeLeadsStatus.textContent = leads.length > 0 ? `🟢 มีข้อมูลรายงาน ${leads.length} รายการ` : '🟢 พร้อมรับข้อมูล Real-time';
+  }
+
+  const sessions = parseInt(localStorage.getItem('rm_sessions') || '0', 10);
+  const sessionsText = document.getElementById('metricSessionsText');
+  if (sessionsText) {
+    sessionsText.textContent = sessions > 0 ? `${sessions} Session` : 'Session สด';
+  }
+}
+
+function renderLeadsList() {
+  const container = document.getElementById('leadsContainer');
+  if (!container) return;
+
+  const allLeads = getStoredLeads();
+
+  // Update counts on filter tags
+  const countAll = allLeads.length;
+  const countNew = allLeads.filter(l => l.status === 'new').length;
+  const countContacted = allLeads.filter(l => l.status === 'contacted').length;
+  const countDone = allLeads.filter(l => l.status === 'done').length;
+
+  const elAll = document.getElementById('countFilterAll');
+  const elNew = document.getElementById('countFilterNew');
+  const elContacted = document.getElementById('countFilterContacted');
+  const elDone = document.getElementById('countFilterDone');
+
+  if (elAll) elAll.textContent = countAll;
+  if (elNew) elNew.textContent = countNew;
+  if (elContacted) elContacted.textContent = countContacted;
+  if (elDone) elDone.textContent = countDone;
+
+  // Filter leads
+  let displayLeads = allLeads;
+  if (currentFilter !== 'all') {
+    displayLeads = allLeads.filter(l => l.status === currentFilter);
+  }
+
+  container.innerHTML = '';
+
+  // Clean Empty State (Ready for Deploy)
+  if (displayLeads.length === 0) {
+    if (allLeads.length === 0) {
+      container.innerHTML = `
+        <div class="empty-leads-notice">
+          <div class="empty-icon">📭</div>
+          <h4>ลบข้อมูลเก่าเรียบร้อย พร้อมรับรายงานตัวใหม่</h4>
+          <p>ระบบอยู่ในสถานะ Standby พร้อมรับรายงานจริง เมื่อมีลูกค้ากรอกแบบฟอร์มหน้าเว็บไซต์ รายงานจะบันทึกและแสดงที่นี่ทันทีแบบอัตโนมัติ</p>
+          <button class="btn-action-outline" id="btnQuickTestLead" style="margin-top:0.4rem; font-size:0.8rem; padding:0.4rem 0.9rem;">
+            + ทดลองส่งข้อมูลจำลอง 1 รายการ
+          </button>
+        </div>
+      `;
+      const quickBtn = document.getElementById('btnQuickTestLead');
+      if (quickBtn) {
+        quickBtn.addEventListener('click', () => {
+          promptAndAddTestLead();
+        });
+      }
+    } else {
+      container.innerHTML = `
+        <div style="text-align:center; padding:2rem; color:#94a3b8; font-size:0.9rem;">
+          ไม่มีรายการในหมวดที่เลือก
+        </div>
+      `;
+    }
+    return;
+  }
+
+  displayLeads.forEach((lead) => {
+    const row = document.createElement('div');
+    row.className = 'lead-row';
+    
+    let statusText = 'ใหม่';
+    let statusClass = 'new';
+
+    if (lead.status === 'contacted') {
+      statusText = 'ติดต่อแล้ว';
+      statusClass = 'contacted';
+    } else if (lead.status === 'done') {
+      statusText = 'สำเร็จ';
+      statusClass = 'done';
+    }
+
+    const leadTime = lead.time || lead.createdAt || 'เพิ่งส่งเข้ามา';
+
+    row.innerHTML = `
+      <div class="lead-info-col">
+        <span class="lead-name">${escapeHtml(lead.name)}</span>
+        <span class="lead-phone">${escapeHtml(lead.phone)}</span>
+        <span style="font-size:0.75rem; color:#94a3b8; margin-left:0.5rem;">📍 ${escapeHtml(lead.location || 'ระยอง')}</span>
+        <span style="font-size:0.72rem; color:#cbd5e1; margin-left:0.35rem;">(${escapeHtml(leadTime)})</span>
+      </div>
+      <button class="lead-status-pill ${statusClass}" title="คลิกเพื่อเปลี่ยนสถานะ (${statusText})">${statusText}</button>
+    `;
+
+    const pill = row.querySelector('.lead-status-pill');
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleLeadStatus(lead.id);
+    });
+
+    row.addEventListener('click', () => {
+      openLeadDetail(lead);
+    });
+
+    container.appendChild(row);
+  });
+}
+
+function initFilterButtons() {
+  const filterBtns = document.querySelectorAll('.btn-filter-tag');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-filter') || 'all';
+      renderLeadsList();
+    });
+  });
+}
+
+function toggleLeadStatus(leadId) {
+  const leads = getStoredLeads();
+  const target = leads.find(l => l.id === leadId);
+  if (!target) return;
+
+  if (target.status === 'new') {
+    target.status = 'contacted';
+  } else if (target.status === 'contacted') {
+    target.status = 'done';
+  } else {
+    target.status = 'new';
+  }
+
+  saveLeads(leads);
+  renderMetrics();
+  renderLeadsList();
+}
+
+function openLeadDetail(lead) {
+  const modal = document.getElementById('leadDetailModal');
+  if (!modal) return;
+
+  document.getElementById('modalLeadName').textContent = lead.name || '-';
+  document.getElementById('modalLeadPhone').textContent = lead.phone || '-';
+  document.getElementById('modalLeadLocation').textContent = lead.location || 'ระยอง';
+  document.getElementById('modalLeadBudget').textContent = lead.budget || 'ไม่ระบุ';
+  document.getElementById('modalLeadMessage').textContent = lead.message || 'ไม่มีข้อความเพิ่มเติม';
+  document.getElementById('modalLeadTime').textContent = lead.time || lead.createdAt || 'ไม่นานมานี้';
+
+  modal.classList.add('open');
+
+  const callBtn = document.getElementById('modalCallBtn');
+  if (callBtn) {
+    callBtn.onclick = () => {
+      window.location.href = `tel:${lead.phone}`;
+    };
+  }
+
+  const deleteBtn = document.getElementById('modalDeleteBtn');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      if (confirm(`ต้องการลบข้อมูล Lead ของคุณ ${lead.name} หรือไม่?`)) {
+        let leads = getStoredLeads();
+        leads = leads.filter(l => l.id !== lead.id);
+        saveLeads(leads);
+        modal.classList.remove('open');
+        renderMetrics();
+        renderLeadsList();
+      }
+    };
+  }
+}
+
+function promptAndAddTestLead() {
+  const name = prompt('กรอกชื่อลูกค้าจำลอง:', 'คุณลูกค้าใหม่ (ระยอง)');
+  if (!name) return;
+  const phone = prompt('กรอกเบอร์โทรศัพท์:', '082-945-8999');
+  if (!phone) return;
+
+  const leads = getStoredLeads();
+  leads.unshift({
+    id: 'lead_' + Date.now(),
+    name,
+    phone,
+    location: 'อำเภอเมืองระยอง',
+    budget: '3.5 - 5 ล้านบาท',
+    message: 'สนใจสร้างบ้านพูลวิลล่าสไตล์โมเดิร์น',
+    status: 'new',
+    time: 'เพิ่งส่งเข้ามา',
+    createdAt: new Date().toLocaleString('th-TH')
+  });
+  saveLeads(leads);
+  renderMetrics();
+  renderLeadsList();
+}
+
+function exportLeadsToCsv() {
+  const leads = getStoredLeads();
+  if (leads.length === 0) {
+    alert('⚠️ ขณะนี้ยังไม่มีข้อมูล Leads ในระบบสำหรับส่งออก');
+    return;
+  }
+
+  let csvContent = '\uFEFF'; // UTF-8 BOM for Excel Thai language support
+  csvContent += 'ลำดับ,ชื่อ-นามสกุล,เบอร์โทรศัพท์,ทำเลที่ดิน,งบประมาณ,สถานะ,ข้อความเพิ่มเติม,เวลาที่ส่งเข้ามา\n';
+
+  leads.forEach((l, index) => {
+    const statusLabel = l.status === 'new' ? 'รอติดต่อ' : (l.status === 'contacted' ? 'ติดต่อแล้ว' : 'สำเร็จ');
+    const safeName = `"${(l.name || '').replace(/"/g, '""')}"`;
+    const safePhone = `"${(l.phone || '').replace(/"/g, '""')}"`;
+    const safeLoc = `"${(l.location || '').replace(/"/g, '""')}"`;
+    const safeBudget = `"${(l.budget || '').replace(/"/g, '""')}"`;
+    const safeMsg = `"${(l.message || '').replace(/"/g, '""')}"`;
+    const safeTime = `"${(l.time || l.createdAt || '').replace(/"/g, '""')}"`;
+
+    csvContent += `${index + 1},${safeName},${safePhone},${safeLoc},${safeBudget},${statusLabel},${safeMsg},${safeTime}\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  const dateStr = new Date().toISOString().slice(0, 10);
+  link.setAttribute('download', `RMHome_Leads_Report_${dateStr}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function initActionButtons() {
+  const closeBtn = document.getElementById('modalCloseBtn');
+  const modal = document.getElementById('leadDetailModal');
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('open');
+    });
+  }
+
+  // Refresh Button
+  const refreshBtn = document.getElementById('btnRefresh');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      refreshBtn.style.opacity = '0.6';
+      setTimeout(() => {
+        renderMetrics();
+        renderLeadsList();
+        refreshBtn.style.opacity = '1';
+      }, 250);
+    });
+  }
+
+  // Clear Old Data & Reset to 0 (พร้อมเริ่ม Deploy รายงานตัวใหม่)
+  const clearOldDataBtn = document.getElementById('btnClearOldData');
+  if (clearOldDataBtn) {
+    clearOldDataBtn.addEventListener('click', () => {
+      if (confirm('คุณต้องการลบข้อมูล Leads เก่าทั้งหมด และรีเซ็ตตัวเลขเป็น 0 ใช่หรือไม่?\n\n(เพื่อเตรียมพร้อมรับ Deploy รายงานตัวใหม่จากหน้าเว็บ)')) {
+        localStorage.removeItem('rm_leads');
+        localStorage.setItem('rm_page_views', '0');
+        localStorage.setItem('rm_sessions', '0');
+        renderMetrics();
+        renderLeadsList();
+        alert('✅ ลบข้อมูลเก่าในแดชบอร์ดออกเรียบร้อยแล้ว!\n\nแดชบอร์ดอยู่ในสถานะ Standby พร้อมรับรายงานตัวใหม่ทันที');
+      }
+    });
+  }
+
+  // Export CSV
+  const exportBtn = document.getElementById('btnExportCsv');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportLeadsToCsv();
+    });
+  }
+
+  // Add Test Lead Button
+  const addLeadBtn = document.getElementById('btnAddTestLead');
+  if (addLeadBtn) {
+    addLeadBtn.addEventListener('click', () => {
+      promptAndAddTestLead();
+    });
+  }
+
+  // Manage Admins from topic row
+  const topicManageAdmins = document.getElementById('btnTopicManageAdmins');
+  if (topicManageAdmins) {
+    topicManageAdmins.addEventListener('click', () => {
+      const modalUsers = document.getElementById('adminUsersModal');
+      if (modalUsers) {
+        renderAdminUsersList();
+        modalUsers.classList.add('open');
+      }
+    });
+  }
+}
+
+/* ---------------------------------------------------------
+   4. Portfolio & Warm Home Projects Management (บ้านอบอุ่นที่เรามอบให้คุณ)
+   --------------------------------------------------------- */
+const DEFAULT_PORTFOLIO_HOUSES = [
+  {
+    id: 'house_nordic_01',
+    title: 'RM-Nordic Grand',
+    category: 'นอร์ดิก',
+    categorySlug: 'nordic',
+    budget: '3.89 ล้านบาท',
+    type: 'แบบบ้าน (ยังไม่สร้าง)',
+    area: '245',
+    floors: '2',
+    bedrooms: '3',
+    bathrooms: '4',
+    parking: '2 (EV)',
+    location: 'อ.เมืองระยอง จ.ระยอง',
+    cover: 'assets/images/house-nordic.jpg',
+    gallery: ['assets/images/house-nordic.jpg', 'assets/images/luxury-interior.jpg'],
+    description: 'แบบบ้านสไตล์นอร์ดิกกลิ่นอายสแกนดิเนเวียน ดีไซน์หลังคาจั่วสูงโปร่ง โอ่โถง พร้อมกระจกบานใหญ่รับแสงธรรมชาติและวิวสวน เหมาะสำหรับครอบครัวคนรุ่นใหม่ในระยองที่ต้องการความสงบ อบอุ่น และฟังก์ชันครบครัน',
+    features: [
+      'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
+      'หลังคา SCG Shingle Roof พร้อมฉนวนกันความร้อน Stay Cool 3 นิ้ว',
+      'กระจกเขียวตัดแสงหนา 6 มม. กรอบอะลูมิเนียมเกรดพรีเมียม Powder Coat',
+      'สุขภัณฑ์ Cotto / American Standard ประหยัดน้ำระดับพรีเมียม',
+      'ระบบไฟฟ้ารองรับ EV Charger และ Smart Home Control',
+      'รับประกันงานโครงสร้าง 20 ปี และงานสถาปัตยกรรม 2 ปีเต็ม'
+    ],
+    tall: false,
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'house_mansion_02',
+    title: 'RM-Mansion Elite',
+    category: 'โมเดิร์นคฤหาสน์',
+    categorySlug: 'mansion',
+    budget: '6.95 ล้านบาท',
+    type: 'แบบบ้าน (ยังไม่สร้าง)',
+    area: '380',
+    floors: '2',
+    bedrooms: '4',
+    bathrooms: '5',
+    parking: '3',
+    location: 'อ.บ้านฉาง จ.ระยอง',
+    cover: 'assets/images/house-mansion.jpg',
+    gallery: ['assets/images/house-mansion.jpg', 'assets/images/luxury-interior.jpg'],
+    description: 'คฤหาสน์หรูระดับ High-End โดดเด่นด้วย Façade หินอ่อนและเส้นสายสีทองแชมเปญ โถง Double Volume สูง 6.5 เมตร พร้อมระเบียง Sky Terrace ชั้นบน ตอบโจทย์การใช้ชีวิตเหนือระดับในระยอง',
+    features: [
+      'ฐานรากตอกเสาเข็มลึกถึงชั้นดินดาน วิศวกรสามัญเซ็นรับรองทุกจุด',
+      'ผนังอิฐมวลเบา Q-CON ป้องกันเสียงและความร้อน 2 ชั้น',
+      'โถง Living Room เพดานสูง Double Volume โปร่งโล่งสง่างาม',
+      'ระบบ Smart Home ควบคุมไฟ แอร์ และความปลอดภัยผ่านสมาร์ตโฟน',
+      'สุขภัณฑ์อัตโนมัติ TOTO Neorest ในห้อง Master Bedroom',
+      'ฟรี จัดสวน Landscape สไตล์ Modern Luxury รอบบ้าน'
+    ],
+    tall: false,
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'house_tropical_03',
+    title: 'RM-Tropical Pool Villa',
+    category: 'พูลวิลล่า',
+    categorySlug: 'tropical',
+    budget: '4.95 ล้านบาท',
+    type: 'ผลงานสร้างเสร็จแล้ว',
+    area: '290',
+    floors: '1',
+    bedrooms: '3',
+    bathrooms: '3',
+    parking: '2',
+    location: 'อ.แกลง จ.ระยอง',
+    cover: 'assets/images/house-tropical.jpg',
+    gallery: ['assets/images/house-tropical.jpg', 'assets/images/luxury-interior.jpg'],
+    description: 'บ้านพักตากอากาศสไตล์โมเดิร์นทรอปิคอล พร้อมสระว่ายน้ำระบบเกลือในตัว ออกแบบระแนงไม้ธรรมชาติช่วยกรองแสงแดดเมืองระยอง ทุกห้องนอนเชื่อมต่อสู่สระว่ายน้ำได้โดยตรง เหมาะสำหรับอยู่อาศัยหรือปล่อยเช่าพูลวิลล่า',
+    features: [
+      'สระว่ายน้ำระบบเกลือ Overflow ขนาด 3.5 x 8 เมตร พร้อมระบบไฟ LED ใต้น้ำ',
+      'พื้นระเบียงไม้เทียม WPC เกรดพรีเมียม ทนแดด ทนฝน ไม่ผุกร่อน',
+      'ดีไซน์เชื่อมต่อ Indoor-Outdoor ด้วยประตูกระจกบานเลื่อนขนาดยักษ์',
+      'ห้องน้ำสไตล์ Semi-Outdoor พร้อมอ่างอาบน้ำสั่งทำพิเศษ',
+      'ระบบบำบัดน้ำเสียและระบายน้ำรอบตัวบ้าน ออกแบบป้องกันน้ำท่วมขัง',
+      'บริการยื่นขออนุญาตประกอบกิจการวิลล่าตากอากาศให้ครบวงจร'
+    ],
+    tall: false,
+    createdAt: '2026-11-01'
+  }
+];
+
+function getCategorySlug(cat) {
+  if (!cat) return 'modern';
+  const c = cat.toLowerCase();
+  if (c.includes('นอร์ดิก') || c.includes('nordic')) return 'nordic';
+  if (c.includes('คฤหาสน์') || c.includes('mansion') || c.includes('luxury')) return 'mansion';
+  if (c.includes('พูลวิลล่า') || c.includes('pool') || c.includes('ทรอปิคอล') || c.includes('tropical')) return 'tropical';
+  if (c.includes('มินิมอล') || c.includes('minimal')) return 'minimal';
+  return 'modern';
+}
+
+function getStoredPortfolio() {
+  try {
+    const raw = localStorage.getItem('rm_portfolio_items');
+    if (!raw) {
+      localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
+      return DEFAULT_PORTFOLIO_HOUSES;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES));
+      return DEFAULT_PORTFOLIO_HOUSES;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_PORTFOLIO_HOUSES;
+  }
+}
+
+function savePortfolio(items) {
+  try {
+    localStorage.setItem('rm_portfolio_items', JSON.stringify(items));
+    window.dispatchEvent(new Event('portfolioUpdated'));
+  } catch (e) {
+    console.error('Failed to save portfolio items:', e);
+  }
+}
+
+function initPortfolioManager() {
+  const addForm = document.getElementById('portfolioAddForm');
+  const coverInput = document.getElementById('projCover');
+  const btnUploadCover = document.getElementById('btnUploadCover');
+  const coverFileInput = document.getElementById('coverFileInput');
+  const coverPreviewBox = document.getElementById('coverPreviewBox');
+  const coverPreviewImg = document.getElementById('coverPreviewImg');
+
+  const btnAddGalleryPhotos = document.getElementById('btnAddGalleryPhotos');
+  const galleryFileInput = document.getElementById('galleryFileInput');
+  const galleryPreviewStrip = document.getElementById('galleryPreviewStrip');
+
+  let currentGalleryPhotos = [];
+
+  // Initial render
+  renderAdminPortfolioList();
+
+  // Handle Cover File Upload via disk selector
+  if (btnUploadCover && coverFileInput) {
+    btnUploadCover.addEventListener('click', () => {
+      coverFileInput.click();
+    });
+
+    coverFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target.result;
+          if (coverInput) coverInput.value = dataUrl;
+          if (coverPreviewImg && coverPreviewBox) {
+            coverPreviewImg.src = dataUrl;
+            coverPreviewBox.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Handle Cover text change for URL
+  if (coverInput) {
+    coverInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val && coverPreviewImg && coverPreviewBox) {
+        coverPreviewImg.src = val;
+        coverPreviewBox.style.display = 'block';
+      }
+    });
+  }
+
+  // Handle Gallery Photos Upload
+  if (btnAddGalleryPhotos && galleryFileInput) {
+    btnAddGalleryPhotos.addEventListener('click', () => {
+      galleryFileInput.click();
+    });
+
+    galleryFileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target.result;
+          currentGalleryPhotos.push(dataUrl);
+
+          if (galleryPreviewStrip) {
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.className = 'gallery-thumb';
+            galleryPreviewStrip.appendChild(img);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
+
+  // Handle Form Submission: เพิ่มผลงานใหม่
+  if (addForm) {
+    addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById('projTitle').value.trim();
+      const category = document.getElementById('projCategory').value;
+      const budget = document.getElementById('projBudget').value.trim();
+      const type = document.getElementById('projType').value;
+      const area = document.getElementById('projArea').value.trim();
+      const floors = document.getElementById('projFloors').value.trim() || '1';
+      const bedrooms = document.getElementById('projBeds').value.trim() || '2';
+      const bathrooms = document.getElementById('projBaths').value.trim() || '2';
+      const parking = document.getElementById('projParking').value.trim() || '1';
+      const location = document.getElementById('projLocation').value.trim() || 'จ.ระยอง';
+      let cover = coverInput ? coverInput.value.trim() : '';
+      if (!cover) {
+        cover = 'assets/images/house-nordic.jpg';
+      }
+      const description = document.getElementById('projDescription').value.trim() || 'ผลงานสร้างบ้านคุณภาพโดย RMHome ระยอง ฟังก์ชันครบครัน คุมงบได้จริง';
+      const tall = document.getElementById('projTallCard') ? document.getElementById('projTallCard').checked : false;
+
+      const gallery = currentGalleryPhotos.length > 0 ? [...currentGalleryPhotos] : [cover, 'assets/images/luxury-interior.jpg'];
+
+      const newHouse = {
+        id: 'house_' + Date.now(),
+        title,
+        category,
+        categorySlug: getCategorySlug(category),
+        budget: budget.includes('ล้าน') ? budget : budget + ' ล้านบาท',
+        type,
+        area,
+        floors,
+        bedrooms,
+        bathrooms,
+        parking,
+        location,
+        cover,
+        gallery,
+        description,
+        features: [
+          'โครงสร้างคอนกรีตเสริมเหล็ก ต้านแผ่นดินไหวตาม มยผ.',
+          'วัสดุมาตรฐาน มอก. แบรนด์ชั้นนำ SCG / Cotto',
+          'ควบคุมงานโดยวิศวกร กว. ทุกขั้นตอน',
+          'รับประกันงานโครงสร้าง 20 ปี และสถาปัตยกรรม 2 ปี'
+        ],
+        tall,
+        createdAt: new Date().toLocaleDateString('th-TH')
+      };
+
+      const items = getStoredPortfolio();
+      items.unshift(newHouse);
+      savePortfolio(items);
+
+      // Reset form
+      addForm.reset();
+      currentGalleryPhotos = [];
+      if (galleryPreviewStrip) galleryPreviewStrip.innerHTML = '';
+      if (coverPreviewBox) coverPreviewBox.style.display = 'none';
+
+      renderAdminPortfolioList();
+      alert(`✅ เพิ่มผลงาน "${title}" เรียบร้อยแล้ว!\n\nผลงานใหม่จะปรากฏบนหน้าแรกของเว็บไซต์ทันทีแบบเรียลไทม์`);
+    });
+  }
+}
+
+function renderAdminPortfolioList() {
+  const grid = document.getElementById('adminPortfolioGrid');
+  const countBadge = document.getElementById('portfolioHeaderCountBadge');
+  const sidebarBadge = document.getElementById('sidebarPortfolioBadge');
+  const topicCount = document.getElementById('topicHousesCount');
+
+  const items = getStoredPortfolio();
+
+  if (countBadge) countBadge.textContent = `${items.length} หลังในระบบ`;
+  if (sidebarBadge) sidebarBadge.textContent = items.length;
+  if (topicCount) topicCount.textContent = `${items.length} แบบบ้าน`;
+
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  if (items.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:#94a3b8; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+        ยังไม่มีผลงานในระบบ กรุณากรอกแบบฟอร์มด้านบนเพื่อเพิ่มผลงานบ้าน
+      </div>
+    `;
+    return;
+  }
+
+  items.forEach((house) => {
+    const card = document.createElement('div');
+    card.className = 'admin-house-card';
+
+    card.innerHTML = `
+      <div class="admin-house-img-wrap">
+        <img src="${escapeHtml(house.cover)}" alt="${escapeHtml(house.title)}" onerror="this.src='assets/images/house-nordic.jpg'">
+        <span class="admin-house-badge">${escapeHtml(house.type || 'แบบบ้าน')}</span>
+        <span class="admin-house-category">${escapeHtml(house.category || 'โมเดิร์น')}</span>
+      </div>
+      <div class="admin-house-body">
+        <div class="admin-house-title">${escapeHtml(house.title)}</div>
+        <div class="admin-house-price">฿ ${escapeHtml(house.budget)}</div>
+        <div class="admin-house-specs-grid">
+          <div>📐 พื้นที่: ${escapeHtml(house.area)} ตร.ม.</div>
+          <div>🏢 ชั้น: ${escapeHtml(house.floors || '1')} ชั้น</div>
+          <div>🛏️ นอน: ${escapeHtml(house.bedrooms)} ห้อง</div>
+          <div>🚿 น้ำ: ${escapeHtml(house.bathrooms)} ห้อง</div>
+          <div>🚗 จอดรถ: ${escapeHtml(house.parking)} คัน</div>
+          <div>📍 ${escapeHtml(house.location || 'ระยอง')}</div>
+        </div>
+        <div class="admin-house-desc">${escapeHtml(house.description || '')}</div>
+        <div class="admin-house-footer">
+          <a href="index.html#models" target="_blank" style="font-size:0.78rem; color:#0d5c3a; text-decoration:none; font-weight:600;">
+            ดูบนหน้าเว็บ ↗
+          </a>
+          <button class="btn-delete-house" data-id="${escapeHtml(house.id)}" data-title="${escapeHtml(house.title)}">
+            🗑️ ลบผลงาน
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Handle delete house
+    const btnDel = card.querySelector('.btn-delete-house');
+    if (btnDel) {
+      btnDel.addEventListener('click', () => {
+        const targetId = btnDel.getAttribute('data-id');
+        const targetTitle = btnDel.getAttribute('data-title');
+        if (confirm(`คุณต้องการลบผลงาน "${targetTitle}" ออกจากเว็บไซต์ใช่หรือไม่?\n\n(ผลงานจะหายไปจากหน้าเว็บทันทีแบบเรียลไทม์)`)) {
+          let currentItems = getStoredPortfolio();
+          currentItems = currentItems.filter(h => h.id !== targetId);
+          savePortfolio(currentItems);
+          renderAdminPortfolioList();
+        }
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/* ==========================================================================
+   5. In-Place CMS Tab Switching System (No External Page Jumps)
+   ========================================================================== */
+function notifyContentUpdated(type) {
+  try {
+    window.dispatchEvent(new CustomEvent('contentUpdated', { detail: { type } }));
+    localStorage.setItem('rm_last_sync_timestamp', Date.now().toString());
+  } catch (e) {}
+}
+
+function initTabNavigation() {
+  const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-tab]');
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tabName = item.getAttribute('data-tab');
+      switchAdminTab(tabName);
+    });
+  });
+
+  // Buttons inside widgets or pages that open a tab
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-open-tab]');
+    if (btn) {
+      e.preventDefault();
+      const tabName = btn.getAttribute('data-open-tab');
+      switchAdminTab(tabName);
+    }
+  });
+
+  // Check initial hash
+  if (window.location.hash) {
+    const rawHash = window.location.hash.replace('#', '');
+    const validTabs = ['overview', 'leads', 'portfolio', 'reviews', 'services', 'standards', 'why-us', 'workflow', 'site-content', 'calculator', 'areas', 'users'];
+    if (validTabs.includes(rawHash)) {
+      switchAdminTab(rawHash);
+    }
+  }
+}
+
+function switchAdminTab(tabName) {
+  if (!tabName) return;
+
+  let targetTabId = 'tabOverview';
+  let targetNavTab = tabName;
+
+  if (tabName === 'overview') targetTabId = 'tabOverview';
+  else if (tabName === 'leads') targetTabId = 'tabLeads';
+  else if (tabName === 'portfolio') targetTabId = 'tabPortfolio';
+  else if (tabName === 'reviews') targetTabId = 'tabReviews';
+  else if (tabName === 'services') targetTabId = 'tabServices';
+  else if (tabName === 'standards') targetTabId = 'tabStandards';
+  else if (tabName === 'why-us') targetTabId = 'tabWhyUs';
+  else if (tabName === 'workflow') targetTabId = 'tabWorkflow';
+  else if (tabName === 'site-content') targetTabId = 'tabSiteContent';
+  else if (tabName === 'calculator') targetTabId = 'tabCalculator';
+  else if (tabName === 'areas') targetTabId = 'tabAreas';
+  else if (tabName === 'users') targetTabId = 'tabUsers';
+
+  // Update nav item active state
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('data-tab') === targetNavTab) {
+      item.classList.add('active');
+    }
+  });
+
+  // Hide all tab panes, show target pane
+  document.querySelectorAll('.admin-tab-pane').forEach(pane => {
+    pane.classList.remove('active');
+  });
+
+  const activePane = document.getElementById(targetTabId);
+  if (activePane) {
+    activePane.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  try {
+    history.replaceState(null, null, `#${targetNavTab}`);
+  } catch (e) {}
+
+  // Trigger relevant renders
+  if (targetTabId === 'tabReviews') renderAdminReviewsList();
+  else if (targetTabId === 'tabServices') renderAdminServicesList();
+  else if (targetTabId === 'tabStandards') renderAdminStandardsList();
+  else if (targetTabId === 'tabWhyUs') renderAdminWhyUsList();
+  else if (targetTabId === 'tabWorkflow') renderAdminWorkflowList();
+  else if (targetTabId === 'tabSiteContent') loadSiteContentForm();
+  else if (targetTabId === 'tabCalculator') loadCalculatorSettingsForm();
+  else if (targetTabId === 'tabAreas') loadAreasSettingsForm();
+  else if (targetTabId === 'tabUsers') renderTabAdminUsersList();
+  else if (targetTabId === 'tabLeads') renderLeadsTabList();
+  else if (targetTabId === 'tabPortfolio') renderAdminPortfolioList();
+}
+
+/* ==========================================================================
+   6. Dedicated Leads Tab
+   ========================================================================== */
+function initTabLeads() {
+  const exportBtn = document.getElementById('btnExportCsvTabLeads');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => exportLeadsToCsv());
+  }
+
+  const addLeadBtn = document.getElementById('btnAddLeadTabLeads');
+  if (addLeadBtn) {
+    addLeadBtn.addEventListener('click', () => promptAndAddTestLead());
+  }
+
+  const filterButtons = document.querySelectorAll('#tabLeads .btn-filter-tag');
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-filter') || 'all';
+      renderLeadsTabList();
+    });
+  });
+
+  renderLeadsTabList();
+}
+
+function renderLeadsTabList() {
+  const container = document.getElementById('leadsTabContainer');
+  if (!container) return;
+
+  const allLeads = getStoredLeads();
+
+  const countAll = allLeads.length;
+  const countNew = allLeads.filter(l => l.status === 'new').length;
+  const countContacted = allLeads.filter(l => l.status === 'contacted').length;
+  const countDone = allLeads.filter(l => l.status === 'done').length;
+
+  const fAll = document.getElementById('leadsTabFilterAll');
+  const fNew = document.getElementById('leadsTabFilterNew');
+  const fContacted = document.getElementById('leadsTabFilterContacted');
+  const fDone = document.getElementById('leadsTabFilterDone');
+  if (fAll) fAll.textContent = countAll;
+  if (fNew) fNew.textContent = countNew;
+  if (fContacted) fContacted.textContent = countContacted;
+  if (fDone) fDone.textContent = countDone;
+
+  const filtered = allLeads.filter(lead => {
+    if (currentFilter === 'all') return true;
+    return lead.status === currentFilter;
+  });
+
+  container.innerHTML = '';
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="leads-empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">ยังไม่มีข้อมูล Leads ในหมวดนี้</div>
+        <div class="empty-desc">ข้อมูลผู้ติดต่อสร้างบ้านที่ส่งเข้ามาจะปรากฏที่นี่แบบเรียลไทม์</div>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.forEach(lead => {
+    const row = document.createElement('div');
+    row.className = `lead-row ${lead.status === 'new' ? 'unread' : ''}`;
+
+    const statusBadge = lead.status === 'new'
+      ? '<span class="status-badge new">รอติดต่อ</span>'
+      : (lead.status === 'contacted'
+        ? '<span class="status-badge contacted">ติดต่อแล้ว</span>'
+        : '<span class="status-badge done">สำเร็จ</span>');
+
+    row.innerHTML = `
+      <div class="lead-avatar">${escapeHtml((lead.name || 'ค').charAt(0))}</div>
+      <div class="lead-info">
+        <div class="lead-name-row">
+          <span class="lead-name">${escapeHtml(lead.name)}</span>
+          ${statusBadge}
+        </div>
+        <div class="lead-phone">📞 ${escapeHtml(lead.phone)} • ${escapeHtml(lead.location || 'ระยอง')}</div>
+        <div class="lead-meta-row">
+          <span>💰 ${escapeHtml(lead.budget || 'ไม่ระบุงบ')}</span>
+          <span>•</span>
+          <span>${escapeHtml(lead.time || 'เมื่อสักครู่')}</span>
+        </div>
+      </div>
+      <div class="lead-actions">
+        <button class="btn-lead-view" data-id="${lead.id}">ดูข้อมูล</button>
+      </div>
+    `;
+
+    const viewBtn = row.querySelector('.btn-lead-view');
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => openLeadModal(lead.id));
+    }
+
+    container.appendChild(row);
+  });
+}
+
+/* ==========================================================================
+   7. Reviews CMS (Testimonials - Matching media_1793614452976_4a6202cb.png)
+   ========================================================================== */
+const DEFAULT_REVIEWS = [
+  {
+    id: 'rev_01',
+    name: 'คุณก้อย',
+    role: 'เจ้าของบ้าน',
+    image: 'assets/images/quality-engineer.jpg',
+    text: 'ลูกค้าประทับใจในความเป็นมืออาชีพของทีม RM HOME ทั้งเรื่องความสะอาด ความเรียบร้อยของหน้างาน ทีมช่างสุภาพ และการแก้ไขปัญหาที่รวดเร็ว ทำให้มั่นใจและไว้วางใจในการดูแลบ้านทุกขั้นตอน',
+    fullDetail: 'ประทับใจการทำงานของวิศวกรและช่างประจำโครงการ ดูแลเอาใจใส่ทุกขั้นตอน',
+    rating: 5,
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'rev_02',
+    name: 'คุณธีรศักดิ์ วิจิตรจินดา',
+    role: 'บ้านเดี่ยว 2 ชั้น • อ.เมืองระยอง',
+    image: 'assets/images/luxury-interior.jpg',
+    text: 'ประทับใจทีมงาน RMHome มากครับ ทำงานมืออาชีพจริงๆ สัญญาชัดเจน งวดงานตรงไปตรงมา ตอนแรกกลัวเรื่องผู้รับเหมาทิ้งงานมาก แต่ที่นี่มีวิศวกรส่งรูปให้ดูทุกวัน บ้านเสร็จเร็วกว่ากำหนด 2 สัปดาห์ แนะนำเลยครับ',
+    fullDetail: 'บ้านเดี่ยว 2 ชั้นในระยอง คุมงบได้ ไม่มีบานปลาย',
+    rating: 5,
+    createdAt: '2026-10-28'
+  },
+  {
+    id: 'rev_03',
+    name: 'พญ. นภัสวรรณ รัตนศิลป์',
+    role: 'พูลวิลล่าตากอากาศ • อ.บ้านฉาง ระยอง',
+    image: 'assets/images/house-tropical.jpg',
+    text: 'จ้าง RMHome สร้างบ้านพูลวิลล่าสไตล์โมเดิร์นที่บ้านฉาง สวยตรงปกเหมือนรูป 3D ทุกประการเลยค่ะ สเปกวัสดุใช้ของ SCG แท้ทุกชิ้น ทีมงานสุภาพ เก็บงานเนี้ยบมาก บริการเรื่องยื่นกู้ธนาคารผ่านฉลุยเลยค่ะ',
+    fullDetail: 'บ้านสวยตรงปก วัสดุเกรดพรีเมียม SCG แท้',
+    rating: 5,
+    createdAt: '2026-10-25'
+  },
+  {
+    id: 'rev_04',
+    name: 'คุณวรัญญู เอกอนันต์',
+    role: 'แบบบ้านนอร์ดิก • อ.นิคมพัฒนา ระยอง',
+    image: 'assets/images/house-nordic.jpg',
+    text: 'ผมเป็นวิศวกรโรงงานในมาบตาพุด ค่อนข้างละเอียดเรื่องโครงสร้าง พอได้เห็นขั้นตอนการตอกเสาเข็มและการผูกเหล็กของ RMHome แล้วยอมรับเลยว่าได้มาตรฐานจริง คุมงบได้ไม่มีบานปลายแม้แต่บาทเดียวครับ',
+    fullDetail: 'งานโครงสร้างมาตรฐานวิศวกรรมสากล มั่นคง แข็งแรง',
+    rating: 5,
+    createdAt: '2026-10-20'
+  }
+];
+
+function getStoredReviews() {
+  try {
+    const raw = localStorage.getItem('rm_reviews');
+    if (!raw) {
+      localStorage.setItem('rm_reviews', JSON.stringify(DEFAULT_REVIEWS));
+      return DEFAULT_REVIEWS;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_reviews', JSON.stringify(DEFAULT_REVIEWS));
+      return DEFAULT_REVIEWS;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_REVIEWS;
+  }
+}
+
+function saveReviews(items) {
+  try {
+    localStorage.setItem('rm_reviews', JSON.stringify(items));
+    notifyContentUpdated('reviews');
+  } catch (e) {
+    console.error('Failed to save reviews:', e);
+  }
+}
+
+function initReviewsCMS() {
+  const form = document.getElementById('reviewAddForm');
+  const fileInput = document.getElementById('reviewFileInput');
+  const btnUpload = document.getElementById('btnUploadReviewImg');
+  const imgInput = document.getElementById('newReviewImg');
+  const previewBox = document.getElementById('newReviewPreviewBox');
+  const previewImg = document.getElementById('newReviewPreviewImg');
+
+  if (btnUpload && fileInput) {
+    btnUpload.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const dataUrl = event.target.result;
+          if (imgInput) imgInput.value = dataUrl;
+          if (previewImg && previewBox) {
+            previewImg.src = dataUrl;
+            previewBox.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (imgInput) {
+    imgInput.addEventListener('input', () => {
+      const val = imgInput.value.trim();
+      if (val && previewImg && previewBox) {
+        previewImg.src = val;
+        previewBox.style.display = 'block';
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newReviewName').value.trim();
+      const role = document.getElementById('newReviewRole').value.trim();
+      let image = imgInput ? imgInput.value.trim() : '';
+      if (!image) image = 'assets/images/quality-engineer.jpg';
+      const text = document.getElementById('newReviewText').value.trim();
+      const fullDetail = document.getElementById('newReviewFull') ? document.getElementById('newReviewFull').value.trim() : '';
+
+      const newRev = {
+        id: 'rev_' + Date.now(),
+        name,
+        role,
+        image,
+        text,
+        fullDetail: fullDetail || text,
+        rating: 5,
+        createdAt: new Date().toLocaleDateString('th-TH')
+      };
+
+      const list = getStoredReviews();
+      list.unshift(newRev);
+      saveReviews(list);
+
+      form.reset();
+      if (previewBox) previewBox.style.display = 'none';
+
+      renderAdminReviewsList();
+      alert(`✅ เพิ่มรีวิวของ "${name}" เรียบร้อยแล้ว!\n\nรีวิวจะปรากฏบนหน้าแรกของเว็บไซต์ทันทีแบบเรียลไทม์`);
+    });
+  }
+
+  renderAdminReviewsList();
+}
+
+function saveSingleReviewFromCard(card, revId, isAutoSave = false) {
+  const nameInput = card.querySelector('.edit-rev-name');
+  const roleInput = card.querySelector('.edit-rev-role');
+  const imgInput = card.querySelector('.edit-rev-image');
+  const textInput = card.querySelector('.edit-rev-text');
+  const statusSpan = card.querySelector('.rev-save-status');
+
+  const list = getStoredReviews();
+  const target = list.find(r => r.id === revId);
+  if (!target) return;
+
+  target.name = nameInput ? nameInput.value.trim() : target.name;
+  target.role = roleInput ? roleInput.value.trim() : target.role;
+  target.image = imgInput ? imgInput.value.trim() : target.image;
+  target.text = textInput ? textInput.value.trim() : target.text;
+
+  saveReviews(list);
+
+  if (statusSpan) {
+    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    setTimeout(() => {
+      statusSpan.textContent = '';
+    }, 2000);
+  }
+}
+
+function renderAdminReviewsList() {
+  const container = document.getElementById('adminReviewsList');
+  const badge = document.getElementById('reviewsCountBadge');
+  const sidebarBadge = document.getElementById('sidebarReviewsBadge');
+  const reviews = getStoredReviews();
+
+  if (badge) badge.textContent = `${reviews.length} รีวิวในระบบ`;
+  if (sidebarBadge) sidebarBadge.textContent = reviews.length;
+  if (!container) return;
+
+  container.innerHTML = '';
+  if (reviews.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:2rem; color:#94a3b8; background:#f8fafc; border-radius:12px;">ยังไม่มีรีวิวในระบบ</div>`;
+    return;
+  }
+
+  reviews.forEach((rev, idx) => {
+    const card = document.createElement('div');
+    card.className = 'review-edit-card';
+    card.setAttribute('data-id', rev.id);
+
+    card.innerHTML = `
+      <div class="review-avatar-wrap">
+        <img src="${escapeHtml(rev.image || 'assets/images/quality-engineer.jpg')}" alt="${escapeHtml(rev.name)}" class="review-avatar-img-el" onerror="this.src='assets/images/quality-engineer.jpg'">
+      </div>
+      <div class="review-edit-body">
+        <div class="review-top-row">
+          <div class="form-group">
+            <label class="form-label">ชื่อ</label>
+            <input type="text" class="form-control edit-rev-name" value="${escapeHtml(rev.name)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ตำแหน่ง</label>
+            <input type="text" class="form-control edit-rev-role" value="${escapeHtml(rev.role)}">
+          </div>
+          <div class="review-order-del-box">
+            <span class="review-order-badge">${idx + 1}</span>
+            <button type="button" class="btn-trash-item btn-del-review" data-id="${rev.id}" data-name="${escapeHtml(rev.name)}" title="ลบรีวิวนี้">🗑️</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:0.4rem;">
+          <label class="form-label">รูปภาพ</label>
+          <div class="input-with-button">
+            <input type="text" class="form-control edit-rev-image" value="${escapeHtml(rev.image || '')}">
+            <button type="button" class="btn-upload-file btn-upload-item-img">↑ อัพโหลด</button>
+            <input type="file" class="file-upload-rev-hidden" accept="image/*" style="display:none;">
+          </div>
+        </div>
+
+        <div class="review-thumb-preview">
+          <img src="${escapeHtml(rev.image || 'assets/images/quality-engineer.jpg')}" alt="Preview" class="review-thumb-preview-el" onerror="this.src='assets/images/quality-engineer.jpg'">
+        </div>
+
+        <div class="form-group" style="margin-top:0.4rem;">
+          <label class="form-label">รีวิว</label>
+          <textarea class="form-control edit-rev-text" rows="3">${escapeHtml(rev.text)}</textarea>
+        </div>
+
+        <div class="review-bottom-actions">
+          <span class="save-status-indicator rev-save-status"></span>
+          <button type="button" class="btn-save-inline btn-save-single-review" data-id="${rev.id}">
+            💾 บันทึกการแก้ไข
+          </button>
+        </div>
+      </div>
+    `;
+
+    const btnUpload = card.querySelector('.btn-upload-item-img');
+    const fileInput = card.querySelector('.file-upload-rev-hidden');
+    const imgInput = card.querySelector('.edit-rev-image');
+    const avatarEl = card.querySelector('.review-avatar-img-el');
+    const thumbEl = card.querySelector('.review-thumb-preview-el');
+
+    if (btnUpload && fileInput) {
+      btnUpload.onclick = () => fileInput.click();
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const dataUrl = event.target.result;
+            if (imgInput) imgInput.value = dataUrl;
+            if (avatarEl) avatarEl.src = dataUrl;
+            if (thumbEl) thumbEl.src = dataUrl;
+            saveSingleReviewFromCard(card, rev.id);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+    }
+
+    if (imgInput) {
+      imgInput.oninput = () => {
+        const val = imgInput.value.trim();
+        if (avatarEl) avatarEl.src = val;
+        if (thumbEl) thumbEl.src = val;
+      };
+    }
+
+    const btnSave = card.querySelector('.btn-save-single-review');
+    if (btnSave) {
+      btnSave.onclick = () => {
+        saveSingleReviewFromCard(card, rev.id);
+      };
+    }
+
+    const inputs = card.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+      inp.onblur = () => {
+        saveSingleReviewFromCard(card, rev.id, true);
+      };
+    });
+
+    const btnDel = card.querySelector('.btn-del-review');
+    if (btnDel) {
+      btnDel.onclick = () => {
+        if (confirm(`คุณต้องการลบรีวิวของ "${rev.name}" ใช่หรือไม่?\n\n(รีวิวจะหายไปจากหน้าเว็บทันทีแบบเรียลไทม์)`)) {
+          let list = getStoredReviews().filter(r => r.id !== rev.id);
+          saveReviews(list);
+          renderAdminReviewsList();
+        }
+      };
+    }
+
+    container.appendChild(card);
+  });
+}
+
+/* ==========================================================================
+   8. Services CMS (บริการครบวงจร)
+   ========================================================================== */
+const DEFAULT_SERVICES = [
+  {
+    id: 'srv_01',
+    title: 'บริการ สำรวจหน้างาน',
+    freeTag: 'ฟรี',
+    desc: 'สำรวจฟรีไม่มีค่าใช้จ่าย'
+  },
+  {
+    id: 'srv_02',
+    title: 'บริการ ยื่นกู้',
+    freeTag: 'ฟรี',
+    desc: 'ลดความยุ่งยาก ประหยัดเวลา พร้อมดูแลจนดำเนินการเสร็จ'
+  },
+  {
+    id: 'srv_03',
+    title: 'บริการ ขออนุญาตปลูกสร้าง',
+    freeTag: 'ฟรี',
+    desc: 'อำนวยความสะดวกทุกขั้นตอน พร้อมยื่นเอกสารตามกฎหมาย'
+  },
+  {
+    id: 'srv_04',
+    title: 'บริการ ยื่นขอน้ำปะปา-ไฟฟ้า(ชั่วคราว)',
+    freeTag: 'ฟรี',
+    desc: 'ดำเนินการยื่นเอกสารและประสานงานกับหน่วยงานราชการให้ครบ จบในที่เดียว'
+  }
+];
+
+function getStoredServices() {
+  try {
+    const raw = localStorage.getItem('rm_services');
+    if (!raw) {
+      localStorage.setItem('rm_services', JSON.stringify(DEFAULT_SERVICES));
+      return DEFAULT_SERVICES;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_services', JSON.stringify(DEFAULT_SERVICES));
+      return DEFAULT_SERVICES;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_SERVICES;
+  }
+}
+
+function saveServices(items) {
+  try {
+    localStorage.setItem('rm_services', JSON.stringify(items));
+    notifyContentUpdated('services');
+  } catch (e) {
+    console.error('Failed to save services:', e);
+  }
+}
+
+function initServicesCMS() {
+  const form = document.getElementById('serviceAddForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('newServiceTitle').value.trim();
+      const tag = document.getElementById('newServiceTag').value.trim() || 'ฟรี';
+      const desc = document.getElementById('newServiceDesc').value.trim();
+
+      const newSrv = {
+        id: 'srv_' + Date.now(),
+        title,
+        freeTag: tag,
+        desc
+      };
+
+      const items = getStoredServices();
+      items.push(newSrv);
+      saveServices(items);
+
+      form.reset();
+      renderAdminServicesList();
+      alert(`✅ เพิ่มบริการ "${title}" เรียบร้อยแล้ว!`);
+    });
+  }
+
+  renderAdminServicesList();
+}
+
+function renderAdminServicesList() {
+  const container = document.getElementById('adminServicesList');
+  const badge = document.getElementById('servicesCountBadge');
+  const services = getStoredServices();
+
+  if (badge) badge.textContent = `${services.length} บริการ`;
+  if (!container) return;
+
+  container.innerHTML = '';
+  services.forEach((srv, idx) => {
+    const card = document.createElement('div');
+    card.className = 'cms-item-card';
+
+    card.innerHTML = `
+      <div class="cms-item-header">
+        <span class="cms-item-header-title">🛠️ บริการที่ ${idx + 1}</span>
+        <button type="button" class="btn-trash-item btn-del-srv" data-id="${srv.id}" title="ลบบริการนี้">🗑️</button>
+      </div>
+      <div class="form-grid-2col" style="margin-bottom:0.75rem;">
+        <div class="form-group">
+          <label class="form-label">ชื่อบริการ</label>
+          <input type="text" class="form-control edit-srv-title" value="${escapeHtml(srv.title)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ป้ายกำกับ</label>
+          <input type="text" class="form-control edit-srv-tag" value="${escapeHtml(srv.freeTag || 'ฟรี')}">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">รายละเอียดบริการ</label>
+          <textarea class="form-control edit-srv-desc" rows="2">${escapeHtml(srv.desc)}</textarea>
+        </div>
+      </div>
+      <div class="review-bottom-actions">
+        <span class="save-status-indicator srv-save-status"></span>
+        <button type="button" class="btn-save-inline btn-save-srv" data-id="${srv.id}">
+          💾 บันทึกบริการนี้
+        </button>
+      </div>
+    `;
+
+    const btnSave = card.querySelector('.btn-save-srv');
+    if (btnSave) {
+      btnSave.onclick = () => saveSingleService(card, srv.id);
+    }
+
+    const inputs = card.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+      inp.onblur = () => saveSingleService(card, srv.id, true);
+    });
+
+    const btnDel = card.querySelector('.btn-del-srv');
+    if (btnDel) {
+      btnDel.onclick = () => {
+        if (confirm(`คุณต้องการลบบริการ "${srv.title}" ใช่หรือไม่?`)) {
+          let list = getStoredServices().filter(s => s.id !== srv.id);
+          saveServices(list);
+          renderAdminServicesList();
+        }
+      };
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function saveSingleService(card, srvId, isAutoSave = false) {
+  const titleInput = card.querySelector('.edit-srv-title');
+  const tagInput = card.querySelector('.edit-srv-tag');
+  const descInput = card.querySelector('.edit-srv-desc');
+  const statusSpan = card.querySelector('.srv-save-status');
+
+  const list = getStoredServices();
+  const target = list.find(s => s.id === srvId);
+  if (!target) return;
+
+  target.title = titleInput ? titleInput.value.trim() : target.title;
+  target.freeTag = tagInput ? tagInput.value.trim() : target.freeTag;
+  target.desc = descInput ? descInput.value.trim() : target.desc;
+
+  saveServices(list);
+
+  if (statusSpan) {
+    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    setTimeout(() => { statusSpan.textContent = ''; }, 2000);
+  }
+}
+
+/* ==========================================================================
+   9. Standards CMS (มาตรฐานวิศวกรรม)
+   ========================================================================== */
+const DEFAULT_STANDARDS = [
+  {
+    id: 'std_01',
+    title: 'ฐานรากตอกเสาเข็มลึกถึงชั้นดินดาน (Solid Soil Layer)',
+    desc: 'คำนวณกำลังรับน้ำหนักตามผลเจาะสำรวจดินในระยอง มั่นใจบ้านไม่ทรุดตัว'
+  },
+  {
+    id: 'std_02',
+    title: 'คอนกรีตผสมเสร็จแบรนด์ชั้นนำ (CPAC / SCG Standard)',
+    desc: 'ควบคุมความข้นเหลวและค่าความแข็งแรง (Cylinder Strength) มีใบรับรองทุกคันรถ'
+  },
+  {
+    id: 'std_03',
+    title: 'ระบบท่อและสายไฟร้อยท่อฝังผนัง 100%',
+    desc: 'ใช้อุปกรณ์สายไฟมาตรฐาน มอก. (Thai Yazaki / BCC) พร้อมระบบตัดไฟรั่วอัตโนมัติ Safe-T-Cut'
+  },
+  {
+    id: 'std_04',
+    title: 'รายงานความคืบหน้าแบบเรียลไทม์ผ่าน Mobile Cloud',
+    desc: 'ลูกค้าไม่ต้องลางานมาดูไซต์งานเอง เราอัปเดตภาพและวิดีโอ 360 องศาทุกสัปดาห์'
+  }
+];
+
+function getStoredStandards() {
+  try {
+    const raw = localStorage.getItem('rm_standards');
+    if (!raw) {
+      localStorage.setItem('rm_standards', JSON.stringify(DEFAULT_STANDARDS));
+      return DEFAULT_STANDARDS;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_standards', JSON.stringify(DEFAULT_STANDARDS));
+      return DEFAULT_STANDARDS;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_STANDARDS;
+  }
+}
+
+function saveStandards(items) {
+  try {
+    localStorage.setItem('rm_standards', JSON.stringify(items));
+    notifyContentUpdated('standards');
+  } catch (e) {
+    console.error('Failed to save standards:', e);
+  }
+}
+
+function initStandardsCMS() {
+  const form = document.getElementById('standardAddForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('newStandardTitle').value.trim();
+      const desc = document.getElementById('newStandardDesc').value.trim();
+
+      const newStd = {
+        id: 'std_' + Date.now(),
+        title,
+        desc
+      };
+
+      const items = getStoredStandards();
+      items.push(newStd);
+      saveStandards(items);
+
+      form.reset();
+      renderAdminStandardsList();
+      alert(`✅ เพิ่มมาตรฐาน "${title}" เรียบร้อยแล้ว!`);
+    });
+  }
+
+  renderAdminStandardsList();
+}
+
+function renderAdminStandardsList() {
+  const container = document.getElementById('adminStandardsList');
+  const badge = document.getElementById('standardsCountBadge');
+  const standards = getStoredStandards();
+
+  if (badge) badge.textContent = `${standards.length} รายการ`;
+  if (!container) return;
+
+  container.innerHTML = '';
+  standards.forEach((std, idx) => {
+    const card = document.createElement('div');
+    card.className = 'cms-item-card';
+
+    card.innerHTML = `
+      <div class="cms-item-header">
+        <span class="cms-item-header-title">🏗️ มาตรฐานที่ ${idx + 1}</span>
+        <button type="button" class="btn-trash-item btn-del-std" data-id="${std.id}" title="ลบมาตรฐานนี้">🗑️</button>
+      </div>
+      <div class="form-grid-2col" style="margin-bottom:0.75rem;">
+        <div class="form-group full-width">
+          <label class="form-label">หัวข้อมาตรฐาน</label>
+          <input type="text" class="form-control edit-std-title" value="${escapeHtml(std.title)}">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">รายละเอียดและเกณฑ์ QC</label>
+          <textarea class="form-control edit-std-desc" rows="2">${escapeHtml(std.desc)}</textarea>
+        </div>
+      </div>
+      <div class="review-bottom-actions">
+        <span class="save-status-indicator std-save-status"></span>
+        <button type="button" class="btn-save-inline btn-save-std" data-id="${std.id}">
+          💾 บันทึกมาตรฐานนี้
+        </button>
+      </div>
+    `;
+
+    const btnSave = card.querySelector('.btn-save-std');
+    if (btnSave) {
+      btnSave.onclick = () => saveSingleStandard(card, std.id);
+    }
+
+    const inputs = card.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+      inp.onblur = () => saveSingleStandard(card, std.id, true);
+    });
+
+    const btnDel = card.querySelector('.btn-del-std');
+    if (btnDel) {
+      btnDel.onclick = () => {
+        if (confirm(`คุณต้องการลบมาตรฐาน "${std.title}" ใช่หรือไม่?`)) {
+          let list = getStoredStandards().filter(s => s.id !== std.id);
+          saveStandards(list);
+          renderAdminStandardsList();
+        }
+      };
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function saveSingleStandard(card, stdId, isAutoSave = false) {
+  const titleInput = card.querySelector('.edit-std-title');
+  const descInput = card.querySelector('.edit-std-desc');
+  const statusSpan = card.querySelector('.std-save-status');
+
+  const list = getStoredStandards();
+  const target = list.find(s => s.id === stdId);
+  if (!target) return;
+
+  target.title = titleInput ? titleInput.value.trim() : target.title;
+  target.desc = descInput ? descInput.value.trim() : target.desc;
+
+  saveStandards(list);
+
+  if (statusSpan) {
+    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    setTimeout(() => { statusSpan.textContent = ''; }, 2000);
+  }
+}
+
+/* ==========================================================================
+   10. Why Us CMS (จุดเด่น RMHome)
+   ========================================================================== */
+const DEFAULT_WHY_US = [
+  {
+    id: 'why_01',
+    title: 'สัญญาโปร่งใส จ่ายตามงวดงาน',
+    desc: 'แบ่งจ่ายเป็นงวดตามงานที่สร้างเสร็จจริง ไม่มีการเรียกเก็บเงินล่วงหน้าเกินเนื้องาน คุมงบได้ 100% ไม่มีงบบานปลาย'
+  },
+  {
+    id: 'why_02',
+    title: 'รับประกันโครงสร้างยาวนาน 20 ปี',
+    desc: 'อุ่นใจด้วยหนังสือค้ำประกันโครงสร้าง 20 ปีเต็ม และรับประกันสถาปัตยกรรม 2 ปี พร้อมทีมเซอร์วิสดูแลรวดเร็ว'
+  },
+  {
+    id: 'why_03',
+    title: 'วัสดุแท้เกรดพรีเมียม SCG & TOA',
+    desc: 'เลือกใช้เฉพาะแบรนด์ชั้นนำระดับประเทศ มอก. ทุกชิ้น ไม่มีสับเปลี่ยนของเกรดต่ำ มั่นใจในอายุการใช้งานยาวนาน'
+  },
+  {
+    id: 'why_04',
+    title: 'บริการยื่นสินเชื่อธนาคาร 100%',
+    desc: 'มีเจ้าหน้าที่ฝ่ายการเงินประสานงานกับธนาคารชั้นนำ ให้คำแนะนำเรื่องเอกสาร ช่วยดันยอดกู้สูงสุด ดอกเบี้ยพิเศษ'
+  },
+  {
+    id: 'why_05',
+    title: 'สำนักงานตั้งอยู่ในระยอง ดูแลง่าย',
+    desc: 'มีออฟฟิศและทีมงานประจำพื้นที่ระยอง พร้อมเข้าสำรวจหน้างานทันที ติดต่อง่าย ไม่ใช่ผู้รับเหมาจร'
+  },
+  {
+    id: 'why_06',
+    title: 'วันสต็อปเซอร์วิส ครบวงจร',
+    desc: 'ตั้งแต่ขอเลขที่บ้าน มิเตอร์น้ำ มิเตอร์ไฟ ขุดเจาะบ่อบาดาล ขออนุญาตเทศบาล จบครบในที่เดียวแบบ One Stop'
+  }
+];
+
+function getStoredWhyUs() {
+  try {
+    const raw = localStorage.getItem('rm_why_us');
+    if (!raw) {
+      localStorage.setItem('rm_why_us', JSON.stringify(DEFAULT_WHY_US));
+      return DEFAULT_WHY_US;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_why_us', JSON.stringify(DEFAULT_WHY_US));
+      return DEFAULT_WHY_US;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_WHY_US;
+  }
+}
+
+function saveWhyUs(items) {
+  try {
+    localStorage.setItem('rm_why_us', JSON.stringify(items));
+    notifyContentUpdated('why_us');
+  } catch (e) {
+    console.error('Failed to save why us:', e);
+  }
+}
+
+function initWhyUsCMS() {
+  const form = document.getElementById('whyUsAddForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('newWhyTitle').value.trim();
+      const desc = document.getElementById('newWhyDesc').value.trim();
+
+      const newWhy = {
+        id: 'why_' + Date.now(),
+        title,
+        desc
+      };
+
+      const items = getStoredWhyUs();
+      items.push(newWhy);
+      saveWhyUs(items);
+
+      form.reset();
+      renderAdminWhyUsList();
+      alert(`✅ เพิ่มจุดเด่น "${title}" เรียบร้อยแล้ว!`);
+    });
+  }
+
+  renderAdminWhyUsList();
+}
+
+function renderAdminWhyUsList() {
+  const container = document.getElementById('adminWhyUsList');
+  const badge = document.getElementById('whyUsCountBadge');
+  const whyUs = getStoredWhyUs();
+
+  if (badge) badge.textContent = `${whyUs.length} จุดเด่น`;
+  if (!container) return;
+
+  container.innerHTML = '';
+  whyUs.forEach((w, idx) => {
+    const card = document.createElement('div');
+    card.className = 'cms-item-card';
+
+    card.innerHTML = `
+      <div class="cms-item-header">
+        <span class="cms-item-header-title">🏆 จุดเด่นที่ ${idx + 1}</span>
+        <button type="button" class="btn-trash-item btn-del-why" data-id="${w.id}" title="ลบจุดเด่นนี้">🗑️</button>
+      </div>
+      <div class="form-grid-2col" style="margin-bottom:0.75rem;">
+        <div class="form-group full-width">
+          <label class="form-label">หัวข้อจุดเด่น</label>
+          <input type="text" class="form-control edit-why-title" value="${escapeHtml(w.title)}">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">คำอธิบายรายละเอียด</label>
+          <textarea class="form-control edit-why-desc" rows="2">${escapeHtml(w.desc)}</textarea>
+        </div>
+      </div>
+      <div class="review-bottom-actions">
+        <span class="save-status-indicator why-save-status"></span>
+        <button type="button" class="btn-save-inline btn-save-why" data-id="${w.id}">
+          💾 บันทึกจุดเด่นนี้
+        </button>
+      </div>
+    `;
+
+    const btnSave = card.querySelector('.btn-save-why');
+    if (btnSave) {
+      btnSave.onclick = () => saveSingleWhyUs(card, w.id);
+    }
+
+    const inputs = card.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+      inp.onblur = () => saveSingleWhyUs(card, w.id, true);
+    });
+
+    const btnDel = card.querySelector('.btn-del-why');
+    if (btnDel) {
+      btnDel.onclick = () => {
+        if (confirm(`คุณต้องการลบจุดเด่น "${w.title}" ใช่หรือไม่?`)) {
+          let list = getStoredWhyUs().filter(item => item.id !== w.id);
+          saveWhyUs(list);
+          renderAdminWhyUsList();
+        }
+      };
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function saveSingleWhyUs(card, whyId, isAutoSave = false) {
+  const titleInput = card.querySelector('.edit-why-title');
+  const descInput = card.querySelector('.edit-why-desc');
+  const statusSpan = card.querySelector('.why-save-status');
+
+  const list = getStoredWhyUs();
+  const target = list.find(w => w.id === whyId);
+  if (!target) return;
+
+  target.title = titleInput ? titleInput.value.trim() : target.title;
+  target.desc = descInput ? descInput.value.trim() : target.desc;
+
+  saveWhyUs(list);
+
+  if (statusSpan) {
+    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    setTimeout(() => { statusSpan.textContent = ''; }, 2000);
+  }
+}
+
+/* ==========================================================================
+   11. Workflow CMS (ขั้นตอนงานสร้าง)
+   ========================================================================== */
+const DEFAULT_WORKFLOW = [
+  {
+    id: 'wf_01',
+    step: '01',
+    title: 'ปรึกษา & สำรวจที่ดินระยอง ฟรี',
+    desc: 'ทีมสถาปนิกและวิศวกรเข้าสำรวจสภาพดิน ทิศทางแดด ลม และผังเมืองระยอง เพื่อประเมินความเป็นไปได้'
+  },
+  {
+    id: 'wf_02',
+    step: '02',
+    title: 'ออกแบบ 3D & ปรับฟังก์ชัน',
+    desc: 'เขียนแบบบ้าน 3D เสมือนจริง ปรับแก้ตามความพึงพอใจและฟังก์ชันการใช้งานของครอบครัวคุณ'
+  },
+  {
+    id: 'wf_03',
+    step: '03',
+    title: 'ทำใบเสนอราคา BOQ ละเอียด',
+    desc: 'แจกแจงรายการวัสดุและค่าแรงชัดเจนทุกตารางนิ้ว ไม่มีหมกเม็ด ก่อนลงนามทำสัญญามาตรฐาน'
+  },
+  {
+    id: 'wf_04',
+    step: '04',
+    title: 'ยื่นขออนุญาต & ยื่นกู้ธนาคาร',
+    desc: 'ทีมงานจัดการเอกสารราชการ ยื่นขออนุญาตก่อสร้าง และยื่นกู้สถาบันการเงินให้จนผ่านอนุมัติ'
+  },
+  {
+    id: 'wf_05',
+    step: '05',
+    title: 'ลงมือก่อสร้างตามมาตรฐาน QC',
+    desc: 'วิศวกรและโฟร์แมนควบคุมงานทุกวัน ส่งรายงานความคืบหน้าภาพถ่ายและวิดีโอ 360 องศาให้ท่านทราบ'
+  },
+  {
+    id: 'wf_06',
+    step: '06',
+    title: 'ตรวจรับ & ส่งมอบบ้านพร้อมอยู่',
+    desc: 'ทำความสะอาดแบบ Big Cleaning ส่งมอบกุญแจ ใบรับประกันโครงสร้าง 20 ปี และของขวัญขึ้นบ้านใหม่'
+  }
+];
+
+function getStoredWorkflow() {
+  try {
+    const raw = localStorage.getItem('rm_workflow');
+    if (!raw) {
+      localStorage.setItem('rm_workflow', JSON.stringify(DEFAULT_WORKFLOW));
+      return DEFAULT_WORKFLOW;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_workflow', JSON.stringify(DEFAULT_WORKFLOW));
+      return DEFAULT_WORKFLOW;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_WORKFLOW;
+  }
+}
+
+function saveWorkflow(items) {
+  try {
+    localStorage.setItem('rm_workflow', JSON.stringify(items));
+    notifyContentUpdated('workflow');
+  } catch (e) {
+    console.error('Failed to save workflow:', e);
+  }
+}
+
+function initWorkflowCMS() {
+  renderAdminWorkflowList();
+}
+
+function renderAdminWorkflowList() {
+  const container = document.getElementById('adminWorkflowList');
+  const badge = document.getElementById('workflowCountBadge');
+  const workflow = getStoredWorkflow();
+
+  if (badge) badge.textContent = `${workflow.length} ขั้นตอน`;
+  if (!container) return;
+
+  container.innerHTML = '';
+  workflow.forEach((wf, idx) => {
+    const card = document.createElement('div');
+    card.className = 'cms-item-card';
+
+    card.innerHTML = `
+      <div class="cms-item-header">
+        <span class="cms-item-header-title">📋 ขั้นตอนที่ ${escapeHtml(wf.step || (idx + 1).toString())}</span>
+      </div>
+      <div class="form-grid-2col" style="margin-bottom:0.75rem;">
+        <div class="form-group">
+          <label class="form-label">หมายเลขสเต็ป</label>
+          <input type="text" class="form-control edit-wf-step" value="${escapeHtml(wf.step || (idx + 1).toString())}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อขั้นตอน</label>
+          <input type="text" class="form-control edit-wf-title" value="${escapeHtml(wf.title)}">
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">รายละเอียดขั้นตอน</label>
+          <textarea class="form-control edit-wf-desc" rows="2">${escapeHtml(wf.desc)}</textarea>
+        </div>
+      </div>
+      <div class="review-bottom-actions">
+        <span class="save-status-indicator wf-save-status"></span>
+        <button type="button" class="btn-save-inline btn-save-wf" data-id="${wf.id}">
+          💾 บันทึกขั้นตอนนี้
+        </button>
+      </div>
+    `;
+
+    const btnSave = card.querySelector('.btn-save-wf');
+    if (btnSave) {
+      btnSave.onclick = () => saveSingleWorkflow(card, wf.id);
+    }
+
+    const inputs = card.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+      inp.onblur = () => saveSingleWorkflow(card, wf.id, true);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function saveSingleWorkflow(card, wfId, isAutoSave = false) {
+  const stepInput = card.querySelector('.edit-wf-step');
+  const titleInput = card.querySelector('.edit-wf-title');
+  const descInput = card.querySelector('.edit-wf-desc');
+  const statusSpan = card.querySelector('.wf-save-status');
+
+  const list = getStoredWorkflow();
+  const target = list.find(w => w.id === wfId);
+  if (!target) return;
+
+  target.step = stepInput ? stepInput.value.trim() : target.step;
+  target.title = titleInput ? titleInput.value.trim() : target.title;
+  target.desc = descInput ? descInput.value.trim() : target.desc;
+
+  saveWorkflow(list);
+
+  if (statusSpan) {
+    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    setTimeout(() => { statusSpan.textContent = ''; }, 2000);
+  }
+}
+
+/* ==========================================================================
+   12. Site Content CMS (แถบโปรโมชั่น & ข้อความหน้าเว็บหลัก)
+   ========================================================================== */
+const DEFAULT_SITE_INFO = {
+  promoText: 'จองสร้างบ้านระยองวันนี้ ฟรี! ออกแบบ 3D + ค่าขออนุญาตก่อสร้าง + ส่วนลดสูงสุด 300,000 บ.',
+  promoPill: 'PROMOTION 2026',
+  phone: '082-945-8999',
+  hours: 'เปิดบริการ: จันทร์ - เสาร์ (09:00 - 18:00 น.)',
+  heroBadge: 'บริษัทรับสร้างบ้านอันดับ 1 ในจังหวัดระยอง และพื้นที่เศรษฐกิจ EEC',
+  heroTitle: 'สร้างบ้านในฝันของคุณ<br><span class="hero-brand-gold">สร้างบ้านระยอง RMHome</span>',
+  heroSubtitle: 'เนรมิตบ้านคุณภาพระดับพรีเมียม ผสานความหรูหราและอบอุ่นต้อนรับเทศกาลแห่งความสุข ออกแบบเฉพาะเพื่อชีวิตคุณ คุมงบได้ ไม่บานปลาย หมดปัญหาทิ้งงาน 100% พร้อมบริการยื่นกู้และขออนุญาตครบวงจร',
+  navModelsLabel: 'บ้านอบอุ่นที่เรามอบให้คุณ'
+};
+
+function getStoredSiteInfo() {
+  try {
+    const raw = localStorage.getItem('rm_site_info');
+    if (!raw) {
+      localStorage.setItem('rm_site_info', JSON.stringify(DEFAULT_SITE_INFO));
+      return DEFAULT_SITE_INFO;
+    }
+    return { ...DEFAULT_SITE_INFO, ...JSON.parse(raw) };
+  } catch (e) {
+    return DEFAULT_SITE_INFO;
+  }
+}
+
+function saveSiteInfo(info) {
+  try {
+    localStorage.setItem('rm_site_info', JSON.stringify(info));
+    notifyContentUpdated('site_info');
+  } catch (e) {
+    console.error('Failed to save site info:', e);
+  }
+}
+
+function initSiteContentCMS() {
+  const form = document.getElementById('siteContentForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const info = {
+        promoText: document.getElementById('editPromoText').value.trim(),
+        promoPill: document.getElementById('editPromoPill').value.trim(),
+        phone: document.getElementById('editPhone').value.trim(),
+        hours: document.getElementById('editHours').value.trim(),
+        navModelsLabel: document.getElementById('editNavModelsLabel').value.trim(),
+        heroBadge: document.getElementById('editHeroBadge').value.trim(),
+        heroTitle: document.getElementById('editHeroTitle').value.trim(),
+        heroSubtitle: document.getElementById('editHeroSubtitle').value.trim()
+      };
+
+      saveSiteInfo(info);
+
+      const feedback = document.getElementById('siteContentSaveFeedback');
+      if (feedback) {
+        feedback.style.display = 'inline';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2500);
+      }
+      alert('✅ บันทึกข้อความหน้าเว็บหลักและแถบโปรโมชั่นเรียบร้อยแล้ว!\n\nหน้าแรกจะแสดงข้อความใหม่ทันทีแบบเรียลไทม์');
+    });
+  }
+
+  loadSiteContentForm();
+}
+
+function loadSiteContentForm() {
+  const info = getStoredSiteInfo();
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+
+  setVal('editPromoText', info.promoText);
+  setVal('editPromoPill', info.promoPill);
+  setVal('editPhone', info.phone);
+  setVal('editHours', info.hours);
+  setVal('editNavModelsLabel', info.navModelsLabel);
+  setVal('editHeroBadge', info.heroBadge);
+  setVal('editHeroTitle', info.heroTitle);
+  setVal('editHeroSubtitle', info.heroSubtitle);
+}
+
+/* ==========================================================================
+   13. Calculator Settings CMS (อัตราค่าก่อสร้าง)
+   ========================================================================== */
+const DEFAULT_CALC_SETTINGS = {
+  standard: 15500,
+  premium: 18500,
+  luxury: 22500,
+  pool: 450000,
+  smart: 220000,
+  interior: 3500
+};
+
+function getStoredCalculatorSettings() {
+  try {
+    const raw = localStorage.getItem('rm_calculator_settings');
+    if (!raw) {
+      localStorage.setItem('rm_calculator_settings', JSON.stringify(DEFAULT_CALC_SETTINGS));
+      return DEFAULT_CALC_SETTINGS;
+    }
+    return { ...DEFAULT_CALC_SETTINGS, ...JSON.parse(raw) };
+  } catch (e) {
+    return DEFAULT_CALC_SETTINGS;
+  }
+}
+
+function saveCalculatorSettings(settings) {
+  try {
+    localStorage.setItem('rm_calculator_settings', JSON.stringify(settings));
+    notifyContentUpdated('calculator');
+  } catch (e) {
+    console.error('Failed to save calc settings:', e);
+  }
+}
+
+function initCalculatorCMS() {
+  const form = document.getElementById('calculatorSettingsForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const settings = {
+        standard: parseInt(document.getElementById('calcRateStandard').value, 10) || 15500,
+        premium: parseInt(document.getElementById('calcRatePremium').value, 10) || 18500,
+        luxury: parseInt(document.getElementById('calcRateLuxury').value, 10) || 22500,
+        pool: parseInt(document.getElementById('calcCostPool').value, 10) || 450000,
+        smart: parseInt(document.getElementById('calcCostSmart').value, 10) || 220000,
+        interior: parseInt(document.getElementById('calcRateInterior').value, 10) || 3500
+      };
+
+      saveCalculatorSettings(settings);
+
+      const feedback = document.getElementById('calcSettingsSaveFeedback');
+      if (feedback) {
+        feedback.style.display = 'inline';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2500);
+      }
+      alert('✅ บันทึกอัตราคำนวณงบก่อสร้างเรียบร้อยแล้ว!');
+    });
+  }
+
+  loadCalculatorSettingsForm();
+}
+
+function loadCalculatorSettingsForm() {
+  const s = getStoredCalculatorSettings();
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  setVal('calcRateStandard', s.standard);
+  setVal('calcRatePremium', s.premium);
+  setVal('calcRateLuxury', s.luxury);
+  setVal('calcCostPool', s.pool);
+  setVal('calcCostSmart', s.smart);
+  setVal('calcRateInterior', s.interior);
+}
+
+/* ==========================================================================
+   14. Service Areas CMS (พื้นที่ให้บริการ)
+   ========================================================================== */
+const DEFAULT_SERVICE_AREAS = {
+  provinces: 'ชลบุรี · จันทบุรี · ตราด · ปราจีนบุรี · ฉะเชิงเทรา · สระแก้ว',
+  districts: [
+    'อำเภอเมืองระยอง (เนินพระ, เชิงเนิน, ตะพง, เพ)',
+    'อำเภอบ้านฉาง (ใกล้สนามบินอู่ตะเภา)',
+    'อำเภอปลวกแดง (โซนนิคมอีสเทิร์นซีบอร์ด)',
+    'อำเภอนิคมพัฒนา (โซนนิคม WHA, อมตะ)',
+    'อำเภอแกลง (โซนแหลมแม่พิมพ์, ปากน้ำประแส)',
+    'อำเภอบ้านค่าย',
+    'อำเภอวังจันทร์',
+    'โซนหาดแม่รำพึง & สวนสน'
+  ]
+};
+
+function getStoredServiceAreas() {
+  try {
+    const raw = localStorage.getItem('rm_service_areas');
+    if (!raw) {
+      localStorage.setItem('rm_service_areas', JSON.stringify(DEFAULT_SERVICE_AREAS));
+      return DEFAULT_SERVICE_AREAS;
+    }
+    return { ...DEFAULT_SERVICE_AREAS, ...JSON.parse(raw) };
+  } catch (e) {
+    return DEFAULT_SERVICE_AREAS;
+  }
+}
+
+function saveServiceAreas(areas) {
+  try {
+    localStorage.setItem('rm_service_areas', JSON.stringify(areas));
+    notifyContentUpdated('areas');
+  } catch (e) {
+    console.error('Failed to save service areas:', e);
+  }
+}
+
+function initAreasCMS() {
+  const form = document.getElementById('areasSettingsForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const provinces = document.getElementById('editAreasProvinces').value.trim();
+      const rawDistricts = document.getElementById('editAreasDistricts').value.trim();
+      const districts = rawDistricts.split('\n').map(d => d.trim()).filter(d => d.length > 0);
+
+      saveServiceAreas({
+        provinces,
+        districts
+      });
+
+      const feedback = document.getElementById('areasSaveFeedback');
+      if (feedback) {
+        feedback.style.display = 'inline';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2500);
+      }
+      alert('✅ บันทึกข้อมูลพื้นที่ให้บริการเรียบร้อยแล้ว!');
+    });
+  }
+
+  loadAreasSettingsForm();
+}
+
+function loadAreasSettingsForm() {
+  const a = getStoredServiceAreas();
+  const provEl = document.getElementById('editAreasProvinces');
+  const distEl = document.getElementById('editAreasDistricts');
+  if (provEl) provEl.value = a.provinces || '';
+  if (distEl) distEl.value = Array.isArray(a.districts) ? a.districts.join('\n') : '';
+}
+
+/* ==========================================================================
+   15. Tab Admin Users Integration
+   ========================================================================== */
+function initTabAdminUsers() {
+  const form = document.getElementById('tabAddNewAdminForm');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const usernameInput = document.getElementById('tabNewAdminUsername');
+      const passwordInput = document.getElementById('tabNewAdminPassword');
+      const roleSelect = document.getElementById('tabNewAdminRole');
+
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+      const role = roleSelect ? roleSelect.value : 'แอดมินทั่วไป';
+
+      if (!username || !password) {
+        alert('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+        return;
+      }
+
+      const currentUsers = getAdminUsers();
+      if (currentUsers.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        alert(`ชื่อผู้ใช้ "${username}" มีอยู่ในระบบแล้ว กรุณาเลือกชื่ออื่น`);
+        return;
+      }
+
+      currentUsers.push({
+        username,
+        password,
+        role,
+        isMaster: false,
+        createdAt: new Date().toLocaleDateString('th-TH')
+      });
+
+      saveAdminUsers(currentUsers);
+      form.reset();
+      renderTabAdminUsersList();
+      alert(`✅ เพิ่มบัญชีแอดมิน "${username}" สำเร็จเรียบร้อยแล้ว!`);
+    });
+  }
+
+  renderTabAdminUsersList();
+}
+
+function renderTabAdminUsersList() {
+  const tbody = document.getElementById('tabAdminUsersTableBody');
+  if (!tbody) return;
+
+  const users = getAdminUsers();
+  tbody.innerHTML = '';
+
+  users.forEach((user) => {
+    const tr = document.createElement('tr');
+
+    const badgeRole = user.isMaster
+      ? '<span class="user-role-badge master">👑 ผู้ดูแลระบบหลัก</span>'
+      : `<span class="user-role-badge sub">${escapeHtml(user.role || 'แอดมินทั่วไป')}</span>`;
+
+    const deleteBtn = user.isMaster
+      ? '<span style="color:#94a3b8; font-size:0.75rem;">บัญชีหลัก</span>'
+      : `<button class="btn-del-user-tab" data-username="${escapeHtml(user.username)}" style="background:#fee2e2; border:1px solid #fecaca; color:#dc2626; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.75rem;">ลบ</button>`;
+
+    tr.innerHTML = `
+      <td>
+        <strong style="color:#0f172a;">${escapeHtml(user.username)}</strong>
+        ${user.isMaster ? '<span style="color:#d4af37; font-size:0.8rem; margin-left:4px;">★</span>' : ''}
+      </td>
+      <td>
+        <div class="pw-col">
+          <span class="pw-masked" data-pw="${escapeHtml(user.password)}">••••••••</span>
+          <button type="button" class="btn-show-tab-pw" style="background:none; border:none; cursor:pointer; font-size:0.9rem;" title="เปิด/ปิดรหัสผ่าน">👁️</button>
+        </div>
+      </td>
+      <td>${badgeRole}</td>
+      <td>${deleteBtn}</td>
+    `;
+
+    const btnToggle = tr.querySelector('.btn-show-tab-pw');
+    const maskedSpan = tr.querySelector('.pw-masked');
+    if (btnToggle && maskedSpan) {
+      btnToggle.onclick = () => {
+        if (maskedSpan.textContent === '••••••••') {
+          maskedSpan.textContent = maskedSpan.getAttribute('data-pw');
+          btnToggle.textContent = '🙈';
+        } else {
+          maskedSpan.textContent = '••••••••';
+          btnToggle.textContent = '👁️';
+        }
+      };
+    }
+
+    const btnDelete = tr.querySelector('.btn-del-user-tab');
+    if (btnDelete) {
+      btnDelete.onclick = () => {
+        const targetUsername = btnDelete.getAttribute('data-username');
+        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีแอดมิน "${targetUsername}" ?`)) {
+          let currentUsers = getAdminUsers().filter(u => u.username !== targetUsername);
+          saveAdminUsers(currentUsers);
+          renderTabAdminUsersList();
+        }
+      };
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
