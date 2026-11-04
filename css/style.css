@@ -2351,6 +2351,16 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.line-oa-banner:hover {
+  background: rgba(6, 199, 85, 0.22);
+  border-color: #06c755;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(6, 199, 85, 0.25);
 }
 
 .line-oa-icon {

@@ -702,8 +702,8 @@ function openHouseModalById(houseId) {
         <a href="tel:0912998797" class="btn" style="background:linear-gradient(135deg, #0e3d29, #145338); color:#ffd700; border:1px solid #d4af37; padding:0.65rem 1.25rem; font-weight:700; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
           <span>📞</span> โทรปรึกษาวิศวกร: 091-299-8797
         </a>
-        <a href="https://line.me" target="_blank" rel="noopener" class="btn" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
-          <span>💬</span> ขอแปลนฉบับเต็มทาง LINE
+        <a href="${window.RM_LINE_URL || 'https://line.me/R/ti/p/@sunny_anavin'}" target="_blank" rel="noopener" class="btn btn-modal-line" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
+          <span>💬</span> ขอแปลนฉบับเต็มทาง LINE (เพิ่มเพื่อน)
         </a>
       </div>
       <div style="display:flex; gap:0.75rem; align-items:center;">
@@ -2563,6 +2563,26 @@ function renderSiteInfo() {
       const el = document.getElementById('heroDescEl');
       if (el) el.textContent = info.heroSubtitle;
     }
+
+    const lineLink = info.lineUrl || 'https://line.me/R/ti/p/@sunny_anavin';
+    const lineId = info.lineId || '@sunny_anavin';
+    window.RM_LINE_URL = lineLink;
+    window.RM_LINE_ID = lineId;
+
+    const bannerLink = document.getElementById('siteLineBannerLink');
+    if (bannerLink) bannerLink.href = lineLink;
+
+    const bannerText = document.getElementById('siteLineIdText');
+    if (bannerText) bannerText.textContent = `LINE Official: ${lineId}`;
+
+    const footerLink = document.getElementById('siteFooterLineLink');
+    if (footerLink) {
+      footerLink.href = lineLink;
+      footerLink.textContent = `${lineId} (คลิกเพิ่มเพื่อน)`;
+    }
+
+    const floatLink = document.getElementById('siteFloatLineLink');
+    if (floatLink) floatLink.href = lineLink;
   } catch (e) {}
 }
 
