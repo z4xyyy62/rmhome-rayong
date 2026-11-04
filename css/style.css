@@ -3293,3 +3293,410 @@ textarea.form-control {
     height: 520px;
   }
 }
+
+/* ==========================================================================
+   3D Orbit Ferris Wheel Showcase (วงโคจร 3 มิติ ชิงช้าสวรรค์ หมุนวนลูปไม่รู้จบ)
+   ========================================================================== */
+.portfolio-view-switcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 auto 1.75rem auto;
+  flex-wrap: wrap;
+}
+
+.view-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.25rem;
+  background: rgba(4, 20, 14, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 9999px;
+  color: #cbd5e1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.view-mode-pill:hover {
+  border-color: #ffd700;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.view-mode-pill.active {
+  background: linear-gradient(135deg, #0e3d29 0%, #155e3b 100%);
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.35);
+}
+
+.orbit-stage-wrapper {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto 2.5rem auto;
+  background: radial-gradient(ellipse at 50% 50%, rgba(14, 61, 41, 0.45) 0%, rgba(3, 16, 11, 0.95) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.25);
+  border-radius: 20px;
+  padding: 1.5rem 1rem 1.75rem 1rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(14, 61, 41, 0.3);
+  overflow: hidden;
+  user-select: none;
+}
+
+.orbit-stage {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  perspective: 1100px;
+  perspective-origin: 50% 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Central Celestial Sun / RMHome Emblem */
+.orbit-centerpiece {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 400;
+}
+
+.orbit-center-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(14, 61, 41, 0.1) 45%, transparent 70%);
+  border-radius: 50%;
+}
+
+.orbit-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.orbit-ring-outer {
+  width: 780px;
+  height: 320px;
+  border: 1.5px dashed rgba(212, 175, 55, 0.28);
+  animation: orbitRingSpin 50s linear infinite;
+}
+
+.orbit-ring-inner {
+  width: 520px;
+  height: 220px;
+  border: 1px dashed rgba(37, 244, 238, 0.22);
+  animation: orbitRingCounter 35s linear infinite;
+}
+
+@keyframes orbitRingSpin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes orbitRingCounter {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+.orbit-center-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #0e3d29 0%, #03140d 90%);
+  border: 2px solid #d4af37;
+  border-radius: 50%;
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.4), 0 0 15px rgba(34, 211, 238, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.orbit-emblem-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid #d4af37;
+  margin-bottom: 2px;
+}
+
+.orbit-emblem-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.orbit-core-text strong {
+  display: block;
+  font-size: 0.68rem;
+  color: #ffd700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.orbit-core-text span {
+  display: block;
+  font-size: 0.58rem;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+}
+
+/* 3D Orbit Carousel Track */
+.orbit-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.orbit-card {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  width: 290px;
+  background: linear-gradient(180deg, rgba(8, 30, 20, 0.96) 0%, rgba(3, 15, 10, 0.98) 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transform-origin: center center;
+}
+
+.orbit-card:active {
+  cursor: grabbing;
+}
+
+.orbit-card.is-front {
+  border-color: #ffd700;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 28px rgba(212, 175, 55, 0.45);
+  cursor: default;
+}
+
+.orbit-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  overflow: hidden;
+  background: #000;
+}
+
+.orbit-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.orbit-card:hover .orbit-card-img-wrap img {
+  transform: scale(1.05);
+}
+
+.orbit-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: rgba(14, 61, 41, 0.88);
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.orbit-card-body {
+  padding: 1rem 1.15rem 1.15rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.orbit-card-series {
+  font-size: 0.72rem;
+  color: #22d3ee;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.orbit-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.65rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orbit-card-specs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.orbit-card-specs span {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.orbit-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orbit-card-price .price-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.orbit-card-price .price-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffd700;
+}
+
+.btn-orbit-view {
+  background: linear-gradient(135deg, #0e3d29 0%, #062316 100%);
+  color: #ffd700;
+  border: 1px solid #d4af37;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-orbit-view:hover {
+  background: #ffd700;
+  color: #03140d;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+/* Orbit Controls Bar */
+.orbit-controls-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-orbit-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  background: rgba(14, 61, 41, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 9999px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-orbit-control svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.btn-orbit-control:hover {
+  background: #0e3d29;
+  border-color: #ffd700;
+  color: #ffd700;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+}
+
+.btn-orbit-toggle {
+  background: rgba(4, 20, 14, 0.8);
+  border-color: #25f4ee;
+  color: #25f4ee;
+}
+
+.btn-orbit-toggle:hover {
+  border-color: #25f4ee;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(37, 244, 238, 0.3);
+}
+
+.orbit-guide-hint {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0.85rem auto 0 auto;
+}
+
+@media (max-width: 768px) {
+  .orbit-stage {
+    height: 500px;
+  }
+  .orbit-ring-outer {
+    width: 95vw;
+    height: 250px;
+  }
+  .orbit-ring-inner {
+    width: 65vw;
+    height: 170px;
+  }
+  .orbit-card {
+    width: 230px;
+  }
+  .orbit-card-img-wrap {
+    height: 140px;
+  }
+  .orbit-card-title {
+    font-size: 0.95rem;
+  }
+  .orbit-card-specs {
+    font-size: 0.72rem;
+    gap: 0.35rem;
+  }
+  .orbit-card-price .price-val {
+    font-size: 0.95rem;
+  }
+  .btn-orbit-control {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.78rem;
+  }
+}

@@ -496,6 +496,9 @@ function renderHouseGrid() {
     return cat === activeHouseFilter;
   });
 
+  // Render 3D Orbit Carousel with all matching houses
+  renderOrbitCarousel(filteredHouses);
+
   const totalFiltered = filteredHouses.length;
 
   // 1. Dynamic Extra Houses Counter Badge & View All Button (เด้งขึ้นโมดอลกลางจอ)
@@ -543,7 +546,325 @@ function renderHouseGrid() {
   });
 }
 
+
+/* ==========================================================================
+   3D Orbit Ferris Wheel Carousel Engine (หมุนวนรอบแกนกลาง RMHome)
+   ========================================================================== */
+let activePortfolioView = 'orbit'; // 'orbit' or 'grid'
+let orbitAnimationId = null;
+let orbitCurrentAngle = 0;
+let orbitTargetAngle = null;
+let orbitIsPlaying = true;
+let orbitIsDragging = false;
+let orbitDragStartX = 0;
+let orbitDragStartAngle = 0;
+let orbitCardsData = [];
+let orbitCardElements = [];
+
+function getOrbitRadii() {
+  const isMobile = window.innerWidth < 768;
+  const isTablet = window.innerWidth < 1024 && window.innerWidth >= 768;
+  if (isMobile) {
+    return {
+      rx: Math.min(window.innerWidth * 0.38, 160),
+      rz: 95,
+      tiltY: 24
+    };
+  } else if (isTablet) {
+    return {
+      rx: 280,
+      rz: 155,
+      tiltY: 34
+    };
+  } else {
+    return {
+      rx: 390,
+      rz: 210,
+      tiltY: 38
+    };
+  }
+}
+
+function updateOrbitPositions() {
+  const n = orbitCardElements.length;
+  if (n === 0) return;
+
+  const { rx, rz, tiltY } = getOrbitRadii();
+  const step = (2 * Math.PI) / n;
+
+  orbitCardElements.forEach((el, i) => {
+    const phi = orbitCurrentAngle + (i * step);
+    const x = rx * Math.sin(phi);
+    const z = rz * Math.cos(phi);
+    const y = tiltY * Math.cos(phi);
+
+    // Normalized depth: t = 1 at front (cos(phi) = 1), t = 0 at back (cos(phi) = -1)
+    const t = (z + rz) / (2 * rz); // 0 to 1
+    const scale = 0.68 + (0.35 * t); // 0.68 to 1.03
+    const opacity = 0.45 + (0.55 * t); // 0.45 to 1.0
+    const brightness = 0.65 + (0.4 * t); // 0.65 to 1.05
+    const zIndex = Math.round(100 + (t * 800));
+
+    el.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), calc(-50% + ${y.toFixed(1)}px), ${z.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.filter = `brightness(${brightness.toFixed(3)})`;
+    el.style.zIndex = zIndex;
+
+    if (t > 0.88) {
+      el.classList.add('is-front');
+    } else {
+      el.classList.remove('is-front');
+    }
+  });
+}
+
+function orbitTick() {
+  if (activePortfolioView !== 'orbit') return;
+
+  if (orbitTargetAngle !== null) {
+    // Easing towards target angle
+    const diff = orbitTargetAngle - orbitCurrentAngle;
+    if (Math.abs(diff) < 0.003) {
+      orbitCurrentAngle = orbitTargetAngle;
+      orbitTargetAngle = null;
+    } else {
+      orbitCurrentAngle += diff * 0.08;
+    }
+    updateOrbitPositions();
+  } else if (orbitIsPlaying && !orbitIsDragging) {
+    orbitCurrentAngle += 0.0035; // Smooth continuous rotation speed
+    if (orbitCurrentAngle > Math.PI * 2) {
+      orbitCurrentAngle -= Math.PI * 2;
+    }
+    updateOrbitPositions();
+  }
+
+  orbitAnimationId = requestAnimationFrame(orbitTick);
+}
+
+function startOrbitAnimation() {
+  if (!orbitAnimationId && activePortfolioView === 'orbit') {
+    orbitAnimationId = requestAnimationFrame(orbitTick);
+  }
+}
+
+function stopOrbitAnimation() {
+  if (orbitAnimationId) {
+    cancelAnimationFrame(orbitAnimationId);
+    orbitAnimationId = null;
+  }
+}
+
+function rotateCardToFront(targetIndex) {
+  const n = orbitCardElements.length;
+  if (n === 0) return;
+  const step = (2 * Math.PI) / n;
+  let desired = -(targetIndex * step);
+
+  let diff = (desired - orbitCurrentAngle) % (2 * Math.PI);
+  if (diff > Math.PI) diff -= (2 * Math.PI);
+  if (diff < -Math.PI) diff += (2 * Math.PI);
+
+  orbitTargetAngle = orbitCurrentAngle + diff;
+}
+
+function renderOrbitCarousel(houses) {
+  const track = document.getElementById('houseOrbitTrack');
+  if (!track) return;
+
+  orbitCardsData = houses || [];
+  track.innerHTML = '';
+  orbitCardElements = [];
+
+  if (orbitCardsData.length === 0) {
+    track.innerHTML = `
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#94a3b8; background:rgba(3,15,10,0.85); padding:2rem; border-radius:12px; border:1px dashed #d4af37;">
+        <p style="color:#ffd700; font-size:1.1rem; margin-bottom:0.25rem;">🏠 ไม่พบแบบบ้านในหมวดหมู่นี้</p>
+        <p style="font-size:0.85rem;">กรุณาเลือกหมวดหมู่อื่นด้านบน</p>
+      </div>
+    `;
+    return;
+  }
+
+  orbitCardsData.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'orbit-card';
+    card.setAttribute('data-house-id', item.id);
+    card.setAttribute('data-index', idx);
+
+    let priceText = item.budget || '';
+    priceText = priceText.replace('ล้านบาท', '').trim();
+    if (!priceText.includes('ล้าน')) priceText += ' ล้าน';
+
+    card.innerHTML = `
+      <div class="orbit-card-img-wrap">
+        <img src="${item.cover || 'assets/images/house-nordic.jpg'}" alt="${escapeHtml(item.title)}" loading="lazy">
+        <span class="orbit-card-badge">${escapeHtml(item.category || 'Luxury')}</span>
+      </div>
+      <div class="orbit-card-body">
+        <span class="orbit-card-series">SERIES: ${escapeHtml((item.category || 'Modern').toUpperCase())}</span>
+        <h4 class="orbit-card-title">${escapeHtml(item.title)}</h4>
+        <div class="orbit-card-specs">
+          <span>📐 ${item.area || '250'} ตร.ม.</span>
+          <span>🛏️ ${item.bedrooms || '3'} นอน</span>
+          <span>🚿 ${item.bathrooms || '3'} น้ำ</span>
+        </div>
+        <div class="orbit-card-footer">
+          <div class="orbit-card-price">
+            <span class="price-label">เริ่มต้น</span>
+            <span class="price-val">฿ ${priceText}</span>
+          </div>
+          <button type="button" class="btn-orbit-view btn-view-house" data-house-id="${item.id}">
+            ดูสเปก &amp; แปลน ➔
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Click on "ดูสเปก" button
+    const btnView = card.querySelector('.btn-view-house');
+    if (btnView) {
+      btnView.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openHouseModalById(item.id);
+      });
+    }
+
+    // Click on card: if background, rotate to front; if front, open modal
+    card.addEventListener('click', (e) => {
+      if (card.classList.contains('is-front')) {
+        openHouseModalById(item.id);
+      } else {
+        rotateCardToFront(idx);
+      }
+    });
+
+    track.appendChild(card);
+    orbitCardElements.push(card);
+  });
+
+  updateOrbitPositions();
+  startOrbitAnimation();
+}
+
+function initOrbitCarouselEngine() {
+  const stage = document.getElementById('houseOrbitStage');
+  const btnPrev = document.getElementById('btnOrbitPrev');
+  const btnNext = document.getElementById('btnOrbitNext');
+  const btnToggle = document.getElementById('btnOrbitToggleSpin');
+  const iconSpan = document.getElementById('orbitSpinIcon');
+  const textSpan = document.getElementById('orbitSpinText');
+
+  if (btnPrev) {
+    btnPrev.onclick = () => {
+      const n = orbitCardElements.length;
+      if (n > 0) {
+        const step = (2 * Math.PI) / n;
+        orbitTargetAngle = (orbitTargetAngle !== null ? orbitTargetAngle : orbitCurrentAngle) + step;
+      }
+    };
+  }
+
+  if (btnNext) {
+    btnNext.onclick = () => {
+      const n = orbitCardElements.length;
+      if (n > 0) {
+        const step = (2 * Math.PI) / n;
+        orbitTargetAngle = (orbitTargetAngle !== null ? orbitTargetAngle : orbitCurrentAngle) - step;
+      }
+    };
+  }
+
+  if (btnToggle) {
+    btnToggle.onclick = () => {
+      orbitIsPlaying = !orbitIsPlaying;
+      if (iconSpan) iconSpan.textContent = orbitIsPlaying ? '⏸️' : '▶';
+      if (textSpan) textSpan.textContent = orbitIsPlaying ? 'หยุดหมุนชั่วคราว' : 'เริ่มหมุนต่อ';
+    };
+  }
+
+  if (stage) {
+    stage.addEventListener('mouseenter', () => {
+      orbitIsPlaying = false;
+    });
+    stage.addEventListener('mouseleave', () => {
+      if (!btnToggle || (btnToggle.querySelector('#orbitSpinIcon') && btnToggle.querySelector('#orbitSpinIcon').textContent === '⏸️')) {
+        orbitIsPlaying = true;
+      }
+    });
+
+    // Pointer Drag & Swipe
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) return;
+      orbitIsDragging = true;
+      orbitDragStartX = e.clientX;
+      orbitDragStartAngle = orbitCurrentAngle;
+      orbitTargetAngle = null;
+      stage.setPointerCapture?.(e.pointerId);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!orbitIsDragging) return;
+      const deltaX = e.clientX - orbitDragStartX;
+      orbitCurrentAngle = orbitDragStartAngle + (deltaX * 0.005);
+      updateOrbitPositions();
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (orbitIsDragging) {
+        orbitIsDragging = false;
+      }
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    updateOrbitPositions();
+  });
+}
+
+function initPortfolioViewSwitcher() {
+  const btnOrbit = document.getElementById('btnModeOrbit');
+  const btnGrid = document.getElementById('btnModeGrid');
+  const orbitWrap = document.getElementById('houseOrbitWrapper');
+  const gridContainer = document.getElementById('houseGridContainer');
+  const badgeWrap = document.getElementById('housesCountBadgeWrap');
+  const bottomWrap = document.getElementById('housesViewAllBottomWrap');
+
+  function applyViewMode(mode) {
+    activePortfolioView = mode;
+    if (mode === 'orbit') {
+      if (btnOrbit) btnOrbit.classList.add('active');
+      if (btnGrid) btnGrid.classList.remove('active');
+      if (orbitWrap) orbitWrap.style.display = 'block';
+      if (gridContainer) gridContainer.style.display = 'none';
+      if (badgeWrap) badgeWrap.style.display = 'none';
+      if (bottomWrap) bottomWrap.style.display = 'none';
+      startOrbitAnimation();
+      updateOrbitPositions();
+    } else {
+      if (btnOrbit) btnOrbit.classList.remove('active');
+      if (btnGrid) btnGrid.classList.add('active');
+      if (orbitWrap) orbitWrap.style.display = 'none';
+      if (gridContainer) gridContainer.style.display = 'grid';
+      stopOrbitAnimation();
+      renderHouseGrid();
+    }
+  }
+
+  if (btnOrbit) {
+    btnOrbit.onclick = () => applyViewMode('orbit');
+  }
+  if (btnGrid) {
+    btnGrid.onclick = () => applyViewMode('grid');
+  }
+
+  applyViewMode('orbit');
+}
+
+
 function initHouseFilter() {
+  initPortfolioViewSwitcher();
+  initOrbitCarouselEngine();
   renderHouseGrid();
 
   const filterBtns = document.querySelectorAll('.filter-bar .filter-btn');

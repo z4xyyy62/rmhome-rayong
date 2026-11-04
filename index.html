@@ -324,6 +324,63 @@
         <button class="filter-btn" data-filter="luxury">Luxury</button>
       </div>
 
+      <!-- Portfolio View Switcher (สลับระหว่าง โหมดวงโคจร 3D Orbit กับ ตารางแบบเดิม) -->
+      <div class="portfolio-view-switcher" id="portfolioViewSwitcher">
+        <button type="button" class="view-mode-pill active" id="btnModeOrbit" data-mode="orbit">
+          <span>🪐</span> โหมดวงโคจร 3D Orbit (หมุนวนรอบ)
+        </button>
+        <button type="button" class="view-mode-pill" id="btnModeGrid" data-mode="grid">
+          <span>⊞</span> โหมดตารางปกติ (แบบเดิม)
+        </button>
+      </div>
+
+      <!-- 3D Orbit Ferris Wheel Stage (หมุนวนรอบแกนกลาง RMHome ตลอดเวลา) -->
+      <div class="orbit-stage-wrapper" id="houseOrbitWrapper">
+        <div class="orbit-stage" id="houseOrbitStage">
+          <!-- Central Sun / RMHome Emblem -->
+          <div class="orbit-centerpiece">
+            <div class="orbit-center-glow"></div>
+            <div class="orbit-ring orbit-ring-outer"></div>
+            <div class="orbit-ring orbit-ring-inner"></div>
+            <div class="orbit-center-core">
+              <div class="orbit-emblem-wrap">
+                <img src="assets/images/rm-logo.jpg" alt="RMHome Core Logo">
+              </div>
+              <div class="orbit-core-text">
+                <strong>RMHOME</strong>
+                <span>RAYONG</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Orbit Carousel Track with Cards -->
+          <div class="orbit-track" id="houseOrbitTrack">
+            <!-- Dynamically populated by js/app.js -->
+          </div>
+        </div>
+
+        <!-- Orbit Bottom Interactive Controls -->
+        <div class="orbit-controls-bar">
+          <button type="button" class="btn-orbit-control" id="btnOrbitPrev" title="หมุนย้อนกลับ">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            <span>หมุนย้อนกลับ</span>
+          </button>
+          
+          <button type="button" class="btn-orbit-control btn-orbit-toggle" id="btnOrbitToggleSpin" title="หยุด/เริ่มหมุนอัตโนมัติ">
+            <span id="orbitSpinIcon">⏸️</span>
+            <span id="orbitSpinText">หยุดหมุนชั่วคราว</span>
+          </button>
+
+          <button type="button" class="btn-orbit-control" id="btnOrbitNext" title="หมุนถัดไป">
+            <span>หมุนถัดไป</span>
+            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </button>
+        </div>
+        <p class="orbit-guide-hint">
+          💡 <b>คำแนะนำ:</b> นำเมาส์ชี้เพื่อหยุดดูรายละเอียด | คลิกที่การ์ดเพื่อดึงมาข้างหน้า | หรือคลิก <b>"ดูสเปก &amp; แปลน"</b> เพื่อดูรายละเอียดเต็ม
+        </p>
+      </div>
+
       <!-- House Grid Cards (รองรับการเพิ่ม-ลบผลงานจาก Admin Dashboard แบบ Real-time) -->
       <!-- Dynamic Extra Houses Counter Badge (เหมือนระบบรีวิว) -->
       <div id="housesCountBadgeWrap" class="reviews-badge-wrap"
