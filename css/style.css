@@ -3845,3 +3845,199 @@ textarea.form-control {
     contain: paint !important;
   }
 }
+
+
+/* ==========================================================================
+   Mobile UI Optimization (แก้แท็บเบอร์ล้น + ลดสเกลงานในสไลด์และ 3D ให้เห็นทั่วๆ)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Header & Phone Call Tab (แก้แท็บเบอร์ล้น ไม่ให้ดันเมนูหรือเบียดขอบจอ) */
+  .nav-container {
+    padding: 0.55rem 0.85rem !important;
+    gap: 0.5rem !important;
+  }
+  .brand-logo {
+    gap: 0.5rem !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .brand-emblem {
+    width: 36px !important;
+    height: 36px !important;
+    flex-shrink: 0 !important;
+  }
+  .brand-title {
+    font-size: 1.15rem !important;
+    letter-spacing: 0.8px !important;
+  }
+  .brand-sub {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 140px !important;
+  }
+  .nav-actions {
+    gap: 0.4rem !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  .btn-nav-call {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    border-radius: var(--radius-full) !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    background: rgba(212, 175, 55, 0.08) !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  }
+  .btn-nav-call svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0 !important;
+  }
+  .nav-call-text {
+    font-size: 0.75rem !important;
+  }
+  .mobile-toggle {
+    padding: 0.35rem !important;
+    margin-left: 0.1rem !important;
+  }
+  .mobile-toggle svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* 2. Hero Slider & Work Scale (ลดสเกลงานในสไลด์ ให้เห็นตัวบ้านและโปรโมชั่นครบถ้วน ไม่ซูมจนหลุด) */
+  .hero-section {
+    min-height: 76vh !important;
+    padding: 4.5rem 1rem 3rem 1rem !important;
+  }
+  .hero-slide {
+    height: 100% !important;
+    width: 100% !important;
+  }
+  /* Slide 1: แสดงทรงบ้าน พูลวิลล่า และแสงไฟคริสต์มาสด้านบนชัดเจน */
+  .hero-slide:nth-child(1) img {
+    object-fit: cover !important;
+    object-position: center 25% !important;
+    filter: brightness(0.72) !important;
+  }
+  /* Slide 2: ย่อภาพโปรโมชั่นให้พอดีจอ 100% เห็นตัวหนังสือและบ้านครบถ้วน */
+  .hero-slide:nth-child(2) {
+    background: radial-gradient(circle at center, #0a251e 0%, #04100c 100%) !important;
+  }
+  .hero-slide:nth-child(2) a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 0.5rem !important;
+    box-sizing: border-box !important;
+  }
+  .hero-slide:nth-child(2) img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 82% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(212, 175, 55, 0.25) !important;
+  }
+
+  /* Hero Content typography on mobile */
+  .hero-title {
+    font-size: 1.75rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .hero-subtitle {
+    font-size: 0.92rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+  .hero-badge-wrap {
+    margin-bottom: 0.75rem !important;
+  }
+  .gold-badge {
+    font-size: 0.74rem !important;
+    padding: 0.35rem 0.75rem !important;
+  }
+
+  /* 3. 3D Orbit Carousel Scale (ลดสเกลการ์ดแบบบ้าน 3D ให้เห็นทั่วๆ หมุนสบายตา ไม่เบียดขอบ) */
+  .orbit-stage {
+    height: 380px !important;
+  }
+  .orbit-card {
+    width: 165px !important;
+    border-radius: 12px !important;
+  }
+  .orbit-card-img-wrap {
+    height: 96px !important;
+  }
+  .orbit-card-title {
+    font-size: 0.82rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+  .orbit-card-specs {
+    font-size: 0.64rem !important;
+    gap: 0.25rem !important;
+    margin-bottom: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+  }
+  .orbit-card-specs span {
+    padding: 0.12rem 0.35rem !important;
+  }
+  .orbit-card-price .price-val {
+    font-size: 0.82rem !important;
+  }
+  .btn-orbit-view {
+    padding: 0.3rem 0.55rem !important;
+    font-size: 0.68rem !important;
+  }
+  .orbit-ring-outer {
+    width: 230px !important;
+    height: 115px !important;
+  }
+  .orbit-ring-inner {
+    width: 150px !important;
+    height: 75px !important;
+  }
+  .orbit-center-core {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .orbit-center-glow {
+    width: 160px !important;
+    height: 160px !important;
+  }
+}
+
+/* Extra Compact Phones (iPhone SE, Galaxy A series <= 390px) */
+@media (max-width: 390px) {
+  .brand-sub {
+    display: none !important;
+  }
+  .btn-nav-call {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.72rem !important;
+  }
+  .nav-call-text {
+    font-size: 0.72rem !important;
+  }
+  .orbit-stage {
+    height: 360px !important;
+  }
+  .orbit-card {
+    width: 152px !important;
+  }
+  .orbit-card-img-wrap {
+    height: 88px !important;
+  }
+}
