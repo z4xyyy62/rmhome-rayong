@@ -2349,28 +2349,28 @@ const DEFAULT_TIKTOK_CLIPS = [
   {
     id: 'tiktok_01',
     title: '🏡 พาชมแบบบ้านสไตล์นอร์ดิกสร้างเสร็จจริง อ.ปลวกแดง ระยอง คุมงบได้ 100% สเปกวิศวกร กว.',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7312345678901234567',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7312345678901234567',
     videoId: '7312345678901234567',
     tag: 'พาชมบ้านจริง',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-01'
   },
   {
     id: 'tiktok_02',
     title: '🌴 ส่งมอบบ้านพูลวิลล่าสไตล์โมเดิร์น พร้อมสระว่ายน้ำระบบเกลือ อ.แกลง ระยอง สวยตรงปก 100%',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7323456789012345678',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7323456789012345678',
     videoId: '7323456789012345678',
     tag: 'ส่งมอบบ้าน',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-02'
   },
   {
     id: 'tiktok_03',
     title: '👷‍♂️ วิศวกรตรวจงานตอกเสาเข็มลึกถึงชั้นดินดาน (Solid Soil Layer) มั่นใจบ้านไม่ทรุดตัวในระยอง',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7334567890123456789',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7334567890123456789',
     videoId: '7334567890123456789',
     tag: 'งานวิศวกรรม',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-03'
   }
 ];
@@ -2427,9 +2427,9 @@ function renderTikTokFeed() {
     const card = document.createElement('article');
     card.className = 'tiktok-card';
     const videoId = clip.videoId || extractTikTokVideoId(clip.url);
-    const author = clip.author || '@RMHomeRayong';
+    const author = clip.author || '@rm.home.design.co';
     const tag = clip.tag || 'คลิปผลงานจริง';
-    const clipUrl = clip.url || `https://www.tiktok.com/@rmhomerayong/video/${videoId}`;
+    const clipUrl = clip.url || `https://www.tiktok.com/@rm.home.design.co/video/${videoId}`;
 
     let mediaHtml = '';
     if (videoId) {

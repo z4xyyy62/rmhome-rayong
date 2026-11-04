@@ -2514,28 +2514,28 @@ const DEFAULT_TIKTOK_CLIPS = [
   {
     id: 'tiktok_01',
     title: '🏡 พาชมแบบบ้านสไตล์นอร์ดิกสร้างเสร็จจริง อ.ปลวกแดง ระยอง คุมงบได้ 100% สเปกวิศวกร กว.',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7312345678901234567',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7312345678901234567',
     videoId: '7312345678901234567',
     tag: 'พาชมบ้านจริง',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-01'
   },
   {
     id: 'tiktok_02',
     title: '🌴 ส่งมอบบ้านพูลวิลล่าสไตล์โมเดิร์น พร้อมสระว่ายน้ำระบบเกลือ อ.แกลง ระยอง สวยตรงปก 100%',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7323456789012345678',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7323456789012345678',
     videoId: '7323456789012345678',
     tag: 'ส่งมอบบ้าน',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-02'
   },
   {
     id: 'tiktok_03',
     title: '👷‍♂️ วิศวกรตรวจงานตอกเสาเข็มลึกถึงชั้นดินดาน (Solid Soil Layer) มั่นใจบ้านไม่ทรุดตัวในระยอง',
-    url: 'https://www.tiktok.com/@rmhomerayong/video/7334567890123456789',
+    url: 'https://www.tiktok.com/@rm.home.design.co/video/7334567890123456789',
     videoId: '7334567890123456789',
     tag: 'งานวิศวกรรม',
-    author: '@RMHomeRayong',
+    author: '@rm.home.design.co',
     createdAt: '2026-11-03'
   }
 ];
@@ -2560,12 +2560,16 @@ function getStoredTikTokClips() {
       localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
       return DEFAULT_TIKTOK_CLIPS;
     }
-    const parsed = JSON.parse(raw);
+    let parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
       localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
       return DEFAULT_TIKTOK_CLIPS;
     }
-    return parsed;
+    return parsed.map(c => {
+      if (c.author === '@RMHomeRayong') c.author = '@rm.home.design.co';
+      if (c.url && c.url.includes('rmhomerayong')) c.url = c.url.replace('rmhomerayong', 'rm.home.design.co');
+      return c;
+    });
   } catch (e) {
     return DEFAULT_TIKTOK_CLIPS;
   }
@@ -2597,7 +2601,7 @@ function initTikTokCMS() {
       const rawUrl = urlInput ? urlInput.value.trim() : '';
       const title = titleInput ? titleInput.value.trim() : '';
       const tag = (tagInput && tagInput.value.trim()) ? tagInput.value.trim() : 'คลิปผลงานจริง';
-      const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '@RMHomeRayong';
+      const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '@rm.home.design.co';
 
       if (!rawUrl) {
         alert('กรุณากรอกลิงก์คลิป TikTok');
@@ -2625,7 +2629,7 @@ function initTikTokCMS() {
       saveTikTokClips(list);
 
       form.reset();
-      if (authorInput) authorInput.value = '@RMHomeRayong';
+      if (authorInput) authorInput.value = '@rm.home.design.co';
       renderAdminTikTokList();
       alert(`✅ เพิ่มคลิป TikTok "${title}" เรียบร้อยแล้ว! อัปเดตขึ้นหน้าแรกแบบ Real-time ทันที`);
     });
@@ -2670,7 +2674,7 @@ function renderAdminTikTokList() {
     card.style.cssText = 'border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; box-shadow:0 2px 6px rgba(0,0,0,0.04);';
 
     const videoId = clip.videoId || extractTikTokVideoId(clip.url);
-    const clipUrl = clip.url || (videoId ? `https://www.tiktok.com/@rmhomerayong/video/${videoId}` : '#');
+    const clipUrl = clip.url || (videoId ? `https://www.tiktok.com/@rm.home.design.co/video/${videoId}` : '#');
     const previewSrc = videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : '';
 
     card.innerHTML = `
@@ -2715,7 +2719,7 @@ function renderAdminTikTokList() {
           </div>
           <div class="form-group" style="margin:0;">
             <label class="form-label" style="font-size:0.78rem; margin-bottom:0.25rem;">เครดิตผู้ลง</label>
-            <input type="text" class="form-control edit-tiktok-author" value="${escapeHtml(clip.author || '@RMHomeRayong')}" style="font-size:0.82rem;">
+            <input type="text" class="form-control edit-tiktok-author" value="${escapeHtml(clip.author || '@rm.home.design.co')}" style="font-size:0.82rem;">
           </div>
         </div>
 
