@@ -3668,35 +3668,133 @@ textarea.form-control {
 }
 
 @media (max-width: 768px) {
+  .portfolio-view-switcher {
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .view-mode-pill {
+    padding: 0.45rem 0.95rem;
+    font-size: 0.78rem;
+  }
+
+  .orbit-stage-wrapper {
+    padding: 1rem 0.4rem 1.25rem 0.4rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
   .orbit-stage {
-    height: 500px;
+    height: 420px;
+    perspective: 800px;
+    perspective-origin: 50% 45%;
+  }
+
+  /* Centerpiece for mobile: scaled down to avoid blocking cards */
+  .orbit-center-glow {
+    width: 200px;
+    height: 200px;
   }
   .orbit-ring-outer {
-    width: 95vw;
-    height: 250px;
+    width: 290px;
+    height: 150px;
   }
   .orbit-ring-inner {
-    width: 65vw;
-    height: 170px;
+    width: 190px;
+    height: 100px;
   }
+  .orbit-center-core {
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.4);
+  }
+  .orbit-emblem-wrap {
+    width: 28px;
+    height: 28px;
+  }
+  .orbit-core-text strong {
+    font-size: 0.52rem;
+  }
+  .orbit-core-text span {
+    font-size: 0.42rem;
+  }
+
+  /* Card for mobile: perfectly sized so it never overflows screen */
   .orbit-card {
-    width: 230px;
+    width: 190px;
+    border-radius: 12px;
   }
   .orbit-card-img-wrap {
-    height: 140px;
+    height: 115px;
+  }
+  .orbit-card-badge {
+    top: 0.45rem;
+    left: 0.45rem;
+    font-size: 0.62rem;
+    padding: 0.15rem 0.45rem;
+  }
+  .orbit-card-body {
+    padding: 0.65rem 0.75rem 0.75rem 0.75rem;
+  }
+  .orbit-card-series {
+    font-size: 0.62rem;
+    margin-bottom: 0.15rem;
   }
   .orbit-card-title {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
+    margin-bottom: 0.4rem;
   }
   .orbit-card-specs {
-    font-size: 0.72rem;
-    gap: 0.35rem;
+    font-size: 0.68rem;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.45rem;
+  }
+  .orbit-card-specs span {
+    padding: 0.15rem 0.4rem;
+  }
+  .orbit-card-price .price-label {
+    font-size: 0.62rem;
   }
   .orbit-card-price .price-val {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
+  }
+  .btn-orbit-view {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.72rem;
+    border-radius: 6px;
+  }
+
+  /* Controls for mobile: compact and neatly aligned */
+  .orbit-controls-bar {
+    gap: 0.45rem;
+    margin-top: 0.65rem;
   }
   .btn-orbit-control {
-    padding: 0.45rem 0.9rem;
-    font-size: 0.78rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  .btn-orbit-control svg {
+    width: 13px;
+    height: 13px;
+  }
+  .orbit-guide-hint {
+    font-size: 0.72rem;
+    margin-top: 0.65rem;
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .orbit-stage {
+    height: 390px;
+  }
+  .orbit-card {
+    width: 172px;
+  }
+  .orbit-card-img-wrap {
+    height: 105px;
+  }
+  .orbit-ring-outer {
+    width: 260px;
+    height: 140px;
   }
 }

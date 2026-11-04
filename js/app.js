@@ -562,13 +562,16 @@ let orbitCardsData = [];
 let orbitCardElements = [];
 
 function getOrbitRadii() {
-  const isMobile = window.innerWidth < 768;
-  const isTablet = window.innerWidth < 1024 && window.innerWidth >= 768;
+  const w = window.innerWidth;
+  const isMobile = w < 768;
+  const isTablet = w < 1024 && w >= 768;
   if (isMobile) {
+    // Optimized for mobile screens so cards never overflow or collide
+    const rx = Math.min(w * 0.28, 108);
     return {
-      rx: Math.min(window.innerWidth * 0.38, 160),
-      rz: 95,
-      tiltY: 24
+      rx: rx,
+      rz: 75,
+      tiltY: 18
     };
   } else if (isTablet) {
     return {
@@ -577,6 +580,7 @@ function getOrbitRadii() {
       tiltY: 34
     };
   } else {
+    // Desktop: 100% UNTOUCHED!
     return {
       rx: 390,
       rz: 210,
