@@ -702,7 +702,7 @@ function openHouseModalById(houseId) {
         <a href="tel:0912998797" class="btn" style="background:linear-gradient(135deg, #0e3d29, #145338); color:#ffd700; border:1px solid #d4af37; padding:0.65rem 1.25rem; font-weight:700; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
           <span>📞</span> โทรปรึกษาวิศวกร: 091-299-8797
         </a>
-        <a href="${window.RM_LINE_URL || 'https://line.me/R/ti/p/@sunny_anavin'}" target="_blank" rel="noopener" class="btn btn-modal-line" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
+        <a href="${window.RM_LINE_URL || 'https://line.me/ti/p/~sunny_anavin'}" target="_blank" rel="noopener" class="btn btn-modal-line" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
           <span>💬</span> ขอแปลนฉบับเต็มทาง LINE (เพิ่มเพื่อน)
         </a>
       </div>
@@ -2564,8 +2564,12 @@ function renderSiteInfo() {
       if (el) el.textContent = info.heroSubtitle;
     }
 
-    const lineLink = info.lineUrl || 'https://line.me/R/ti/p/@sunny_anavin';
-    const lineId = info.lineId || '@sunny_anavin';
+    let lineLink = info.lineUrl || 'https://line.me/ti/p/~sunny_anavin';
+    let lineId = info.lineId || 'sunny_anavin';
+    if (lineId === '@sunny_anavin' || lineId === '@sunny') lineId = 'sunny_anavin';
+    if (lineLink.includes('@sunny_anavin') || lineLink.includes('/R/ti/p/@')) {
+      lineLink = 'https://line.me/ti/p/~sunny_anavin';
+    }
     window.RM_LINE_URL = lineLink;
     window.RM_LINE_ID = lineId;
 
@@ -2573,7 +2577,7 @@ function renderSiteInfo() {
     if (bannerLink) bannerLink.href = lineLink;
 
     const bannerText = document.getElementById('siteLineIdText');
-    if (bannerText) bannerText.textContent = `LINE Official: ${lineId}`;
+    if (bannerText) bannerText.textContent = `LINE ID: ${lineId}`;
 
     const footerLink = document.getElementById('siteFooterLineLink');
     if (footerLink) {

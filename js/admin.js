@@ -2951,8 +2951,8 @@ const DEFAULT_SITE_INFO = {
   heroSubtitle: 'เนรมิตบ้านคุณภาพระดับพรีเมียม ผสานความหรูหราและอบอุ่นต้อนรับเทศกาลแห่งความสุข ออกแบบเฉพาะเพื่อชีวิตคุณ คุมงบได้ ไม่บานปลาย หมดปัญหาทิ้งงาน 100% พร้อมบริการยื่นกู้และขออนุญาตครบวงจร',
   navModelsLabel: 'บ้านอบอุ่นที่เรามอบให้คุณ',
   address: '41/5 หมู่ 4 หมู่บ้านหนองตะแบก ต.ตาขัน อ.บ้านค่าย จ.ระยอง 21120',
-  lineId: '@sunny_anavin',
-  lineUrl: 'https://line.me/R/ti/p/@sunny_anavin'
+  lineId: 'sunny_anavin',
+  lineUrl: 'https://line.me/ti/p/~sunny_anavin'
 };
 
 function getStoredSiteInfo() {
@@ -2987,8 +2987,8 @@ function initSiteContentCMS() {
         promoPill: document.getElementById('editPromoPill').value.trim(),
         phone: document.getElementById('editPhone').value.trim(),
         hours: document.getElementById('editHours').value.trim(),
-        lineId: (document.getElementById('editLineId') ? document.getElementById('editLineId').value.trim() : '@sunny_anavin'),
-        lineUrl: (document.getElementById('editLineUrl') ? document.getElementById('editLineUrl').value.trim() : 'https://line.me/R/ti/p/@sunny_anavin'),
+        lineId: (document.getElementById('editLineId') ? document.getElementById('editLineId').value.trim() : 'sunny_anavin'),
+        lineUrl: (document.getElementById('editLineUrl') ? document.getElementById('editLineUrl').value.trim() : 'https://line.me/ti/p/~sunny_anavin'),
         navModelsLabel: document.getElementById('editNavModelsLabel').value.trim(),
         heroBadge: document.getElementById('editHeroBadge').value.trim(),
         heroTitle: document.getElementById('editHeroTitle').value.trim(),
@@ -3020,8 +3020,12 @@ function loadSiteContentForm() {
   setVal('editPromoPill', info.promoPill);
   setVal('editPhone', info.phone);
   setVal('editHours', info.hours);
-  setVal('editLineId', info.lineId || '@sunny_anavin');
-  setVal('editLineUrl', info.lineUrl || 'https://line.me/R/ti/p/@sunny_anavin');
+  let currentLineId = info.lineId || 'sunny_anavin';
+  let currentLineUrl = info.lineUrl || 'https://line.me/ti/p/~sunny_anavin';
+  if (currentLineId === '@sunny_anavin') currentLineId = 'sunny_anavin';
+  if (currentLineUrl.includes('@sunny_anavin')) currentLineUrl = 'https://line.me/ti/p/~sunny_anavin';
+  setVal('editLineId', currentLineId);
+  setVal('editLineUrl', currentLineUrl);
   setVal('editNavModelsLabel', info.navModelsLabel);
   setVal('editHeroBadge', info.heroBadge);
   setVal('editHeroTitle', info.heroTitle);
