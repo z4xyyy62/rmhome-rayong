@@ -703,7 +703,7 @@ function openHouseModalById(houseId) {
           <span>📞</span> โทรปรึกษาวิศวกร: 091-299-8797
         </a>
         <a href="${window.RM_LINE_URL || 'https://line.me/ti/p/~sunny_anavin'}" target="_blank" rel="noopener" class="btn btn-modal-line" style="background:#06c755; color:#fff; padding:0.65rem 1.25rem; font-weight:600; display:inline-flex; align-items:center; gap:0.5rem; text-decoration:none; border-radius:8px;">
-          <span>💬</span> ขอแปลนฉบับเต็มทาง LINE (เพิ่มเพื่อน)
+          <span>💬</span> ขอแปลนฉบับเต็มทาง LINE
         </a>
       </div>
       <div style="display:flex; gap:0.75rem; align-items:center;">
@@ -2582,7 +2582,7 @@ function renderSiteInfo() {
     const footerLink = document.getElementById('siteFooterLineLink');
     if (footerLink) {
       footerLink.href = lineLink;
-      footerLink.textContent = `${lineId} (คลิกเพิ่มเพื่อน)`;
+      footerLink.textContent = lineId;
     }
 
     const floatLink = document.getElementById('siteFloatLineLink');
