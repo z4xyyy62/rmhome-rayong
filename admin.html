@@ -90,9 +90,10 @@
         <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
         <span>มาตรฐานวิศวกรรม (กว.)</span>
       </a>
-      <a href="#why-us" class="nav-item" data-tab="why-us" title="แก้ไขจุดเด่นที่เหนือกว่า RMHome">
-        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        <span>จุดเด่น RMHome (Why Us)</span>
+      <a href="#tiktok" class="nav-item" data-tab="tiktok" title="จัดการคลิป TikTok & วิดีโอผลงานจริง">
+        <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.16 8.16 0 0 0 4.82 1.57V6.87c-.334-.047-.667-.107-1-.18z"/></svg>
+        <span>คลิป TikTok &amp; วิดีโอ</span>
+        <span class="badge-counter" id="sidebarTikTokBadge" style="background:#0e3d29; color:#22d3ee; border:1px solid #22d3ee;">3</span>
       </a>
       <a href="#workflow" class="nav-item" data-tab="workflow" title="แก้ไขขั้นตอนงานสร้าง">
         <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -324,18 +325,18 @@
             </div>
           </div>
 
-          <!-- 5. จุดเด่น RMHome -->
+          <!-- 5. คลิป TikTok & วิดีโอผลงาน -->
           <div class="topic-status-row">
             <div class="topic-col-left">
-              <div class="topic-icon-badge">🏆</div>
+              <div class="topic-icon-badge" style="background:#020617; color:#22d3ee;">📱</div>
               <div>
-                <div class="topic-name">จุดเด่นที่เหนือกว่า (Why RMHome)</div>
-                <div class="topic-desc">สัญญาเป็นธรรม ไม่ทิ้งงาน รับประกันโครงสร้าง ชำระตามงวดงานจริง</div>
+                <div class="topic-name">คลิป TikTok &amp; วิดีโอผลงานจริง (TikTok Manager)</div>
+                <div class="topic-desc" id="topicTikTokDesc">เพิ่ม-ลบคลิปสั้น TikTok พาชมบ้านจริงและส่งมอบบ้าน อัปเดตขึ้นหน้าแรกแบบ Real-time</div>
               </div>
             </div>
             <div class="topic-col-right">
-              <span class="topic-live-tag">ออนไลน์</span>
-              <button type="button" class="topic-view-btn" data-open-tab="why-us">แก้ไข ↗</button>
+              <span class="topic-live-tag" style="background:#020617; color:#22d3ee; border:1px solid #22d3ee;">TikTok Live</span>
+              <button type="button" class="topic-view-btn" data-open-tab="tiktok">จัดการคลิป ↗</button>
             </div>
           </div>
 
@@ -836,41 +837,63 @@
     <!-- =========================================================
          TAB 7: จุดเด่นที่เหนือกว่า (Why Choose RMHome CMS Tab)
          ========================================================= -->
-    <div class="admin-tab-pane" id="tabWhyUs">
+    <!-- =========================================================
+         TAB 7: จัดการคลิป TikTok & วิดีโอผลงานจริง (TikTok CMS Tab)
+         ========================================================= -->
+    <div class="admin-tab-pane" id="tabTikTok">
       <div class="cms-editor-card">
         <div class="cms-editor-header">
           <div>
-            <h3>🏆 จุดเด่นที่เหนือกว่า (Why RMHome CMS)</h3>
+            <h3>📱 จัดการคลิป TikTok &amp; วิดีโอผลงานจริง (TikTok CMS)</h3>
             <p style="font-size:0.82rem; color:#64748b; margin-top:3px;">
-              แก้ไขเหตุผลที่ชาวระยองไว้วางใจ จุดแข็งและความคุ้มค่า
+              แอดมินสามารถแปะลิงก์คลิปจาก TikTok เพื่อนำไปแสดงผลบนหน้าแรกของเว็บได้ทันทีแบบ Real-time (ลบหรือเพิ่มกี่คลิปก็ได้)
             </p>
           </div>
-          <span class="badge-trend green" id="whyUsCountBadge" style="font-size:0.82rem;">6 จุดเด่น</span>
+          <span class="badge-trend green" id="tiktokCountBadge" style="font-size:0.82rem;">3 คลิปในระบบ</span>
         </div>
 
-        <form id="whyUsAddForm" style="margin-bottom:2rem;">
-          <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-bottom:1rem;">+ เพิ่มจุดเด่นใหม่</h4>
+        <!-- Form: เพิ่มคลิป TikTok ใหม่ -->
+        <form id="tiktokAddForm" style="margin-bottom:2rem; background:#f8fafc; padding:1.25rem 1.5rem; border-radius:12px; border:1px solid #e2e8f0;">
+          <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-bottom:0.35rem;">+ แปะลิงก์เพิ่มคลิป TikTok ใหม่</h4>
+          <p style="font-size:0.8rem; color:#64748b; margin-bottom:1rem;">
+            💡 <b>วิธีคัดลอกลิงก์:</b> เปิดคลิปที่ต้องการใน TikTok ➔ กดปุ่ม <b>"แชร์ (Share)"</b> ➔ เลือก <b>"คัดลอกลิงก์ (Copy Link)"</b> แล้วนำมาวางในช่องด้านล่างได้เลย
+          </p>
           <div class="form-grid-2col">
             <div class="form-group full-width">
-              <label class="form-label" for="newWhyTitle">หัวข้อจุดเด่น *</label>
-              <input type="text" id="newWhyTitle" class="form-control" placeholder="เช่น วิศวกรประจำทุกไซต์งาน" required>
+              <label class="form-label" for="newTikTokUrl">ลิงก์คลิป TikTok (TikTok URL หรือ Video ID) *</label>
+              <input type="text" id="newTikTokUrl" class="form-control" placeholder="เช่น https://www.tiktok.com/@rmhomerayong/video/7312345678901234567 หรือ https://vt.tiktok.com/..." required>
             </div>
             <div class="form-group full-width">
-              <label class="form-label" for="newWhyDesc">คำอธิบายรายละเอียด *</label>
-              <textarea id="newWhyDesc" class="form-control" rows="2" placeholder="คำอธิบายจุดเด่นที่ทำให้ลูกค้าประทับใจ" required></textarea>
+              <label class="form-label" for="newTikTokTitle">ชื่อคลิป / แคปชันบรรยาย *</label>
+              <input type="text" id="newTikTokTitle" class="form-control" placeholder="เช่น พาชมบ้านนอร์ดิกสร้างเสร็จจริง อ.ปลวกแดง ระยอง คุมงบได้ 100%" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newTikTokTag">หมวดหมู่ / แท็กคลิป</label>
+              <input type="text" id="newTikTokTag" class="form-control" placeholder="เช่น พาชมบ้านจริง, รีวิวลูกค้า, ส่งมอบบ้าน, งานโครงสร้าง">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newTikTokAuthor">ชื่อบัญชี TikTok / เครดิต</label>
+              <input type="text" id="newTikTokAuthor" class="form-control" placeholder="@RMHomeRayong" value="@RMHomeRayong">
             </div>
           </div>
-          <div>
-            <button type="submit" class="btn-green-submit">+ เพิ่มจุดเด่น</button>
+          <div style="margin-top:0.75rem;">
+            <button type="submit" class="btn-green-submit" id="btnSubmitTikTok" style="background:#0e3d29; border:1px solid #d4af37; padding:0.65rem 1.6rem; font-weight:700; border-radius:8px; cursor:pointer; color:#fff;">
+              + เพิ่มคลิป TikTok ขึ้นหน้าเว็บทันที
+            </button>
           </div>
         </form>
 
         <div style="padding-top:1.5rem; border-top:1px solid #f1f5f9;">
-          <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-bottom:1rem;">
-            รายการจุดเด่นปัจจุบัน (แก้ไขได้ทุกข้อ)
-          </h4>
-          <div class="cms-items-grid" id="adminWhyUsList">
-            <!-- Dynamic why-us rendered by js/admin.js -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin:0;">
+              รายการคลิป TikTok บนเว็บไซต์ปัจจุบัน (เพิ่ม/ลบได้แบบ Real-time)
+            </h4>
+            <a href="index.html#tiktok" target="_blank" style="font-size:0.82rem; color:#0d5c3a; text-decoration:none; font-weight:600;">
+              ดูบนหน้าแรกของเว็บ ↗
+            </a>
+          </div>
+          <div class="portfolio-admin-grid" id="adminTikTokList">
+            <!-- Dynamically rendered by js/admin.js -->
           </div>
         </div>
       </div>

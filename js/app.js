@@ -558,11 +558,13 @@ function initHouseFilter() {
 
   // Real-time synchronization when admin adds/deletes houses in dashboard
   window.addEventListener('storage', (e) => {
+    if (e.key === 'rm_tiktok_clips') renderTikTokFeed();
     if (e.key === 'rm_portfolio_items') {
       renderHouseGrid();
     }
   });
 
+  window.addEventListener('tiktokUpdated', () => { renderTikTokFeed(); });
   window.addEventListener('portfolioUpdated', () => {
     renderHouseGrid();
   });
@@ -1883,16 +1885,17 @@ function initDynamicCMSContent() {
   initUserReviewModal();
   renderServices();
   renderStandards();
-  renderWhyUs();
+  renderTikTokFeed();
   renderWorkflow();
 
   // Cross-tab/window real-time sync via storage event
   window.addEventListener('storage', (e) => {
+    if (e.key === 'rm_tiktok_clips') renderTikTokFeed();
     if (e.key === 'rm_site_info' || e.key === 'rm_last_sync_timestamp') renderSiteInfo();
     if (e.key === 'rm_reviews' || e.key === 'rm_last_sync_timestamp') renderReviews();
     if (e.key === 'rm_services' || e.key === 'rm_last_sync_timestamp') renderServices();
     if (e.key === 'rm_standards' || e.key === 'rm_last_sync_timestamp') renderStandards();
-    if (e.key === 'rm_why_us' || e.key === 'rm_last_sync_timestamp') renderWhyUs();
+    if (e.key === 'rm_why_us' || e.key === 'rm_last_sync_timestamp') renderTikTokFeed();
     if (e.key === 'rm_workflow' || e.key === 'rm_last_sync_timestamp') renderWorkflow();
     if (e.key === 'rm_portfolio_items' || e.key === 'rm_last_sync_timestamp') renderHouseGrid();
   });
@@ -1903,7 +1906,7 @@ function initDynamicCMSContent() {
     renderReviews();
     renderServices();
     renderStandards();
-    renderWhyUs();
+    renderTikTokFeed();
     renderWorkflow();
     renderHouseGrid();
   });
@@ -2339,38 +2342,142 @@ function renderStandards() {
   });
 }
 
-function renderWhyUs() {
-  const container = document.getElementById('whyGridContainer');
+/* ---------------------------------------------------------
+   TikTok Video Feed System (Real-time Sync with Admin Dashboard)
+   --------------------------------------------------------- */
+const DEFAULT_TIKTOK_CLIPS = [
+  {
+    id: 'tiktok_01',
+    title: '🏡 พาชมแบบบ้านสไตล์นอร์ดิกสร้างเสร็จจริง อ.ปลวกแดง ระยอง คุมงบได้ 100% สเปกวิศวกร กว.',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7312345678901234567',
+    videoId: '7312345678901234567',
+    tag: 'พาชมบ้านจริง',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-01'
+  },
+  {
+    id: 'tiktok_02',
+    title: '🌴 ส่งมอบบ้านพูลวิลล่าสไตล์โมเดิร์น พร้อมสระว่ายน้ำระบบเกลือ อ.แกลง ระยอง สวยตรงปก 100%',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7323456789012345678',
+    videoId: '7323456789012345678',
+    tag: 'ส่งมอบบ้าน',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-02'
+  },
+  {
+    id: 'tiktok_03',
+    title: '👷‍♂️ วิศวกรตรวจงานตอกเสาเข็มลึกถึงชั้นดินดาน (Solid Soil Layer) มั่นใจบ้านไม่ทรุดตัวในระยอง',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7334567890123456789',
+    videoId: '7334567890123456789',
+    tag: 'งานวิศวกรรม',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-03'
+  }
+];
+
+function extractTikTokVideoId(url) {
+  if (!url) return '';
+  url = url.trim();
+  if (/^\d{15,22}$/.test(url)) return url;
+  const matchVideo = url.match(/\/video\/(\d+)/);
+  if (matchVideo && matchVideo[1]) return matchVideo[1];
+  const matchItem = url.match(/item_id=(\d+)/);
+  if (matchItem && matchItem[1]) return matchItem[1];
+  const matchV = url.match(/\/v\/(\d+)/);
+  if (matchV && matchV[1]) return matchV[1];
+  return '';
+}
+
+function getStoredTikTokClipsForWeb() {
+  try {
+    const raw = localStorage.getItem('rm_tiktok_clips');
+    if (!raw) {
+      localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
+      return DEFAULT_TIKTOK_CLIPS;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
+      return DEFAULT_TIKTOK_CLIPS;
+    }
+    return parsed;
+  } catch (e) {
+    return DEFAULT_TIKTOK_CLIPS;
+  }
+}
+
+function renderTikTokFeed() {
+  const container = document.getElementById('tiktokGridContainer');
   if (!container) return;
 
-  let whyUs = [];
-  try {
-    const raw = localStorage.getItem('rm_why_us');
-    if (raw) whyUs = JSON.parse(raw);
-  } catch (e) {}
+  const clips = getStoredTikTokClipsForWeb();
+  container.innerHTML = '';
 
-  if (!whyUs || whyUs.length === 0) {
-    whyUs = [
-      { title: 'สัญญาโปร่งใส จ่ายตามงวดงาน', desc: 'แบ่งจ่ายเป็นงวดตามงานที่สร้างเสร็จจริง ไม่มีการเรียกเก็บเงินล่วงหน้าเกินเนื้องาน คุมงบได้ 100% ไม่มีงบบานปลาย' },
-      { title: 'รับประกันโครงสร้างยาวนาน 20 ปี', desc: 'อุ่นใจด้วยหนังสือค้ำประกันโครงสร้าง 20 ปีเต็ม และรับประกันสถาปัตยกรรม 2 ปี พร้อมทีมเซอร์วิสดูแลรวดเร็ว' },
-      { title: 'วัสดุแท้เกรดพรีเมียม SCG & TOA', desc: 'เลือกใช้เฉพาะแบรนด์ชั้นนำระดับประเทศ มอก. ทุกชิ้น ไม่มีสับเปลี่ยนของเกรดต่ำ มั่นใจในอายุการใช้งานยาวนาน' },
-      { title: 'บริการยื่นสินเชื่อธนาคาร 100%', desc: 'มีเจ้าหน้าที่ฝ่ายการเงินประสานงานกับธนาคารชั้นนำ ให้คำแนะนำเรื่องเอกสาร ช่วยดันยอดกู้สูงสุด ดอกเบี้ยพิเศษ' },
-      { title: 'สำนักงานตั้งอยู่ในระยอง ดูแลง่าย', desc: 'มีออฟฟิศและทีมงานประจำพื้นที่ระยอง พร้อมเข้าสำรวจหน้างานทันที ติดต่อง่าย ไม่ใช่ผู้รับเหมาจร' },
-      { title: 'วันสต็อปเซอร์วิส ครบวงจร', desc: 'ตั้งแต่ขอเลขที่บ้าน มิเตอร์น้ำ มิเตอร์ไฟ ขุดเจาะบ่อบาดาล ขออนุญาตเทศบาล จบครบในที่เดียวแบบ One Stop' }
-    ];
+  if (clips.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:3rem; color:#94a3b8; background:rgba(4,20,14,0.6); border-radius:16px; border:1px dashed rgba(212,175,55,0.3);">
+        <p style="font-size:1.1rem; color:#ffd700; margin-bottom:0.5rem;">📱 ยังไม่มีคลิป TikTok ในระบบ</p>
+        <p style="font-size:0.88rem; color:#cbd5e1;">แอดมินสามารถแปะลิงก์คลิปจาก TikTok ผ่านระบบหลังบ้านเพื่ออัปเดตขึ้นหน้านี้ได้ทันที</p>
+      </div>
+    `;
+    return;
   }
 
-  container.innerHTML = '';
-  whyUs.forEach(w => {
-    const card = document.createElement('div');
-    card.className = 'why-card';
+  clips.forEach(clip => {
+    const card = document.createElement('article');
+    card.className = 'tiktok-card';
+    const videoId = clip.videoId || extractTikTokVideoId(clip.url);
+    const author = clip.author || '@RMHomeRayong';
+    const tag = clip.tag || 'คลิปผลงานจริง';
+    const clipUrl = clip.url || `https://www.tiktok.com/@rmhomerayong/video/${videoId}`;
+
+    let mediaHtml = '';
+    if (videoId) {
+      mediaHtml = `
+        <div class="tiktok-frame-wrap">
+          <iframe 
+            src="https://www.tiktok.com/embed/v2/${videoId}" 
+            title="${clip.title}"
+            loading="lazy" 
+            allowfullscreen 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+          </iframe>
+        </div>
+      `;
+    } else {
+      mediaHtml = `
+        <div class="tiktok-frame-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; background:radial-gradient(circle, #0e3d29 0%, #03140d 100%); text-align:center;">
+          <div style="width:70px; height:70px; border-radius:50%; background:#010101; border:2px solid #25f4ee; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; box-shadow:0 0 20px rgba(37,244,238,0.4);">
+            <svg style="width:34px; height:34px; fill:#fff;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.16 8.16 0 0 0 4.82 1.57V6.87c-.334-.047-.667-.107-1-.18z"/></svg>
+          </div>
+          <p style="color:#ffffff; font-weight:700; font-size:1rem; margin-bottom:0.75rem;">${clip.title}</p>
+          <a href="${clipUrl}" target="_blank" rel="noopener" class="btn btn-gold" style="padding:0.55rem 1.4rem; font-size:0.85rem; border-radius:50px;">
+            ▶ ชมคลิปบน TikTok
+          </a>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
-      <div class="why-icon-wrap">
-        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <div class="tiktok-card-header">
+        <div class="tiktok-card-author">
+          <svg style="width:16px; height:16px; fill:#25f4ee;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.16 8.16 0 0 0 4.82 1.57V6.87c-.334-.047-.667-.107-1-.18z"/></svg>
+          <span>${author}</span>
+        </div>
+        <span class="tiktok-badge-pill">${tag}</span>
       </div>
-      <h4>${escapeHtml(w.title)}</h4>
-      <p>${escapeHtml(w.desc)}</p>
+      ${mediaHtml}
+      <div class="tiktok-card-body">
+        <h4 class="tiktok-card-title">${clip.title}</h4>
+        <div class="tiktok-card-action">
+          <span style="font-size:0.78rem; color:#94a3b8;">RMHome Official Clip</span>
+          <a href="${clipUrl}" target="_blank" rel="noopener" class="btn-open-tiktok-clip">
+            ชมคลิปนี้บน TikTok ➔
+          </a>
+        </div>
+      </div>
     `;
+
     container.appendChild(card);
   });
 }
@@ -2468,7 +2575,7 @@ function renderSiteInfo() {
     if (typeof renderReviews === 'function') renderReviews();
     if (typeof renderServices === 'function') renderServices();
     if (typeof renderStandards === 'function') renderStandards();
-    if (typeof renderWhyUs === 'function') renderWhyUs();
+    if (typeof renderWhyUs === 'function') renderTikTokFeed();
     if (typeof renderWorkflow === 'function') renderWorkflow();
     if (typeof renderSiteInfo === 'function') renderSiteInfo();
   }

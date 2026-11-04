@@ -435,7 +435,7 @@ function initDashboard() {
   initReviewsCMS();
   initServicesCMS();
   initStandardsCMS();
-  initWhyUsCMS();
+  initTikTokCMS();
   initWorkflowCMS();
   initSiteContentCMS();
   initCalculatorCMS();
@@ -1706,7 +1706,7 @@ function initTabNavigation() {
   // Check initial hash
   if (window.location.hash) {
     const rawHash = window.location.hash.replace('#', '');
-    const validTabs = ['overview', 'leads', 'portfolio', 'reviews', 'services', 'standards', 'why-us', 'workflow', 'site-content', 'calculator', 'areas', 'users'];
+    const validTabs = ['overview', 'leads', 'portfolio', 'reviews', 'services', 'standards', 'tiktok', 'why-us', 'workflow', 'site-content', 'calculator', 'areas', 'users'];
     if (validTabs.includes(rawHash)) {
       switchAdminTab(rawHash);
     }
@@ -1725,7 +1725,7 @@ function switchAdminTab(tabName) {
   else if (tabName === 'reviews') targetTabId = 'tabReviews';
   else if (tabName === 'services') targetTabId = 'tabServices';
   else if (tabName === 'standards') targetTabId = 'tabStandards';
-  else if (tabName === 'why-us') targetTabId = 'tabWhyUs';
+  else if (tabName === 'tiktok' || tabName === 'why-us') targetTabId = 'tabTikTok';
   else if (tabName === 'workflow') targetTabId = 'tabWorkflow';
   else if (tabName === 'site-content') targetTabId = 'tabSiteContent';
   else if (tabName === 'calculator') targetTabId = 'tabCalculator';
@@ -2508,148 +2508,253 @@ function saveSingleStandard(card, stdId, isAutoSave = false) {
 }
 
 /* ==========================================================================
-   10. Why Us CMS (จุดเด่น RMHome)
+   10. TikTok Video Showcase CMS (จัดการคลิป TikTok & วิดีโอผลงานจริง)
    ========================================================================== */
-const DEFAULT_WHY_US = [
+const DEFAULT_TIKTOK_CLIPS = [
   {
-    id: 'why_01',
-    title: 'สัญญาโปร่งใส จ่ายตามงวดงาน',
-    desc: 'แบ่งจ่ายเป็นงวดตามงานที่สร้างเสร็จจริง ไม่มีการเรียกเก็บเงินล่วงหน้าเกินเนื้องาน คุมงบได้ 100% ไม่มีงบบานปลาย'
+    id: 'tiktok_01',
+    title: '🏡 พาชมแบบบ้านสไตล์นอร์ดิกสร้างเสร็จจริง อ.ปลวกแดง ระยอง คุมงบได้ 100% สเปกวิศวกร กว.',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7312345678901234567',
+    videoId: '7312345678901234567',
+    tag: 'พาชมบ้านจริง',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-01'
   },
   {
-    id: 'why_02',
-    title: 'รับประกันโครงสร้างยาวนาน 20 ปี',
-    desc: 'อุ่นใจด้วยหนังสือค้ำประกันโครงสร้าง 20 ปีเต็ม และรับประกันสถาปัตยกรรม 2 ปี พร้อมทีมเซอร์วิสดูแลรวดเร็ว'
+    id: 'tiktok_02',
+    title: '🌴 ส่งมอบบ้านพูลวิลล่าสไตล์โมเดิร์น พร้อมสระว่ายน้ำระบบเกลือ อ.แกลง ระยอง สวยตรงปก 100%',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7323456789012345678',
+    videoId: '7323456789012345678',
+    tag: 'ส่งมอบบ้าน',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-02'
   },
   {
-    id: 'why_03',
-    title: 'วัสดุแท้เกรดพรีเมียม SCG & TOA',
-    desc: 'เลือกใช้เฉพาะแบรนด์ชั้นนำระดับประเทศ มอก. ทุกชิ้น ไม่มีสับเปลี่ยนของเกรดต่ำ มั่นใจในอายุการใช้งานยาวนาน'
-  },
-  {
-    id: 'why_04',
-    title: 'บริการยื่นสินเชื่อธนาคาร 100%',
-    desc: 'มีเจ้าหน้าที่ฝ่ายการเงินประสานงานกับธนาคารชั้นนำ ให้คำแนะนำเรื่องเอกสาร ช่วยดันยอดกู้สูงสุด ดอกเบี้ยพิเศษ'
-  },
-  {
-    id: 'why_05',
-    title: 'สำนักงานตั้งอยู่ในระยอง ดูแลง่าย',
-    desc: 'มีออฟฟิศและทีมงานประจำพื้นที่ระยอง พร้อมเข้าสำรวจหน้างานทันที ติดต่อง่าย ไม่ใช่ผู้รับเหมาจร'
-  },
-  {
-    id: 'why_06',
-    title: 'วันสต็อปเซอร์วิส ครบวงจร',
-    desc: 'ตั้งแต่ขอเลขที่บ้าน มิเตอร์น้ำ มิเตอร์ไฟ ขุดเจาะบ่อบาดาล ขออนุญาตเทศบาล จบครบในที่เดียวแบบ One Stop'
+    id: 'tiktok_03',
+    title: '👷‍♂️ วิศวกรตรวจงานตอกเสาเข็มลึกถึงชั้นดินดาน (Solid Soil Layer) มั่นใจบ้านไม่ทรุดตัวในระยอง',
+    url: 'https://www.tiktok.com/@rmhomerayong/video/7334567890123456789',
+    videoId: '7334567890123456789',
+    tag: 'งานวิศวกรรม',
+    author: '@RMHomeRayong',
+    createdAt: '2026-11-03'
   }
 ];
 
-function getStoredWhyUs() {
+function extractTikTokVideoId(url) {
+  if (!url) return '';
+  url = url.trim();
+  if (/^\d{15,22}$/.test(url)) return url;
+  const matchVideo = url.match(/\/video\/(\d+)/);
+  if (matchVideo && matchVideo[1]) return matchVideo[1];
+  const matchItem = url.match(/item_id=(\d+)/);
+  if (matchItem && matchItem[1]) return matchItem[1];
+  const matchV = url.match(/\/v\/(\d+)/);
+  if (matchV && matchV[1]) return matchV[1];
+  return '';
+}
+
+function getStoredTikTokClips() {
   try {
-    const raw = localStorage.getItem('rm_why_us');
+    const raw = localStorage.getItem('rm_tiktok_clips');
     if (!raw) {
-      localStorage.setItem('rm_why_us', JSON.stringify(DEFAULT_WHY_US));
-      return DEFAULT_WHY_US;
+      localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
+      return DEFAULT_TIKTOK_CLIPS;
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem('rm_why_us', JSON.stringify(DEFAULT_WHY_US));
-      return DEFAULT_WHY_US;
+      localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
+      return DEFAULT_TIKTOK_CLIPS;
     }
     return parsed;
   } catch (e) {
-    return DEFAULT_WHY_US;
+    return DEFAULT_TIKTOK_CLIPS;
   }
 }
 
-function saveWhyUs(items) {
+function saveTikTokClips(clips) {
   try {
-    localStorage.setItem('rm_why_us', JSON.stringify(items));
-    notifyContentUpdated('why_us');
+    localStorage.setItem('rm_tiktok_clips', JSON.stringify(clips));
+    notifyContentUpdated('tiktok');
+    window.dispatchEvent(new CustomEvent('tiktokUpdated', { detail: { clips } }));
+    if (window.CloudSync && typeof window.CloudSync.syncAll === 'function') {
+      window.CloudSync.syncAll();
+    }
   } catch (e) {
-    console.error('Failed to save why us:', e);
+    console.error('Failed to save tiktok clips:', e);
   }
 }
 
-function initWhyUsCMS() {
-  const form = document.getElementById('whyUsAddForm');
+function initTikTokCMS() {
+  const form = document.getElementById('tiktokAddForm');
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const title = document.getElementById('newWhyTitle').value.trim();
-      const desc = document.getElementById('newWhyDesc').value.trim();
+      const urlInput = document.getElementById('newTikTokUrl');
+      const titleInput = document.getElementById('newTikTokTitle');
+      const tagInput = document.getElementById('newTikTokTag');
+      const authorInput = document.getElementById('newTikTokAuthor');
 
-      const newWhy = {
-        id: 'why_' + Date.now(),
+      const rawUrl = urlInput ? urlInput.value.trim() : '';
+      const title = titleInput ? titleInput.value.trim() : '';
+      const tag = (tagInput && tagInput.value.trim()) ? tagInput.value.trim() : 'คลิปผลงานจริง';
+      const author = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : '@RMHomeRayong';
+
+      if (!rawUrl) {
+        alert('กรุณากรอกลิงก์คลิป TikTok');
+        return;
+      }
+      if (!title) {
+        alert('กรุณากรอกชื่อคลิปหรือคำอธิบาย');
+        return;
+      }
+
+      const videoId = extractTikTokVideoId(rawUrl);
+
+      const newClip = {
+        id: 'tiktok_' + Date.now(),
         title,
-        desc
+        url: rawUrl,
+        videoId: videoId,
+        tag,
+        author,
+        createdAt: new Date().toISOString().split('T')[0]
       };
 
-      const items = getStoredWhyUs();
-      items.push(newWhy);
-      saveWhyUs(items);
+      const list = getStoredTikTokClips();
+      list.unshift(newClip);
+      saveTikTokClips(list);
 
       form.reset();
-      renderAdminWhyUsList();
-      alert(`✅ เพิ่มจุดเด่น "${title}" เรียบร้อยแล้ว!`);
+      if (authorInput) authorInput.value = '@RMHomeRayong';
+      renderAdminTikTokList();
+      alert(`✅ เพิ่มคลิป TikTok "${title}" เรียบร้อยแล้ว! อัปเดตขึ้นหน้าแรกแบบ Real-time ทันที`);
     });
   }
 
-  renderAdminWhyUsList();
+  // Cross-tab real-time sync
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'rm_tiktok_clips') {
+      renderAdminTikTokList();
+    }
+  });
+
+  renderAdminTikTokList();
 }
 
-function renderAdminWhyUsList() {
-  const container = document.getElementById('adminWhyUsList');
-  const badge = document.getElementById('whyUsCountBadge');
-  const whyUs = getStoredWhyUs();
+function renderAdminTikTokList() {
+  const container = document.getElementById('adminTikTokList');
+  const badge = document.getElementById('tiktokCountBadge');
+  const sidebarBadge = document.getElementById('sidebarTikTokBadge');
+  const clips = getStoredTikTokClips();
 
-  if (badge) badge.textContent = `${whyUs.length} จุดเด่น`;
+  if (badge) badge.textContent = `${clips.length} คลิป`;
+  if (sidebarBadge) sidebarBadge.textContent = clips.length.toString();
   if (!container) return;
 
   container.innerHTML = '';
-  whyUs.forEach((w, idx) => {
+
+  if (clips.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b;">
+        <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📱</div>
+        <p style="font-size: 1rem; font-weight: 600; color: #334155; margin-bottom: 0.25rem;">ยังไม่มีคลิป TikTok ในระบบ</p>
+        <p style="font-size: 0.85rem;">คุณสามารถคัดลอกลิงก์จากแอป TikTok แล้วนำมาวางในแบบฟอร์มด้านบนเพื่อเพิ่มคลิปได้ทันที</p>
+      </div>
+    `;
+    return;
+  }
+
+  clips.forEach((clip, idx) => {
     const card = document.createElement('div');
-    card.className = 'cms-item-card';
+    card.className = 'portfolio-admin-card';
+    card.style.cssText = 'border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; display:flex; flex-direction:column; box-shadow:0 2px 6px rgba(0,0,0,0.04);';
+
+    const videoId = clip.videoId || extractTikTokVideoId(clip.url);
+    const clipUrl = clip.url || (videoId ? `https://www.tiktok.com/@rmhomerayong/video/${videoId}` : '#');
+    const previewSrc = videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : '';
 
     card.innerHTML = `
-      <div class="cms-item-header">
-        <span class="cms-item-header-title">🏆 จุดเด่นที่ ${idx + 1}</span>
-        <button type="button" class="btn-trash-item btn-del-why" data-id="${w.id}" title="ลบจุดเด่นนี้">🗑️</button>
-      </div>
-      <div class="form-grid-2col" style="margin-bottom:0.75rem;">
-        <div class="form-group full-width">
-          <label class="form-label">หัวข้อจุดเด่น</label>
-          <input type="text" class="form-control edit-why-title" value="${escapeHtml(w.title)}">
+      <div style="background:#092518; color:#fff; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(212,175,55,0.2);">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:0.85rem; font-weight:700; color:#d4af37;">คลิปที่ ${idx + 1}</span>
+          <span style="background:rgba(34,211,238,0.15); color:#22d3ee; font-size:0.72rem; padding:0.15rem 0.5rem; border-radius:10px; border:1px solid rgba(34,211,238,0.3);">
+            ${escapeHtml(clip.tag || 'คลิปผลงาน')}
+          </span>
         </div>
-        <div class="form-group full-width">
-          <label class="form-label">คำอธิบายรายละเอียด</label>
-          <textarea class="form-control edit-why-desc" rows="2">${escapeHtml(w.desc)}</textarea>
-        </div>
-      </div>
-      <div class="review-bottom-actions">
-        <span class="save-status-indicator why-save-status"></span>
-        <button type="button" class="btn-save-inline btn-save-why" data-id="${w.id}">
-          💾 บันทึกจุดเด่นนี้
+        <button type="button" class="btn-trash-item btn-del-tiktok" data-id="${clip.id}" title="ลบคลิปนี้ออกจากหน้าเว็บ" style="background:#ef4444; color:#fff; border:none; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.78rem; font-weight:600;">
+          🗑️ ลบคลิป
         </button>
+      </div>
+      
+      <div style="padding:1rem; flex:1; display:flex; flex-direction:column; gap:0.75rem;">
+        ${videoId ? `
+          <div style="width:100%; height:260px; background:#000; border-radius:8px; overflow:hidden; position:relative;">
+            <iframe 
+              src="${previewSrc}" 
+              title="${escapeHtml(clip.title)}" 
+              loading="lazy" 
+              style="width:100%; height:100%; border:none;" 
+              allowfullscreen>
+            </iframe>
+          </div>
+        ` : `
+          <div style="padding:1.5rem 1rem; background:#f1f5f9; border-radius:8px; text-align:center; color:#64748b; font-size:0.85rem;">
+            🔗 ลิงก์คลิป: <a href="${clipUrl}" target="_blank" rel="noopener" style="color:#0284c7; word-break:break-all;">${clipUrl}</a>
+          </div>
+        `}
+
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" style="font-size:0.8rem; margin-bottom:0.25rem;">ชื่อคลิป / แคปชัน</label>
+          <input type="text" class="form-control edit-tiktok-title" value="${escapeHtml(clip.title)}" style="font-size:0.88rem;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label" style="font-size:0.78rem; margin-bottom:0.25rem;">แท็ก / หมวดหมู่</label>
+            <input type="text" class="form-control edit-tiktok-tag" value="${escapeHtml(clip.tag || '')}" style="font-size:0.82rem;">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label" style="font-size:0.78rem; margin-bottom:0.25rem;">เครดิตผู้ลง</label>
+            <input type="text" class="form-control edit-tiktok-author" value="${escapeHtml(clip.author || '@RMHomeRayong')}" style="font-size:0.82rem;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" style="font-size:0.78rem; margin-bottom:0.25rem;">URL คลิป TikTok</label>
+          <input type="text" class="form-control edit-tiktok-url" value="${escapeHtml(clip.url || '')}" style="font-size:0.82rem; font-family:monospace;">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:0.5rem; border-top:1px solid #f1f5f9;">
+          <a href="${clipUrl}" target="_blank" rel="noopener" style="font-size:0.78rem; color:#0d5c3a; text-decoration:none; font-weight:600;">
+            ▶ ทดสอบเปิดบน TikTok
+          </a>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="save-status-indicator tiktok-save-status" style="font-size:0.75rem; color:#10b981;"></span>
+            <button type="button" class="btn-save-inline btn-save-tiktok" data-id="${clip.id}" style="background:#0e3d29; color:#fff; border:none; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.8rem; cursor:pointer; font-weight:600;">
+              💾 บันทึกแก้ไข
+            </button>
+          </div>
+        </div>
       </div>
     `;
 
-    const btnSave = card.querySelector('.btn-save-why');
+    const btnSave = card.querySelector('.btn-save-tiktok');
     if (btnSave) {
-      btnSave.onclick = () => saveSingleWhyUs(card, w.id);
+      btnSave.onclick = () => saveSingleTikTokClip(card, clip.id);
     }
 
-    const inputs = card.querySelectorAll('input, textarea');
+    const inputs = card.querySelectorAll('input');
     inputs.forEach(inp => {
-      inp.onblur = () => saveSingleWhyUs(card, w.id, true);
+      inp.onblur = () => saveSingleTikTokClip(card, clip.id, true);
     });
 
-    const btnDel = card.querySelector('.btn-del-why');
+    const btnDel = card.querySelector('.btn-del-tiktok');
     if (btnDel) {
       btnDel.onclick = () => {
-        if (confirm(`คุณต้องการลบจุดเด่น "${w.title}" ใช่หรือไม่?`)) {
-          let list = getStoredWhyUs().filter(item => item.id !== w.id);
-          saveWhyUs(list);
-          renderAdminWhyUsList();
+        if (confirm(`คุณต้องการลบคลิป TikTok "${clip.title}" ใช่หรือไม่?\n(ระบบจะลบออกจากหน้าแรกของเว็บทันทีแบบ Real-time)`)) {
+          let list = getStoredTikTokClips().filter(item => item.id !== clip.id);
+          saveTikTokClips(list);
+          renderAdminTikTokList();
         }
       };
     }
@@ -2658,22 +2763,29 @@ function renderAdminWhyUsList() {
   });
 }
 
-function saveSingleWhyUs(card, whyId, isAutoSave = false) {
-  const titleInput = card.querySelector('.edit-why-title');
-  const descInput = card.querySelector('.edit-why-desc');
-  const statusSpan = card.querySelector('.why-save-status');
+function saveSingleTikTokClip(card, clipId, isAutoSave = false) {
+  const titleInput = card.querySelector('.edit-tiktok-title');
+  const tagInput = card.querySelector('.edit-tiktok-tag');
+  const authorInput = card.querySelector('.edit-tiktok-author');
+  const urlInput = card.querySelector('.edit-tiktok-url');
+  const statusSpan = card.querySelector('.tiktok-save-status');
 
-  const list = getStoredWhyUs();
-  const target = list.find(w => w.id === whyId);
+  const list = getStoredTikTokClips();
+  const target = list.find(item => item.id === clipId);
   if (!target) return;
 
   target.title = titleInput ? titleInput.value.trim() : target.title;
-  target.desc = descInput ? descInput.value.trim() : target.desc;
+  target.tag = tagInput ? tagInput.value.trim() : target.tag;
+  target.author = authorInput ? authorInput.value.trim() : target.author;
+  if (urlInput && urlInput.value.trim() !== target.url) {
+    target.url = urlInput.value.trim();
+    target.videoId = extractTikTokVideoId(target.url);
+  }
 
-  saveWhyUs(list);
+  saveTikTokClips(list);
 
   if (statusSpan) {
-    statusSpan.textContent = isAutoSave ? 'บันทึกอัตโนมัติแล้ว ✓' : 'บันทึกสำเร็จ ✅';
+    statusSpan.textContent = isAutoSave ? 'บันทึกแล้ว ✓' : 'บันทึกสำเร็จ ✅';
     setTimeout(() => { statusSpan.textContent = ''; }, 2000);
   }
 }
