@@ -800,16 +800,18 @@ button, input, select, textarea {
   pointer-events: none;
 }
 
-/* Slide 2 active state: keep artwork visible and pleasant */
-.hero-section.slide-2-active .hero-stats {
-  opacity: 0.2;
-  transform: translateY(12px);
-  transition: all 0.4s ease;
+/* Slide 2 active state: Hide center text, buttons, and ornaments so Slide 2 banner is completely clear */
+.hero-section.slide-2-active .hero-content {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(22px) scale(0.96) !important;
 }
 
-.hero-section.slide-2-active .hero-stats:hover {
-  opacity: 1;
-  transform: translateY(0);
+.hero-section.slide-2-active .xmas-ornament {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 @media (max-width: 768px) {
@@ -847,6 +849,7 @@ button, input, select, textarea {
   pointer-events: none;
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
   transform-origin: 50% 0;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 .xmas-stocking {
@@ -926,6 +929,7 @@ button, input, select, textarea {
   max-width: 900px;
   text-align: center;
   margin: 0 auto;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s ease;
 }
 
 .hero-badge-wrap {
