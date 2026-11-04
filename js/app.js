@@ -83,7 +83,7 @@ function initHeroSlider() {
     if (badgeEl) {
       badgeEl.innerHTML = currentSlide === 0
         ? '🎄 1/2 RMHome Villa'
-        : '✨ 2/2 NewJeans Edition';
+        : '🎁 2/2 Christmas Promo';
     }
 
     restartAutoSlide();

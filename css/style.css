@@ -696,8 +696,8 @@ button, input, select, textarea {
 
 .hero-slide:nth-child(2) img {
   object-fit: cover;
-  object-position: center 40%;
-  background: #9ab4b9;
+  object-position: center center;
+  background: #0b1a2d;
 }
 
 /* Slider Navigation Arrows */
