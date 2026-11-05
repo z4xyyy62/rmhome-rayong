@@ -4057,111 +4057,152 @@ textarea.form-control {
     margin-bottom: 1rem !important;
   }
 
-  /* 4. Workflow Section (แก้การ์ด 01, 02, 03 ที่ผู้ใช้แคปมาให้เล็กลงพอดีตา ไม่กินเต็มจอ) */
+    /* 4. Workflow Section (ฝั่งละ 2 ข้อ - จัดเรียง 2 คอลัมน์ ย่อสเกลการ์ดและฟอนต์ให้กะทัดรัด) */
   .workflow-section {
-    padding: 2rem 0 !important;
+    padding: 1.75rem 0 !important;
   }
   .workflow-grid {
-    gap: 0.6rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
   }
   .step-card {
-    padding: 0.75rem 0.95rem !important;
-    border-radius: 10px !important;
+    padding: 0.65rem 0.6rem !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
   }
   .step-number {
-    font-size: 1.4rem !important;
+    font-size: 1.15rem !important;
     margin-bottom: 0.15rem !important;
     line-height: 1 !important;
+    color: var(--color-gold-400) !important;
+    opacity: 0.85 !important;
   }
   .step-card h4 {
-    font-size: 0.9rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
     margin-bottom: 0.2rem !important;
   }
   .step-card p {
-    font-size: 0.72rem !important;
-    line-height: 1.38 !important;
+    font-size: 0.64rem !important;
+    line-height: 1.35 !important;
+    color: var(--text-muted) !important;
   }
 
-  /* 5. Why Choose Us / Standards Section (ทำไมชาวระยองถึงไว้วางใจ) */
+  /* 5. Why Choose Us / Standards Section (ฝั่งละ 2 ข้อ 6 ข้อเป็น 3 แถวเรียบร้อย) */
   .standards-section, .why-section {
-    padding: 2rem 0 !important;
+    padding: 1.75rem 0 !important;
   }
   .why-grid {
-    gap: 0.6rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
   }
   .why-card {
-    padding: 0.75rem 0.95rem !important;
-    border-radius: 10px !important;
+    padding: 0.65rem 0.6rem !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+  }
+  .why-icon-box {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.8rem !important;
+    margin-bottom: 0.25rem !important;
   }
   .why-card h4 {
-    font-size: 0.9rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
     margin-bottom: 0.2rem !important;
   }
   .why-card p {
-    font-size: 0.72rem !important;
-    line-height: 1.38 !important;
-  }
-  .why-icon-box {
-    width: 30px !important;
-    height: 30px !important;
-    font-size: 0.95rem !important;
-    margin-bottom: 0.35rem !important;
+    font-size: 0.64rem !important;
+    line-height: 1.35 !important;
+    color: var(--text-muted) !important;
   }
 
-  /* 6. Services Section (บริการของเรา) */
+  /* 6. Services Section (ฝั่งละ 2 ข้อ) */
   .services-section {
-    padding: 2rem 0 !important;
+    padding: 1.75rem 0 !important;
   }
   .services-grid {
-    gap: 0.6rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
   }
   .service-item-card {
-    padding: 0.75rem 0.95rem !important;
-    border-radius: 10px !important;
+    padding: 0.65rem 0.6rem !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
   }
   .service-item-title {
-    font-size: 0.9rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
     margin-bottom: 0.2rem !important;
   }
   .service-item-desc {
-    font-size: 0.72rem !important;
-    line-height: 1.38 !important;
+    font-size: 0.64rem !important;
+    line-height: 1.35 !important;
+    color: var(--text-muted) !important;
   }
   .service-icon-box {
-    width: 30px !important;
-    height: 30px !important;
+    width: 26px !important;
+    height: 26px !important;
   }
 
-  /* 7. Reviews Section (เสียงจากลูกค้าจริง) */
+  /* 7. Reviews Section (ฝั่งละ 2 ข้อ) */
   .reviews-section {
-    padding: 2rem 0 !important;
+    padding: 1.75rem 0 !important;
   }
   .reviews-grid {
-    gap: 0.6rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
   }
   .review-card {
-    padding: 0.75rem 0.95rem !important;
-    border-radius: 10px !important;
+    padding: 0.65rem 0.6rem !important;
+    border-radius: 8px !important;
   }
   .reviewer-name {
-    font-size: 0.85rem !important;
+    font-size: 0.76rem !important;
   }
   .reviewer-location {
-    font-size: 0.65rem !important;
+    font-size: 0.58rem !important;
   }
   .review-text {
-    font-size: 0.72rem !important;
-    line-height: 1.38 !important;
+    font-size: 0.64rem !important;
+    line-height: 1.35 !important;
   }
 
-  /* 8. Service Areas Section (พื้นที่ให้บริการ) */
+  /* 8. Service Areas Section (ฝั่งละ 2 ข้อ) */
   .areas-section {
-    padding: 2rem 0 !important;
+    padding: 1.75rem 0 !important;
+  }
+  .areas-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
   }
   .area-card, .area-tag {
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.74rem !important;
-    border-radius: 8px !important;
+    padding: 0.45rem 0.65rem !important;
+    font-size: 0.7rem !important;
+    border-radius: 6px !important;
+  }
+
+  /* Card corner holiday ornaments */
+  .card-corner-stocking {
+    width: 20px !important;
+    height: 28px !important;
+    top: -6px !important;
+    right: 6px !important;
   }
 
   /* 9. House Collections: 3D Orbit Carousel & Grid (ลดสเกลงานแบบบ้านลงอีกให้เห็นทั่วๆ) */
