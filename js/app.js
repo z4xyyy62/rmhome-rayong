@@ -3083,12 +3083,14 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
 function getStoredConstructionProjects() {
   try {
     const raw = localStorage.getItem('rm_construction_projects');
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
-  } catch (e) {}
-  return DEFAULT_CONSTRUCTION_PROJECTS;
+    return DEFAULT_CONSTRUCTION_PROJECTS;
+  } catch (e) {
+    return [];
+  }
 }
 
 function initSiteTracker() {
@@ -3307,8 +3309,18 @@ function initSiteTracker() {
     });
   });
 
-  const defaultProj = getStoredConstructionProjects()[0];
-  if (defaultProj) {
-    renderProjectCard(defaultProj);
+  const projects = getStoredConstructionProjects();
+  if (projects && projects.length > 0) {
+    renderProjectCard(projects[0]);
+  } else {
+    container.innerHTML = `
+      <div class="tracker-result-card" style="text-align:center; padding:2.5rem 1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.6rem;">🏗️</div>
+        <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการใหม่</h4>
+        <p style="color:var(--text-dim); font-size:0.85rem; max-width:480px; margin:0 auto;">
+          ขณะนี้ยังไม่มีโครงการที่เปิดให้ติดตาม เมื่อมีโครงการของท่านจะสามารถกรอกเลขที่สัญญาเพื่อตรวจเช็กได้ทันที
+        </p>
+      </div>
+    `;
   }
 }

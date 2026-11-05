@@ -1089,20 +1089,19 @@ function normalizeCategoryName(cat) {
 let _cachedPortfolioItems = null;
 
 function getStoredPortfolio() {
-  if (_cachedPortfolioItems && Array.isArray(_cachedPortfolioItems) && _cachedPortfolioItems.length > 0) {
+  if (_cachedPortfolioItems && Array.isArray(_cachedPortfolioItems)) {
     return _cachedPortfolioItems;
   }
   try {
     const raw = localStorage.getItem('rm_portfolio_items');
-    if (!raw) {
+    if (raw === null) {
       _cachedPortfolioItems = [...DEFAULT_PORTFOLIO_HOUSES];
       try { localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES)); } catch (e) {}
       return _cachedPortfolioItems;
     }
     let parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      _cachedPortfolioItems = [...DEFAULT_PORTFOLIO_HOUSES];
-      try { localStorage.setItem('rm_portfolio_items', JSON.stringify(DEFAULT_PORTFOLIO_HOUSES)); } catch (e) {}
+    if (!Array.isArray(parsed)) {
+      _cachedPortfolioItems = [];
       return _cachedPortfolioItems;
     }
     let updated = false;
@@ -2104,18 +2103,15 @@ const DEFAULT_REVIEWS = [
 function getStoredReviews() {
   try {
     const raw = localStorage.getItem('rm_reviews');
-    if (!raw) {
+    if (raw === null) {
       localStorage.setItem('rm_reviews', JSON.stringify(DEFAULT_REVIEWS));
       return DEFAULT_REVIEWS;
     }
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem('rm_reviews', JSON.stringify(DEFAULT_REVIEWS));
-      return DEFAULT_REVIEWS;
-    }
+    if (!Array.isArray(parsed)) return [];
     return parsed;
   } catch (e) {
-    return DEFAULT_REVIEWS;
+    return [];
   }
 }
 
@@ -2739,15 +2735,12 @@ function extractTikTokVideoId(url) {
 function getStoredTikTokClips() {
   try {
     const raw = localStorage.getItem('rm_tiktok_clips');
-    if (!raw) {
+    if (raw === null) {
       localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
       return DEFAULT_TIKTOK_CLIPS;
     }
     let parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem('rm_tiktok_clips', JSON.stringify(DEFAULT_TIKTOK_CLIPS));
-      return DEFAULT_TIKTOK_CLIPS;
-    }
+    if (!Array.isArray(parsed)) return [];
     return parsed.map(c => {
       if (c.author === '@RMHomeRayong') c.author = '@rm.home.design.co';
       if (c.url && c.url.includes('rmhomerayong')) c.url = c.url.replace('rmhomerayong', 'rm.home.design.co');
@@ -3567,12 +3560,15 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
 function getStoredConstructionProjectsAdmin() {
   try {
     const raw = localStorage.getItem('rm_construction_projects');
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
-  } catch (e) {}
-  return DEFAULT_CONSTRUCTION_PROJECTS;
+    localStorage.setItem('rm_construction_projects', JSON.stringify(DEFAULT_CONSTRUCTION_PROJECTS));
+    return DEFAULT_CONSTRUCTION_PROJECTS;
+  } catch (e) {
+    return [];
+  }
 }
 
 function saveConstructionProjectsAdmin(projects) {
@@ -3621,10 +3617,33 @@ function renderSiteTrackerAdmin() {
 
   if (projects.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:3rem; color:#94a3b8; font-size:0.9rem;">
-        ยังไม่มีโครงการก่อสร้างในระบบ คลิกปุ่ม "+ เพิ่มโครงการสร้างบ้านใหม่" เพื่อเริ่มต้น
+      <div style="text-align:center; padding:3rem 1.5rem; background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; margin-top:1.25rem;">
+        <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗑️</div>
+        <h4 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin-bottom:0.35rem;">ลบข้อมูลโครงการออกหมดเรียบร้อยแล้ว</h4>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.25rem; max-width:460px; margin-left:auto; margin-right:auto;">
+          ขณะนี้ไม่มีโครงการค้างอยู่ในระบบ (สถานะว่าง 100%) ท่านสามารถกดเพิ่มโครงการสร้างบ้านใหม่ หรือกดโหลดข้อมูลตัวอย่างกลับมาได้ทุกเมื่อ
+        </p>
+        <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+          <button type="button" class="btn-primary" id="btnEmptyAddProject" style="background:#0e3d29; color:#fff; border:1px solid #d4af37; padding:0.5rem 1.25rem; border-radius:8px; font-weight:600; cursor:pointer;">
+            + เพิ่มโครงการสร้างบ้านใหม่
+          </button>
+          <button type="button" class="btn-action-outline" id="btnRestoreDefaultProjects" style="font-size:0.82rem; padding:0.5rem 1rem;">
+            🔄 โหลดโครงการตัวอย่างกลับมา
+          </button>
+        </div>
       </div>
     `;
+    const emptyAddBtn = document.getElementById('btnEmptyAddProject');
+    if (emptyAddBtn) {
+      emptyAddBtn.addEventListener('click', () => openEditProjectModal(null));
+    }
+    const restoreBtn = document.getElementById('btnRestoreDefaultProjects');
+    if (restoreBtn) {
+      restoreBtn.addEventListener('click', () => {
+        saveConstructionProjectsAdmin(DEFAULT_CONSTRUCTION_PROJECTS);
+        renderSiteTrackerAdmin();
+      });
+    }
     return;
   }
 
