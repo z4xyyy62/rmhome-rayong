@@ -1187,6 +1187,34 @@
         <div class="detail-val" id="modalLeadTime" style="font-size:0.85rem; color:#64748b; font-weight:400;">-</div>
       </div>
 
+      <!-- Lead Status Control Box -->
+      <div class="lead-modal-status-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.9rem; margin:1rem 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <div style="font-size:0.85rem; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:0.4rem;">
+            📌 สถานะการติดตามลูกค้า:
+          </div>
+          <span id="modalCurrentStatusBadge" class="lead-status-pill new">
+            ⏳ รอติดต่อ
+          </span>
+        </div>
+        
+        <p style="font-size:0.78rem; color:#64748b; margin-bottom:0.65rem; line-height:1.4;">
+          คลิกเลือกสถานะเพื่ออัปเดต (ระบบแมนนวลให้แอดมินหรือฝ่ายขายกดบันทึกเมื่อโทรคุยแล้ว):
+        </p>
+
+        <div class="modal-status-btn-group" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem;">
+          <button type="button" class="btn-modal-status" id="btnModalStatusNew" data-status="new">
+            ⏳ รอติดต่อ
+          </button>
+          <button type="button" class="btn-modal-status" id="btnModalStatusContacted" data-status="contacted">
+            📞 ติดต่อแล้ว
+          </button>
+          <button type="button" class="btn-modal-status" id="btnModalStatusDone" data-status="done">
+            ✅ สำเร็จ
+          </button>
+        </div>
+      </div>
+
       <div class="detail-actions">
         <button class="btn-action-outline" id="modalCallBtn" style="background:linear-gradient(135deg, #0e3d29, #062417); color:#fff; border:1px solid #d4af37; padding:0.6rem 1.25rem; font-weight:600; box-shadow: 0 4px 12px rgba(14, 61, 41, 0.35);">
           📞 โทรติดต่อทันที

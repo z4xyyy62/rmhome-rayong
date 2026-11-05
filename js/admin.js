@@ -567,15 +567,18 @@ function renderLeadsList() {
     const row = document.createElement('div');
     row.className = 'lead-row';
     
-    let statusText = 'ใหม่';
+    let statusText = '⏳ รอติดต่อ';
     let statusClass = 'new';
+    let nextStatusHint = 'คลิกเปลี่ยนเป็น ➔ ติดต่อแล้ว';
 
     if (lead.status === 'contacted') {
-      statusText = 'ติดต่อแล้ว';
+      statusText = '📞 ติดต่อแล้ว';
       statusClass = 'contacted';
+      nextStatusHint = 'คลิกเปลี่ยนเป็น ➔ สำเร็จ';
     } else if (lead.status === 'done') {
-      statusText = 'สำเร็จ';
+      statusText = '✅ สำเร็จ';
       statusClass = 'done';
+      nextStatusHint = 'คลิกวนกลับเป็น ➔ รอติดต่อ';
     }
 
     const leadTime = lead.time || lead.createdAt || 'เพิ่งส่งเข้ามา';
@@ -587,7 +590,7 @@ function renderLeadsList() {
         <span style="font-size:0.75rem; color:#94a3b8; margin-left:0.5rem;">📍 ${escapeHtml(lead.location || 'ระยอง')}</span>
         <span style="font-size:0.72rem; color:#cbd5e1; margin-left:0.35rem;">(${escapeHtml(leadTime)})</span>
       </div>
-      <button class="lead-status-pill ${statusClass}" title="คลิกเพื่อเปลี่ยนสถานะ (${statusText})">${statusText}</button>
+      <button class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
     `;
 
     const pill = row.querySelector('.lead-status-pill');
@@ -612,6 +615,7 @@ function initFilterButtons() {
       btn.classList.add('active');
       currentFilter = btn.getAttribute('data-filter') || 'all';
       renderLeadsList();
+      if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
     });
   });
 }
@@ -632,11 +636,50 @@ function toggleLeadStatus(leadId) {
   saveLeads(leads);
   renderMetrics();
   renderLeadsList();
+  if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
+
+  if (currentDetailLead && currentDetailLead.id === leadId) {
+    currentDetailLead = target;
+    updateModalStatusUI(target.status);
+  }
+}
+
+let currentDetailLead = null;
+
+function updateModalStatusUI(status) {
+  const badge = document.getElementById('modalCurrentStatusBadge');
+  const btnNew = document.getElementById('btnModalStatusNew');
+  const btnContacted = document.getElementById('btnModalStatusContacted');
+  const btnDone = document.getElementById('btnModalStatusDone');
+
+  const statusMap = {
+    new: { text: '⏳ รอติดต่อ', cls: 'new' },
+    contacted: { text: '📞 ติดต่อแล้ว', cls: 'contacted' },
+    done: { text: '✅ สำเร็จ', cls: 'done' }
+  };
+  const info = statusMap[status] || statusMap.new;
+
+  if (badge) {
+    badge.className = `lead-status-pill ${info.cls}`;
+    badge.textContent = info.text;
+  }
+
+  [btnNew, btnContacted, btnDone].forEach(btn => {
+    if (btn) {
+      if (btn.getAttribute('data-status') === status) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  });
 }
 
 function openLeadDetail(lead) {
   const modal = document.getElementById('leadDetailModal');
   if (!modal) return;
+
+  currentDetailLead = lead;
 
   document.getElementById('modalLeadName').textContent = lead.name || '-';
   document.getElementById('modalLeadPhone').textContent = lead.phone || '-';
@@ -645,11 +688,27 @@ function openLeadDetail(lead) {
   document.getElementById('modalLeadMessage').textContent = lead.message || 'ไม่มีข้อความเพิ่มเติม';
   document.getElementById('modalLeadTime').textContent = lead.time || lead.createdAt || 'ไม่นานมานี้';
 
+  updateModalStatusUI(lead.status || 'new');
+
   modal.classList.add('open');
 
   const callBtn = document.getElementById('modalCallBtn');
   if (callBtn) {
     callBtn.onclick = () => {
+      // Auto-update to contacted if status was new
+      if (currentDetailLead && currentDetailLead.status === 'new') {
+        const leads = getStoredLeads();
+        const target = leads.find(l => l.id === currentDetailLead.id);
+        if (target) {
+          target.status = 'contacted';
+          saveLeads(leads);
+          currentDetailLead = target;
+          updateModalStatusUI('contacted');
+          renderMetrics();
+          renderLeadsList();
+          if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
+        }
+      }
       window.location.href = `tel:${lead.phone}`;
     };
   }
@@ -661,9 +720,11 @@ function openLeadDetail(lead) {
         let leads = getStoredLeads();
         leads = leads.filter(l => l.id !== lead.id);
         saveLeads(leads);
+        currentDetailLead = null;
         modal.classList.remove('open');
         renderMetrics();
         renderLeadsList();
+        if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
       }
     };
   }
@@ -735,6 +796,28 @@ function initActionButtons() {
       if (e.target === modal) modal.classList.remove('open');
     });
   }
+
+  // Lead Modal Status Change Buttons
+  ['btnModalStatusNew', 'btnModalStatusContacted', 'btnModalStatusDone'].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        if (!currentDetailLead) return;
+        const newStatus = btn.getAttribute('data-status');
+        const leads = getStoredLeads();
+        const target = leads.find(l => l.id === currentDetailLead.id);
+        if (target) {
+          target.status = newStatus;
+          saveLeads(leads);
+          currentDetailLead = target;
+          updateModalStatusUI(newStatus);
+          renderMetrics();
+          renderLeadsList();
+          if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
+        }
+      });
+    }
+  });
 
   // Refresh Button
   const refreshBtn = document.getElementById('btnRefresh');
@@ -1868,18 +1951,26 @@ function renderLeadsTabList() {
     const row = document.createElement('div');
     row.className = `lead-row ${lead.status === 'new' ? 'unread' : ''}`;
 
-    const statusBadge = lead.status === 'new'
-      ? '<span class="status-badge new">รอติดต่อ</span>'
-      : (lead.status === 'contacted'
-        ? '<span class="status-badge contacted">ติดต่อแล้ว</span>'
-        : '<span class="status-badge done">สำเร็จ</span>');
+    let statusText = '⏳ รอติดต่อ';
+    let statusClass = 'new';
+    let nextStatusHint = 'คลิกเปลี่ยนเป็น ➔ ติดต่อแล้ว';
+
+    if (lead.status === 'contacted') {
+      statusText = '📞 ติดต่อแล้ว';
+      statusClass = 'contacted';
+      nextStatusHint = 'คลิกเปลี่ยนเป็น ➔ สำเร็จ';
+    } else if (lead.status === 'done') {
+      statusText = '✅ สำเร็จ';
+      statusClass = 'done';
+      nextStatusHint = 'คลิกวนกลับเป็น ➔ รอติดต่อ';
+    }
 
     row.innerHTML = `
       <div class="lead-avatar">${escapeHtml((lead.name || 'ค').charAt(0))}</div>
-      <div class="lead-info">
+      <div class="lead-info" style="cursor:pointer;">
         <div class="lead-name-row">
           <span class="lead-name">${escapeHtml(lead.name)}</span>
-          ${statusBadge}
+          <button class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
         </div>
         <div class="lead-phone">📞 ${escapeHtml(lead.phone)} • ${escapeHtml(lead.location || 'ระยอง')}</div>
         <div class="lead-meta-row">
@@ -1893,10 +1984,25 @@ function renderLeadsTabList() {
       </div>
     `;
 
+    const pill = row.querySelector('.lead-status-pill');
+    if (pill) {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleLeadStatus(lead.id);
+      });
+    }
+
     const viewBtn = row.querySelector('.btn-lead-view');
     if (viewBtn) {
-      viewBtn.addEventListener('click', () => openLeadModal(lead.id));
+      viewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLeadDetail(lead);
+      });
     }
+
+    row.addEventListener('click', () => {
+      openLeadDetail(lead);
+    });
 
     container.appendChild(row);
   });
