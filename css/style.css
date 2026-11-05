@@ -1245,7 +1245,7 @@ button, input, select, textarea {
    ========================================================================== */
 
 .calculator-section {
-  padding: 6rem 0;
+  padding: 3.5rem 0;
   position: relative;
   background: var(--bg-festive-red);
 }
@@ -1253,12 +1253,12 @@ button, input, select, textarea {
 .calc-card-wrap {
   background: linear-gradient(145deg, rgba(50, 11, 18, 0.92) 0%, rgba(22, 5, 8, 0.97) 100%);
   border: 1.5px solid var(--border-gold-subtle);
-  border-radius: var(--radius-xl);
-  padding: 3rem;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.12);
+  border-radius: 18px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(212, 175, 55, 0.12);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 3rem;
+  gap: 2rem;
   align-items: center;
   position: relative;
 }
@@ -1718,7 +1718,7 @@ button, input, select, textarea {
    ========================================================================== */
 
 .standards-section {
-  padding: 6rem 0;
+  padding: 3.5rem 0;
   position: relative;
   background: var(--bg-festive-green);
 }
@@ -1726,7 +1726,7 @@ button, input, select, textarea {
 .standards-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
+  gap: 2.25rem;
   align-items: center;
 }
 
@@ -1973,7 +1973,7 @@ button, input, select, textarea {
    ========================================================================== */
 
 .reviews-section {
-  padding: 6rem 0;
+  padding: 3.5rem 0;
   background: var(--bg-festive-red);
 }
 
@@ -2279,7 +2279,7 @@ button, input, select, textarea {
    ========================================================================== */
 
 .contact-section {
-  padding: 6rem 0;
+  padding: 3.5rem 0;
   background: var(--bg-festive-green);
   position: relative;
 }
@@ -2287,11 +2287,11 @@ button, input, select, textarea {
 .contact-box-grid {
   display: grid;
   grid-template-columns: 1fr 1.35fr;
-  gap: 3.5rem;
+  gap: 2.25rem;
   background: var(--bg-festive-green-card);
   border: 1.5px solid var(--border-gold-subtle);
-  border-radius: var(--radius-xl);
-  padding: 3.5rem;
+  border-radius: 18px;
+  padding: 2.25rem 2rem;
   box-shadow: var(--shadow-deep);
   position: relative;
 }
@@ -2467,16 +2467,16 @@ textarea.form-control {
 .site-footer {
   background: var(--bg-festive-red);
   border-top: 1px solid rgba(212, 175, 55, 0.25);
-  padding: 4.5rem 0 4.5rem 0;
+  padding: 3rem 0;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1.25fr;
-  gap: 3rem;
-  margin-bottom: 3.5rem;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .footer-brand p {
@@ -4096,38 +4096,53 @@ textarea.form-control {
     color: var(--text-muted) !important;
   }
 
-  /* 5. Why Choose Us / Standards Section (ฝั่งละ 2 ข้อ 6 ข้อเป็น 3 แถวเรียบร้อย) */
-  .standards-section, .why-section {
-    padding: 1.75rem 0 !important;
+  /* 5. Standards Section - Compact Scale on Mobile */
+  .standards-section {
+    padding: 1.5rem 0 !important;
   }
-  .why-grid {
+  .standards-row {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.5rem !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
   }
-  .why-card {
-    padding: 0.65rem 0.6rem !important;
+  .standards-img-container {
+    height: 180px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+  .standards-img-container img {
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  .experience-floating-badge {
+    bottom: 0.6rem !important;
+    right: 0.6rem !important;
+    padding: 0.4rem 0.65rem !important;
     border-radius: 8px !important;
+  }
+  .exp-years {
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+  }
+  .exp-text {
+    font-size: 0.56rem !important;
+  }
+  .checklist-items {
     display: flex !important;
     flex-direction: column !important;
-    min-height: 0 !important;
+    gap: 0.45rem !important;
+    margin-bottom: 0.75rem !important;
   }
-  .why-icon-box {
-    width: 26px !important;
-    height: 26px !important;
-    font-size: 0.8rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  .why-card h4 {
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    line-height: 1.25 !important;
-    margin-bottom: 0.2rem !important;
-  }
-  .why-card p {
-    font-size: 0.64rem !important;
+  .check-item {
+    font-size: 0.68rem !important;
     line-height: 1.35 !important;
-    color: var(--text-muted) !important;
+    gap: 0.4rem !important;
+  }
+  .check-circle {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0 !important;
+    font-size: 0.6rem !important;
   }
 
   /* 6. Services Section (ฝั่งละ 2 ข้อ) */
@@ -4162,28 +4177,66 @@ textarea.form-control {
     height: 26px !important;
   }
 
-  /* 7. Reviews Section (ฝั่งละ 2 ข้อ) */
+  /* 7. Reviews Section - Compact Scale on Mobile (2 columns side by side) */
   .reviews-section {
-    padding: 1.75rem 0 !important;
+    padding: 1.5rem 0 !important;
+  }
+  .reviews-section-header {
+    margin-bottom: 0.75rem !important;
+    gap: 0.4rem !important;
+  }
+  .btn-review-add-gold {
+    padding: 0.3rem 0.7rem !important;
+    font-size: 0.68rem !important;
+    gap: 0.35rem !important;
+    border-radius: 9999px !important;
+  }
+  .btn-gold-icon {
+    width: 15px !important;
+    height: 15px !important;
+    font-size: 0.7rem !important;
   }
   .reviews-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.5rem !important;
+    gap: 0.45rem !important;
   }
   .review-card {
-    padding: 0.65rem 0.6rem !important;
+    padding: 0.55rem 0.5rem !important;
     border-radius: 8px !important;
+    min-height: unset !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+  }
+  .review-stars {
+    font-size: 0.68rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+  .reviewer-meta {
+    gap: 0.35rem !important;
+  }
+  .reviewer-avatar {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.65rem !important;
   }
   .reviewer-name {
-    font-size: 0.76rem !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
   }
-  .reviewer-location {
-    font-size: 0.58rem !important;
+  .reviewer-location, .reviewer-loc {
+    font-size: 0.55rem !important;
+    color: var(--text-muted) !important;
   }
   .review-text {
-    font-size: 0.64rem !important;
+    font-size: 0.62rem !important;
     line-height: 1.35 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
   }
 
   /* 8. Service Areas Section - Compact Scale on Mobile */
@@ -4422,16 +4475,234 @@ textarea.form-control {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  .calculator-section, .contact-section {
-    padding: 2rem 0 !important;
+  /* 11. Calculator Section - Compact Scale on Mobile */
+  .calculator-section {
+    padding: 1.5rem 0 !important;
   }
-  .contact-box-grid, .calc-box {
-    padding: 1rem !important;
+  .calc-card-wrap {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    padding: 0.95rem 0.8rem !important;
     border-radius: 12px !important;
+    gap: 1rem !important;
+  }
+  .calc-form-side h3 {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.2rem !important;
+  }
+  .calc-form-side p {
+    font-size: 0.66rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+  .calc-group {
+    margin-bottom: 0.75rem !important;
+  }
+  .calc-label-row {
+    margin-bottom: 0.35rem !important;
+  }
+  .calc-label {
+    font-size: 0.72rem !important;
+  }
+  .calc-dynamic-val {
+    font-size: 0.88rem !important;
+  }
+  .custom-slider {
+    height: 6px !important;
+  }
+  .custom-slider::-webkit-slider-thumb {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .spec-selector-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.35rem !important;
+  }
+  .spec-option-card {
+    padding: 0.45rem 0.3rem !important;
+    border-radius: 6px !important;
+    text-align: center !important;
+  }
+  .spec-title {
+    font-size: 0.68rem !important;
+    margin-bottom: 0.1rem !important;
+  }
+  .spec-desc {
+    font-size: 0.55rem !important;
+  }
+  .options-toggle-row {
+    gap: 0.35rem !important;
+    flex-wrap: wrap !important;
+  }
+  .toggle-item {
+    font-size: 0.65rem !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 6px !important;
+  }
+  .calc-result-side {
+    padding: 0 !important;
+  }
+  .result-badge {
+    font-size: 0.6rem !important;
+    padding: 0.12rem 0.45rem !important;
+  }
+  .result-headline {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+  .result-grand-price {
+    font-size: 1.4rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+  .result-monthly-est {
+    font-size: 0.64rem !important;
+    margin-bottom: 0.6rem !important;
+  }
+  .freebie-box {
+    padding: 0.6rem 0.55rem !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.75rem !important;
+  }
+  .freebie-title {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  .freebie-list li {
+    font-size: 0.62rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+  #btnBookEstimate {
+    padding: 0.45rem 1rem !important;
+    font-size: 0.76rem !important;
+    border-radius: 9999px !important;
+  }
+
+  /* 12. Contact Section - Compact Scale on Mobile */
+  .contact-section {
+    padding: 1.5rem 0 !important;
+  }
+  .contact-box-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    padding: 1rem 0.85rem !important;
+    border-radius: 12px !important;
+    gap: 1rem !important;
+  }
+  .contact-info-side h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+  .contact-info-side p {
+    font-size: 0.68rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.75rem !important;
+  }
+  .contact-direct-list {
+    gap: 0.55rem !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .direct-item {
+    gap: 0.45rem !important;
+  }
+  .direct-icon {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+  }
+  .direct-icon svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+  .direct-text .label {
+    font-size: 0.56rem !important;
+  }
+  .direct-text .val {
+    font-size: 0.72rem !important;
+  }
+  .line-oa-banner {
+    padding: 0.45rem 0.7rem !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.85rem !important;
+    gap: 0.5rem !important;
+  }
+  .line-oa-icon {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .line-oa-text h4 {
+    font-size: 0.72rem !important;
+  }
+  .line-oa-text p {
+    font-size: 0.58rem !important;
+  }
+  .form-group {
+    margin-bottom: 0.5rem !important;
+  }
+  .form-label {
+    font-size: 0.66rem !important;
+    margin-bottom: 0.18rem !important;
   }
   .form-control {
-    font-size: 0.78rem !important;
-    padding: 0.45rem 0.65rem !important;
+    font-size: 0.72rem !important;
+    padding: 0.38rem 0.55rem !important;
+    border-radius: 6px !important;
+    height: auto !important;
+  }
+  #contactSubmitBtn {
+    padding: 0.45rem 1rem !important;
+    font-size: 0.76rem !important;
+    border-radius: 9999px !important;
+  }
+
+  /* 13. Site Footer - Compact Scale on Mobile */
+  .site-footer {
+    padding: 1.75rem 0 2rem 0 !important;
+  }
+  .footer-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem 0.75rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+  .footer-brand {
+    grid-column: span 2 !important;
+  }
+  .footer-brand .brand-logo {
+    gap: 0.4rem !important;
+  }
+  .footer-brand .brand-emblem {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .footer-brand .brand-title {
+    font-size: 1.05rem !important;
+  }
+  .footer-brand p {
+    font-size: 0.66rem !important;
+    margin: 0.4rem 0 0.6rem 0 !important;
+    line-height: 1.4 !important;
+  }
+  .footer-heading {
+    font-size: 0.76rem !important;
+    margin-bottom: 0.45rem !important;
+  }
+  .footer-links {
+    gap: 0.3rem !important;
+  }
+  .footer-links a {
+    font-size: 0.66rem !important;
+  }
+  .footer-contact-info {
+    gap: 0.35rem !important;
+    font-size: 0.66rem !important;
+  }
+  .footer-bottom {
+    padding-top: 0.85rem !important;
+    font-size: 0.6rem !important;
+    gap: 0.4rem !important;
+    flex-direction: column !important;
+    text-align: center !important;
   }
 
   /* 11. Floating Action Buttons (กะทัดรัด ไม่บังเนื้อหาการ์ดด้านล่าง) */
