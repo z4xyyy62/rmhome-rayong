@@ -4384,3 +4384,9 @@ textarea.form-control {
     height: 74px !important;
   }
 }
+
+
+/* Hide central RMHome logo from 3D orbit showcase */
+.orbit-center-core {
+  display: none !important;
+}
