@@ -2772,13 +2772,13 @@ function renderTikTokFeed() {
       `;
     } else {
       mediaHtml = `
-        <div class="tiktok-frame-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; background:radial-gradient(circle, #0e3d29 0%, #03140d 100%); text-align:center;">
-          <div style="width:70px; height:70px; border-radius:50%; background:#010101; border:2px solid #25f4ee; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; box-shadow:0 0 20px rgba(37,244,238,0.4);">
-            <svg style="width:34px; height:34px; fill:#fff;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.16 8.16 0 0 0 4.82 1.57V6.87c-.334-.047-.667-.107-1-.18z"/></svg>
+        <div class="tiktok-frame-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0.75rem; background:radial-gradient(circle, #0e3d29 0%, #03140d 100%); text-align:center;">
+          <div style="width:40px; height:40px; border-radius:50%; background:#010101; border:1.5px solid #25f4ee; display:flex; align-items:center; justify-content:center; margin-bottom:0.4rem; box-shadow:0 0 10px rgba(37,244,238,0.4);">
+            <svg style="width:20px; height:20px; fill:#fff;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.16 8.16 0 0 0 4.82 1.57V6.87c-.334-.047-.667-.107-1-.18z"/></svg>
           </div>
-          <p style="color:#ffffff; font-weight:700; font-size:1rem; margin-bottom:0.75rem;">${clip.title}</p>
-          <a href="${clipUrl}" target="_blank" rel="noopener" class="btn btn-gold" style="padding:0.55rem 1.4rem; font-size:0.85rem; border-radius:50px;">
-            ▶ ชมคลิปบน TikTok
+          <p style="color:#ffffff; font-weight:600; font-size:0.72rem; margin-bottom:0.4rem; line-height:1.25;">${clip.title}</p>
+          <a href="${clipUrl}" target="_blank" rel="noopener" class="btn btn-gold" style="padding:0.25rem 0.65rem; font-size:0.68rem; border-radius:50px;">
+            ▶ ชมบน TikTok
           </a>
         </div>
       `;
