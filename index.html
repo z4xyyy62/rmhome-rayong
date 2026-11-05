@@ -133,6 +133,7 @@
           <li><a href="#services" class="nav-link">บริการของเรา</a></li>
           <li><a href="#tiktok" class="nav-link">คลิป TikTok</a></li>
           <li><a href="#areas" class="nav-link">พื้นที่ให้บริการ</a></li>
+          <li><a href="#siteTracker" class="nav-link" style="color:var(--color-gold-300); font-weight:600;">🏗️ ติดตามงานสร้าง</a></li>
           <li><a href="#contact" class="nav-link">ติดต่อเรา</a></li>
         </ul>
       </nav>
@@ -891,6 +892,49 @@
           <p>ทำความสะอาดแบบ Big Cleaning ส่งมอบกุญแจ ใบรับประกันโครงสร้าง 20 ปี และของขวัญขึ้นบ้านใหม่</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       Section: Live Site Construction Progress Tracker (ระบบตรวจเช็กความคืบหน้าก่อสร้าง)
+       ========================================================================== -->
+  <section class="site-tracker-section" id="siteTracker">
+    <div class="container">
+      <div class="section-tag" style="text-align:center; margin-bottom:0.75rem;">
+        <span class="gold-badge">LIVE SITE TRACKER</span>
+      </div>
+      <h2 style="text-align:center; font-size:2rem; font-weight:700; color:#fff; margin-bottom:0.6rem; letter-spacing:-0.02em;">
+        🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ
+      </h2>
+      <p style="text-align:center; color:var(--text-dim); max-width:680px; margin:0 auto 2.25rem auto; font-size:0.95rem; line-height:1.6;">
+        สำหรับลูกค้าคนสำคัญของ RMHome ติดตามทุกขั้นตอนการก่อสร้างแบบเรียลไทม์ ตรวจสอบงวดงาน ภาพถ่ายหน้างานจริง และบันทึกจากวิศวกรผู้ควบคุมโครงการได้ทุกที่ทุกเวลา
+      </p>
+
+      <!-- Search Card -->
+      <div class="tracker-search-card">
+        <form class="tracker-search-form" id="trackerSearchForm" onsubmit="return false;">
+          <div class="tracker-input-wrap">
+            <svg viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" class="tracker-input" id="trackerContractInput" placeholder="กรอกเลขที่สัญญา (เช่น RM-2026-001) หรือ เบอร์โทรศัพท์เจ้าของบ้าน" autocomplete="off">
+          </div>
+          <button type="button" class="tracker-search-btn" id="btnTrackSearch">
+            <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            ค้นหาความคืบหน้า
+          </button>
+        </form>
+
+        <div class="tracker-demo-pills">
+          <span>คลิกทดสอบดูตัวอย่างโครงการ:</span>
+          <button type="button" class="demo-pill-btn" data-contract="RM-2026-001">🏡 RM-2026-001 (คุณวิศรุต)</button>
+          <button type="button" class="demo-pill-btn" data-contract="RM-2026-002">🏡 RM-2026-002 (คุณก้อย)</button>
+          <button type="button" class="demo-pill-btn" data-contract="081-999-8888">📞 ค้นหาด้วยเบอร์โทร</button>
+        </div>
+      </div>
+
+      <!-- Result Container (Injected by JS) -->
+      <div id="trackerResultContainer"></div>
     </div>
   </section>
 

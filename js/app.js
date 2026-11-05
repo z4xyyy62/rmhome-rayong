@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   trackAnalytics();
   initDynamicCMSContent();
+  initSiteTracker();
 });
 
 /* ---------------------------------------------------------
@@ -3008,4 +3009,306 @@ function initAllCenterModals() {
       closeAllReviews();
     }
   });
+}
+
+/* ==========================================================================
+   Live Construction Site Progress Tracker (Frontend)
+   ========================================================================== */
+const DEFAULT_CONSTRUCTION_PROJECTS = [
+  {
+    id: 'proj_01',
+    contractNo: 'RM-2026-001',
+    customerName: 'คุณวิศรุต และครอบครัว',
+    phone: '081-999-8888',
+    modelName: 'The Grand Nordic Villa (2 ชั้น)',
+    location: 'ต.เนินพระ อ.เมืองระยอง จ.ระยอง',
+    engineerName: 'วศ. สิทธิชัย วัฒนา',
+    engineerLicense: 'ภย. 48291',
+    engineerPhone: '091-299-8797',
+    startDate: '10 ม.ค. 2026',
+    estimatedFinish: '20 พ.ค. 2026',
+    overallProgress: 65,
+    status: 'ongoing',
+    statusNote: 'ดำเนินงานเร็วกว่าแผน 5 วัน',
+    milestones: [
+      { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: 100, status: 'done', date: 'เสร็จสิ้น 25 ม.ค. 2026' },
+      { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', progress: 100, status: 'done', date: 'เสร็จสิ้น 20 ก.พ. 2026' },
+      { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', progress: 65, status: 'in_progress', date: 'กำลังดำเนินงาน (คาดเสร็จ 25 มี.ค. 2026)' },
+      { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
+    ],
+    photos: [
+      { url: 'assets/images/house-nordic.jpg', title: 'ตรวจระดับโครงหลังคาเหล็กกัลวาไนซ์ & งานก่อผนัง', date: '5 พ.ย. 2026' },
+      { url: 'assets/images/luxury-interior.jpg', title: 'เตรียมพื้นที่งานระบบท่อประปาและจุดต่อสายไฟฝังผนัง', date: '3 พ.ย. 2026' },
+      { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าตรวจเช็กแนวระนาบดิ่งฉากและ Slump คอนกรีต', date: '1 พ.ย. 2026' }
+    ],
+    engineerLog: {
+      updateDate: '5 พ.ย. 2026',
+      note: 'ทำการเทคอนกรีตคานรับหลังคาและตรวจวัดระดับ Slump Test ได้มาตรฐาน 12.5 ซม. ขณะนี้ทีมช่างกำลังขึ้นโครงหลังคากัลวาไนซ์กันสนิม สภาพอากาศปลอดโปร่ง งานเดินหน้าได้ไวกว่ากำหนดการ 5 วัน'
+    }
+  },
+  {
+    id: 'proj_02',
+    contractNo: 'RM-2026-002',
+    customerName: 'คุณก้อย อภิญญา',
+    phone: '089-777-6655',
+    modelName: 'Modern Tropical Pool Villa (ชั้นเดียว)',
+    location: 'อ.บ้านฉาง จ.ระยอง',
+    engineerName: 'วศ. สิทธิชัย วัฒนา',
+    engineerLicense: 'ภย. 48291',
+    engineerPhone: '091-299-8797',
+    startDate: '1 ก.พ. 2026',
+    estimatedFinish: '30 มิ.ย. 2026',
+    overallProgress: 35,
+    status: 'ongoing',
+    statusNote: 'ตรงตามแผนงาน 100%',
+    milestones: [
+      { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: 100, status: 'done', date: 'เสร็จสิ้น 18 ก.พ. 2026' },
+      { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นโครงสร้าง', progress: 75, status: 'in_progress', date: 'กำลังดำเนินงาน (เทพื้นคอนกรีต)' },
+      { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนัง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา & สระว่ายน้ำ', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 5, title: 'งวดที่ 5: งานเก็บสี ทดสอบระบบสระ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
+    ],
+    photos: [
+      { url: 'assets/images/house-tropical.jpg', title: 'งานเทพื้นและผูกเหล็กเสริมโครงสร้างฐานราก', date: '4 พ.ย. 2026' },
+      { url: 'assets/images/quality-engineer.jpg', title: 'โฟร์แมนตรวจสอบระยะ Cover คอนกรีตและลูกปูน', date: '2 พ.ย. 2026' }
+    ],
+    engineerLog: {
+      updateDate: '4 พ.ย. 2026',
+      note: 'เทพื้นคอนกรีตโครงสร้างเรียบร้อย กำลังบ่มน้ำคอนกรีตตามระยะเวลามาตรฐาน 7 วัน พร้อมเตรียมเข้าแบบเทเสาในลำดับถัดไป คุณภาพงานเรียบร้อยดีมาก'
+    }
+  }
+];
+
+function getStoredConstructionProjects() {
+  try {
+    const raw = localStorage.getItem('rm_construction_projects');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_CONSTRUCTION_PROJECTS;
+}
+
+function initSiteTracker() {
+  const form = document.getElementById('trackerSearchForm');
+  const input = document.getElementById('trackerContractInput');
+  const searchBtn = document.getElementById('btnTrackSearch');
+  const container = document.getElementById('trackerResultContainer');
+  const demoPills = document.querySelectorAll('.demo-pill-btn');
+
+  if (!input || !container) return;
+
+  function doSearch(keyword) {
+    const term = (keyword || input.value || '').trim().toLowerCase();
+    if (!term) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์');
+      } else {
+        alert('⚠️ กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์');
+      }
+      input.focus();
+      return;
+    }
+
+    const projects = getStoredConstructionProjects();
+    const cleanSearch = term.replace(/[^a-z0-9]/gi, '');
+
+    const found = projects.find(p => {
+      const cNo = (p.contractNo || '').toLowerCase().replace(/[^a-z0-9]/gi, '');
+      const phone = (p.phone || '').replace(/[^0-9]/g, '');
+      const name = (p.customerName || '').toLowerCase();
+      return cNo.includes(cleanSearch) || phone.includes(cleanSearch) || name.includes(term);
+    });
+
+    if (!found) {
+      container.innerHTML = `
+        <div class="tracker-result-card" style="text-align:center; padding:3rem 1.5rem;">
+          <div style="font-size:2.5rem; margin-bottom:0.75rem;">🔍</div>
+          <h4 style="font-size:1.15rem; color:#fff; margin-bottom:0.4rem;">ไม่พบข้อมูลโครงการตามที่ระบุ</h4>
+          <p style="color:var(--text-dim); font-size:0.88rem; max-width:480px; margin:0 auto 1.5rem auto;">
+            กรุณาตรวจสอบหมายเลขสัญญา หรือเบอร์โทรศัพท์ที่ลงทะเบียนไว้กับ RMHome อีกครั้ง หรือติดต่อสอบถามฝ่ายบริการลูกค้า
+          </p>
+          <a href="tel:0912998797" class="btn btn-gold" style="font-size:0.85rem; padding:0.5rem 1.25rem;">
+            📞 ติดต่อฝ่ายบริการลูกค้า (091-299-8797)
+          </a>
+        </div>
+      `;
+      return;
+    }
+
+    renderProjectCard(found);
+  }
+
+  function renderProjectCard(proj) {
+    const isOngoing = proj.status !== 'completed';
+    const statusClass = isOngoing ? 'ongoing' : 'completed';
+    const statusText = isOngoing ? '🟢 กำลังดำเนินการก่อสร้าง' : '✅ ส่งมอบบ้านเรียบร้อยแล้ว';
+
+    const milestonesHtml = (proj.milestones || []).map(m => {
+      const mClass = m.status || 'pending';
+      let icon = m.step;
+      let tagText = 'รอเริ่ม';
+      if (mClass === 'done') {
+        icon = '✓';
+        tagText = 'เสร็จสิ้น 100%';
+      } else if (mClass === 'in_progress') {
+        icon = '⚙️';
+        tagText = `กำลังดำเนินงาน ${m.progress || 0}%`;
+      }
+
+      return `
+        <div class="milestone-step-card ${mClass}">
+          <div class="milestone-badge-icon">${icon}</div>
+          <div class="milestone-info">
+            <div class="milestone-title-row">
+              <span class="milestone-title">${escapeHtml(m.title)}</span>
+              <span class="milestone-status-tag ${mClass}">${tagText}</span>
+            </div>
+            <div class="milestone-date-text">📅 ${escapeHtml(m.date || '')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const photosHtml = (proj.photos || []).map(p => `
+      <div class="tracker-photo-card">
+        <img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.title)}" class="tracker-photo-img" loading="lazy">
+        <div class="tracker-photo-caption">
+          <h5>${escapeHtml(p.title)}</h5>
+          <span>📅 ${escapeHtml(p.date)}</span>
+        </div>
+      </div>
+    `).join('');
+
+    const engineerNote = proj.engineerLog ? proj.engineerLog.note : 'งานดำเนินตามมาตรฐานวิศวกรรม';
+    const engineerDate = proj.engineerLog ? proj.engineerLog.updateDate : '';
+
+    container.innerHTML = `
+      <div class="tracker-result-card">
+        <div class="tracker-header-row">
+          <div class="tracker-title-col">
+            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.4rem;">
+              <span class="tracker-contract-badge">📄 เลขที่สัญญา: ${escapeHtml(proj.contractNo)}</span>
+              <span class="tracker-status-pill ${statusClass}">${statusText}</span>
+            </div>
+            <h3>${escapeHtml(proj.customerName)}</h3>
+            <p style="color:var(--gold-light); font-size:0.85rem;">${escapeHtml(proj.statusNote || '')}</p>
+          </div>
+          <div>
+            <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn btn-gold" style="font-size:0.82rem; padding:0.45rem 1rem;">
+              📞 โทรหาวิศวกรผู้ดูแล
+            </a>
+          </div>
+        </div>
+
+        <div class="tracker-meta-grid">
+          <div class="tracker-meta-item">
+            <span class="tracker-meta-label">🏡 แบบบ้านที่ก่อสร้าง</span>
+            <span class="tracker-meta-val">${escapeHtml(proj.modelName)}</span>
+          </div>
+          <div class="tracker-meta-item">
+            <span class="tracker-meta-label">📍 สถานที่ก่อสร้าง</span>
+            <span class="tracker-meta-val">${escapeHtml(proj.location)}</span>
+          </div>
+          <div class="tracker-meta-item">
+            <span class="tracker-meta-label">👷 วิศวกรผู้ควบคุมโครงการ</span>
+            <span class="tracker-meta-val">${escapeHtml(proj.engineerName)} (${escapeHtml(proj.engineerLicense || '')})</span>
+          </div>
+          <div class="tracker-meta-item">
+            <span class="tracker-meta-label">⏱️ กำหนดส่งมอบบ้าน</span>
+            <span class="tracker-meta-val">${escapeHtml(proj.estimatedFinish || '-')}</span>
+          </div>
+        </div>
+
+        <div class="tracker-progress-section">
+          <div class="tracker-progress-header">
+            <div class="tracker-progress-label">
+              <span>🏗️ ความคืบหน้างานก่อสร้างรวม:</span>
+            </div>
+            <div class="tracker-progress-percent">${proj.overallProgress || 0}%</div>
+          </div>
+          <div class="tracker-progress-track">
+            <div class="tracker-progress-fill" style="width: ${proj.overallProgress || 0}%;"></div>
+          </div>
+        </div>
+
+        <div class="tracker-section-heading">
+          <span>📋 รายละเอียดขั้นตอนงวดงานก่อสร้าง (5 งวดมาตรฐาน)</span>
+        </div>
+        <div class="milestones-stepper">
+          ${milestonesHtml}
+        </div>
+
+        ${proj.photos && proj.photos.length > 0 ? `
+          <div class="tracker-photos-section">
+            <div class="tracker-section-heading">
+              <span>📸 ภาพถ่ายอัปเดตความคืบหน้าหน้างานจริงล่าสุด</span>
+            </div>
+            <div class="tracker-photos-grid">
+              ${photosHtml}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="engineer-log-card">
+          <div class="engineer-avatar-circle">
+            <img src="assets/images/quality-engineer.jpg" alt="Engineer Avatar">
+          </div>
+          <div class="engineer-log-content">
+            <h4>บันทึกจากวิศวกรผู้ควบคุมโครงการ (${escapeHtml(proj.engineerName)})</h4>
+            <span class="log-date">อัปเดตล่าสุด: ${escapeHtml(engineerDate)}</span>
+            <p>${escapeHtml(engineerNote)}</p>
+          </div>
+        </div>
+
+        <div class="tracker-action-buttons">
+          <a href="https://line.me" target="_blank" rel="noopener noreferrer" class="btn" style="background:#06c755; color:#fff; font-size:0.85rem; padding:0.5rem 1.15rem; border:none; border-radius:8px;">
+            💬 สอบถามวิศวกรผ่าน LINE
+          </a>
+          <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn btn-gold" style="font-size:0.85rem; padding:0.5rem 1.15rem;">
+            📞 สายตรงวิศวกรโครงการ
+          </a>
+        </div>
+      </div>
+    `;
+
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => doSearch());
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      doSearch();
+    });
+  }
+
+  if (input) {
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSearch();
+      }
+    });
+  }
+
+  demoPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const contract = pill.getAttribute('data-contract');
+      if (contract) {
+        input.value = contract;
+        doSearch(contract);
+      }
+    });
+  });
+
+  const defaultProj = getStoredConstructionProjects()[0];
+  if (defaultProj) {
+    renderProjectCard(defaultProj);
+  }
 }

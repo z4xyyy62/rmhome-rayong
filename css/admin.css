@@ -1935,3 +1935,63 @@ body {
   }
 }
 
+
+/* ==========================================================================
+   Site Tracker Admin CMS
+   ========================================================================== */
+.tracker-project-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.tracker-project-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
+}
+
+.tracker-project-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.tracker-proj-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.tracker-proj-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.tracker-proj-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.tracker-proj-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}

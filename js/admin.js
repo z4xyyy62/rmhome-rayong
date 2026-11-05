@@ -512,6 +512,7 @@ function initDashboard() {
   initAreasCMS();
   initTabAdminUsers();
   initTabLeads();
+  initSiteTrackerAdmin();
 }
 
 function renderMetrics() {
@@ -1863,7 +1864,7 @@ function initTabNavigation() {
   // Check initial hash
   if (window.location.hash) {
     const rawHash = window.location.hash.replace('#', '');
-    const validTabs = ['overview', 'leads', 'portfolio', 'reviews', 'services', 'standards', 'tiktok', 'why-us', 'workflow', 'site-content', 'calculator', 'areas', 'users'];
+    const validTabs = ['overview', 'leads', 'portfolio', 'reviews', 'services', 'standards', 'tiktok', 'why-us', 'workflow', 'site-tracker', 'site-content', 'calculator', 'areas', 'users'];
     if (validTabs.includes(rawHash)) {
       switchAdminTab(rawHash);
     }
@@ -1884,6 +1885,7 @@ function switchAdminTab(tabName) {
   else if (tabName === 'standards') targetTabId = 'tabStandards';
   else if (tabName === 'tiktok' || tabName === 'why-us') targetTabId = 'tabTikTok';
   else if (tabName === 'workflow') targetTabId = 'tabWorkflow';
+  else if (tabName === 'site-tracker' || tabName === 'tracker') targetTabId = 'tabSiteTracker';
   else if (tabName === 'site-content') targetTabId = 'tabSiteContent';
   else if (tabName === 'calculator') targetTabId = 'tabCalculator';
   else if (tabName === 'areas') targetTabId = 'tabAreas';
@@ -1924,6 +1926,7 @@ function switchAdminTab(tabName) {
   else if (targetTabId === 'tabUsers') renderTabAdminUsersList();
   else if (targetTabId === 'tabLeads') renderLeadsTabList();
   else if (targetTabId === 'tabPortfolio') renderAdminPortfolioList();
+  else if (targetTabId === 'tabSiteTracker') renderSiteTrackerAdmin();
 }
 
 /* ==========================================================================
@@ -3491,3 +3494,337 @@ function renderTabAdminUsersList() {
   });
 }
 
+
+/* ==========================================================================
+   Site Tracker CMS (Admin Dashboard)
+   ========================================================================== */
+const DEFAULT_CONSTRUCTION_PROJECTS = [
+  {
+    id: 'proj_01',
+    contractNo: 'RM-2026-001',
+    customerName: 'คุณวิศรุต และครอบครัว',
+    phone: '081-999-8888',
+    modelName: 'The Grand Nordic Villa (2 ชั้น)',
+    location: 'ต.เนินพระ อ.เมืองระยอง จ.ระยอง',
+    engineerName: 'วศ. สิทธิชัย วัฒนา',
+    engineerLicense: 'ภย. 48291',
+    engineerPhone: '091-299-8797',
+    startDate: '10 ม.ค. 2026',
+    estimatedFinish: '20 พ.ค. 2026',
+    overallProgress: 65,
+    status: 'ongoing',
+    statusNote: 'ดำเนินงานเร็วกว่าแผน 5 วัน',
+    milestones: [
+      { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: 100, status: 'done', date: 'เสร็จสิ้น 25 ม.ค. 2026' },
+      { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', progress: 100, status: 'done', date: 'เสร็จสิ้น 20 ก.พ. 2026' },
+      { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', progress: 65, status: 'in_progress', date: 'กำลังดำเนินงาน (คาดเสร็จ 25 มี.ค. 2026)' },
+      { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
+    ],
+    photos: [
+      { url: 'assets/images/house-nordic.jpg', title: 'ตรวจระดับโครงหลังคาเหล็กกัลวาไนซ์ & งานก่อผนัง', date: '5 พ.ย. 2026' },
+      { url: 'assets/images/luxury-interior.jpg', title: 'เตรียมพื้นที่งานระบบท่อประปาและจุดต่อสายไฟฝังผนัง', date: '3 พ.ย. 2026' },
+      { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าตรวจเช็กแนวระนาบดิ่งฉากและ Slump คอนกรีต', date: '1 พ.ย. 2026' }
+    ],
+    engineerLog: {
+      updateDate: '5 พ.ย. 2026',
+      note: 'ทำการเทคอนกรีตคานรับหลังคาและตรวจวัดระดับ Slump Test ได้มาตรฐาน 12.5 ซม. ขณะนี้ทีมช่างกำลังขึ้นโครงหลังคากัลวาไนซ์กันสนิม สภาพอากาศปลอดโปร่ง งานเดินหน้าได้ไวกว่ากำหนดการ 5 วัน'
+    }
+  },
+  {
+    id: 'proj_02',
+    contractNo: 'RM-2026-002',
+    customerName: 'คุณก้อย อภิญญา',
+    phone: '089-777-6655',
+    modelName: 'Modern Tropical Pool Villa (ชั้นเดียว)',
+    location: 'อ.บ้านฉาง จ.ระยอง',
+    engineerName: 'วศ. สิทธิชัย วัฒนา',
+    engineerLicense: 'ภย. 48291',
+    engineerPhone: '091-299-8797',
+    startDate: '1 ก.พ. 2026',
+    estimatedFinish: '30 มิ.ย. 2026',
+    overallProgress: 35,
+    status: 'ongoing',
+    statusNote: 'ตรงตามแผนงาน 100%',
+    milestones: [
+      { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: 100, status: 'done', date: 'เสร็จสิ้น 18 ก.พ. 2026' },
+      { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นโครงสร้าง', progress: 75, status: 'in_progress', date: 'กำลังดำเนินงาน (เทพื้นคอนกรีต)' },
+      { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนัง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา & สระว่ายน้ำ', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
+      { step: 5, title: 'งวดที่ 5: งานเก็บสี ทดสอบระบบสระ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
+    ],
+    photos: [
+      { url: 'assets/images/house-tropical.jpg', title: 'งานเทพื้นและผูกเหล็กเสริมโครงสร้างฐานราก', date: '4 พ.ย. 2026' },
+      { url: 'assets/images/quality-engineer.jpg', title: 'โฟร์แมนตรวจสอบระยะ Cover คอนกรีตและลูกปูน', date: '2 พ.ย. 2026' }
+    ],
+    engineerLog: {
+      updateDate: '4 พ.ย. 2026',
+      note: 'เทพื้นคอนกรีตโครงสร้างเรียบร้อย กำลังบ่มน้ำคอนกรีตตามระยะเวลามาตรฐาน 7 วัน พร้อมเตรียมเข้าแบบเทเสาในลำดับถัดไป คุณภาพงานเรียบร้อยดีมาก'
+    }
+  }
+];
+
+function getStoredConstructionProjectsAdmin() {
+  try {
+    const raw = localStorage.getItem('rm_construction_projects');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_CONSTRUCTION_PROJECTS;
+}
+
+function saveConstructionProjectsAdmin(projects) {
+  try {
+    localStorage.setItem('rm_construction_projects', JSON.stringify(projects));
+    if (window.CloudSync && typeof window.CloudSync.saveItem === 'function') {
+      window.CloudSync.saveItem('rm_construction_projects', projects).catch(e => console.warn(e));
+    }
+  } catch (e) {
+    console.error('Failed to save construction projects:', e);
+  }
+}
+
+function initSiteTrackerAdmin() {
+  const btnAdd = document.getElementById('btnAddNewProject');
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      openEditProjectModal(null);
+    });
+  }
+
+  const closeBtn = document.getElementById('modalCloseProjectBtn');
+  const cancelBtn = document.getElementById('btnCancelProjectEdit');
+  const modal = document.getElementById('editProjectModal');
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+  }
+  if (cancelBtn && modal) {
+    cancelBtn.addEventListener('click', () => modal.classList.remove('open'));
+  }
+
+  const saveBtn = document.getElementById('btnSaveProjectEdit');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      saveProjectForm();
+    });
+  }
+}
+
+function renderSiteTrackerAdmin() {
+  const container = document.getElementById('adminTrackerProjectContainer');
+  if (!container) return;
+
+  const projects = getStoredConstructionProjectsAdmin();
+  container.innerHTML = '';
+
+  if (projects.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:3rem; color:#94a3b8; font-size:0.9rem;">
+        ยังไม่มีโครงการก่อสร้างในระบบ คลิกปุ่ม "+ เพิ่มโครงการสร้างบ้านใหม่" เพื่อเริ่มต้น
+      </div>
+    `;
+    return;
+  }
+
+  projects.forEach((proj) => {
+    const card = document.createElement('div');
+    card.className = 'tracker-project-card';
+
+    const isOngoing = proj.status !== 'completed';
+    const statusBadge = isOngoing 
+      ? '<span style="background:#e8f5ee; color:#0e3d29; border:1px solid #a7f3d0; padding:0.25rem 0.65rem; border-radius:999px; font-size:0.75rem; font-weight:700;">🟢 กำลังก่อสร้าง</span>'
+      : '<span style="background:#fefce8; color:#b45309; border:1px solid #fef08a; padding:0.25rem 0.65rem; border-radius:999px; font-size:0.75rem; font-weight:700;">✅ ส่งมอบบ้านแล้ว</span>';
+
+    card.innerHTML = `
+      <div class="tracker-proj-header">
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <span class="tracker-proj-badge">📄 ${escapeHtml(proj.contractNo)}</span>
+          <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin:0;">${escapeHtml(proj.customerName)}</h4>
+          ${statusBadge}
+        </div>
+        <div style="font-size:1.15rem; font-weight:800; color:#0e3d29;">
+          ความคืบหน้า: ${proj.overallProgress || 0}%
+        </div>
+      </div>
+
+      <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; margin-bottom:1rem;">
+        <div style="width:${proj.overallProgress || 0}%; height:100%; background:linear-gradient(90deg, #10b981, #d4af37); border-radius:999px;"></div>
+      </div>
+
+      <div class="tracker-proj-meta">
+        <div><strong>🏡 แบบบ้าน:</strong> ${escapeHtml(proj.modelName)}</div>
+        <div><strong>📞 เบอร์โทร:</strong> ${escapeHtml(proj.phone)}</div>
+        <div><strong>📍 ทำเล:</strong> ${escapeHtml(proj.location)}</div>
+        <div><strong>👷 วิศวกรคุมงาน:</strong> ${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย')}</div>
+      </div>
+
+      <div style="background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.82rem; color:#475569; margin-bottom:1rem;">
+        <strong>📝 บันทึกล่าสุด:</strong> ${escapeHtml(proj.engineerLog ? proj.engineerLog.note : '-')}
+      </div>
+
+      <div class="tracker-proj-actions">
+        <button class="btn-action-outline btn-edit-proj" data-id="${proj.id}" style="font-size:0.8rem; padding:0.4rem 0.85rem;">
+          ✏️ แก้ไข & อัปเดตงวดงาน
+        </button>
+        <button class="btn-action-outline btn-delete-proj" data-id="${proj.id}" style="color:#dc2626; border-color:#fecaca; font-size:0.8rem; padding:0.4rem 0.85rem;">
+          🗑️ ลบ
+        </button>
+      </div>
+    `;
+
+    const editBtn = card.querySelector('.btn-edit-proj');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        openEditProjectModal(proj.id);
+      });
+    }
+
+    const delBtn = card.querySelector('.btn-delete-proj');
+    if (delBtn) {
+      delBtn.addEventListener('click', () => {
+        if (confirm(`คุณต้องการลบโครงการของ ${proj.customerName} (สัญญา ${proj.contractNo}) ใช่หรือไม่?`)) {
+          let list = getStoredConstructionProjectsAdmin();
+          list = list.filter(p => p.id !== proj.id);
+          saveConstructionProjectsAdmin(list);
+          renderSiteTrackerAdmin();
+        }
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function openEditProjectModal(projectId) {
+  const modal = document.getElementById('editProjectModal');
+  if (!modal) return;
+
+  const projects = getStoredConstructionProjectsAdmin();
+  const proj = projects.find(p => p.id === projectId);
+
+  const titleEl = document.getElementById('modalProjectTitle');
+  const idEl = document.getElementById('projEditId');
+  const contractEl = document.getElementById('projEditContractNo');
+  const nameEl = document.getElementById('projEditCustomerName');
+  const phoneEl = document.getElementById('projEditPhone');
+  const modelEl = document.getElementById('projEditModelName');
+  const locEl = document.getElementById('projEditLocation');
+  const statusEl = document.getElementById('projEditStatus');
+  const engEl = document.getElementById('projEditEngineerName');
+  const progEl = document.getElementById('projEditProgress');
+  const noteEl = document.getElementById('projEditStatusNote');
+  const logEl = document.getElementById('projEditEngineerNote');
+
+  if (proj) {
+    if (titleEl) titleEl.textContent = `✏️ แก้ไขโครงการ: ${proj.contractNo}`;
+    if (idEl) idEl.value = proj.id;
+    if (contractEl) contractEl.value = proj.contractNo || '';
+    if (nameEl) nameEl.value = proj.customerName || '';
+    if (phoneEl) phoneEl.value = proj.phone || '';
+    if (modelEl) modelEl.value = proj.modelName || '';
+    if (locEl) locEl.value = proj.location || '';
+    if (statusEl) statusEl.value = proj.status || 'ongoing';
+    if (engEl) engEl.value = proj.engineerName || 'วศ. สิทธิชัย วัฒนา';
+    if (progEl) progEl.value = proj.overallProgress || 0;
+    if (noteEl) noteEl.value = proj.statusNote || '';
+    if (logEl) logEl.value = proj.engineerLog ? proj.engineerLog.note : '';
+  } else {
+    if (titleEl) titleEl.textContent = '➕ เพิ่มโครงการสร้างบ้านใหม่';
+    if (idEl) idEl.value = '';
+    if (contractEl) contractEl.value = 'RM-2026-00' + (projects.length + 1);
+    if (nameEl) nameEl.value = '';
+    if (phoneEl) phoneEl.value = '';
+    if (modelEl) modelEl.value = 'The Grand Nordic Villa (2 ชั้น)';
+    if (locEl) locEl.value = 'อ.เมืองระยอง จ.ระยอง';
+    if (statusEl) statusEl.value = 'ongoing';
+    if (engEl) engEl.value = 'วศ. สิทธิชัย วัฒนา';
+    if (progEl) progEl.value = 10;
+    if (noteEl) noteEl.value = 'เริ่มดำเนินการตอกเสาเข็ม';
+    if (logEl) logEl.value = 'ทำการส่งทีมงานเข้าปรับสภาพหน้าดินและทดสอบดินเรียบร้อย';
+  }
+
+  modal.classList.add('open');
+}
+
+function saveProjectForm() {
+  const modal = document.getElementById('editProjectModal');
+  const idEl = document.getElementById('projEditId');
+  const contractEl = document.getElementById('projEditContractNo');
+  const nameEl = document.getElementById('projEditCustomerName');
+  const phoneEl = document.getElementById('projEditPhone');
+  const modelEl = document.getElementById('projEditModelName');
+  const locEl = document.getElementById('projEditLocation');
+  const statusEl = document.getElementById('projEditStatus');
+  const engEl = document.getElementById('projEditEngineerName');
+  const progEl = document.getElementById('projEditProgress');
+  const noteEl = document.getElementById('projEditStatusNote');
+  const logEl = document.getElementById('projEditEngineerNote');
+
+  if (!contractEl.value || !nameEl.value || !phoneEl.value) {
+    alert('กรุณากรอก เลขที่สัญญา, ชื่อลูกค้า และเบอร์โทรศัพท์ให้ครบถ้วน');
+    return;
+  }
+
+  const projects = getStoredConstructionProjectsAdmin();
+  const projId = idEl.value;
+  const progressVal = Math.min(100, Math.max(0, parseInt(progEl.value || '0', 10)));
+
+  if (projId) {
+    // Update existing
+    const existing = projects.find(p => p.id === projId);
+    if (existing) {
+      existing.contractNo = contractEl.value.trim();
+      existing.customerName = nameEl.value.trim();
+      existing.phone = phoneEl.value.trim();
+      existing.modelName = modelEl.value.trim();
+      existing.location = locEl.value.trim();
+      existing.status = statusEl.value;
+      existing.engineerName = engEl.value.trim();
+      existing.overallProgress = progressVal;
+      existing.statusNote = noteEl.value.trim();
+      if (!existing.engineerLog) existing.engineerLog = {};
+      existing.engineerLog.note = logEl.value.trim();
+      existing.engineerLog.updateDate = new Date().toLocaleDateString('th-TH');
+    }
+  } else {
+    // Add new project
+    const newProj = {
+      id: 'proj_' + Date.now(),
+      contractNo: contractEl.value.trim(),
+      customerName: nameEl.value.trim(),
+      phone: phoneEl.value.trim(),
+      modelName: modelEl.value.trim(),
+      location: locEl.value.trim(),
+      status: statusEl.value,
+      engineerName: engEl.value.trim(),
+      engineerLicense: 'ภย. 48291',
+      engineerPhone: '091-299-8797',
+      startDate: new Date().toLocaleDateString('th-TH'),
+      estimatedFinish: 'ภายใน 5 เดือน',
+      overallProgress: progressVal,
+      statusNote: noteEl.value.trim() || 'งานเริ่มดำเนินตามแผน',
+      milestones: [
+        { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: progressVal > 20 ? 100 : progressVal * 5, status: progressVal > 20 ? 'done' : 'in_progress', date: 'เริ่มดำเนินการ' },
+        { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', progress: progressVal > 50 ? 100 : (progressVal > 20 ? 50 : 0), status: progressVal > 50 ? 'done' : (progressVal > 20 ? 'in_progress' : 'pending'), date: '-' },
+        { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', progress: progressVal > 75 ? 100 : (progressVal > 50 ? 50 : 0), status: progressVal > 75 ? 'done' : (progressVal > 50 ? 'in_progress' : 'pending'), date: '-' },
+        { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: progressVal > 90 ? 100 : 0, status: progressVal > 90 ? 'done' : 'pending', date: '-' },
+        { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: progressVal === 100 ? 100 : 0, status: progressVal === 100 ? 'done' : 'pending', date: '-' }
+      ],
+      photos: [
+        { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าควบคุมและตรวจสอบหน้างาน', date: new Date().toLocaleDateString('th-TH') }
+      ],
+      engineerLog: {
+        updateDate: new Date().toLocaleDateString('th-TH'),
+        note: logEl.value.trim() || 'วิศวกรเข้าตรวจสอบหน้างานตามมาตรฐานวิศวกรรมสากล'
+      }
+    };
+    projects.unshift(newProj);
+  }
+
+  saveConstructionProjectsAdmin(projects);
+  modal.classList.remove('open');
+  renderSiteTrackerAdmin();
+  alert('✅ บันทึกข้อมูลโครงการก่อสร้างเรียบร้อยแล้ว! ลูกค้าสามารถนำรหัสสัญญาหรือเบอร์โทรไปตรวจเช็กความคืบหน้าที่หน้าเว็บได้ทันที');
+}
