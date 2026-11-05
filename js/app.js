@@ -567,11 +567,11 @@ function getOrbitRadii() {
   const isTablet = w < 1024 && w >= 768;
   if (isMobile) {
     // Scaled down cleanly so all houses can be seen thoroughly with ample margin
-    const rx = Math.min(w * 0.24, 88);
+    const rx = Math.min(w * 0.20, 75);
     return {
       rx: rx,
-      rz: 60,
-      tiltY: 14
+      rz: 48,
+      tiltY: 10
     };
   } else if (isTablet) {
     return {
@@ -605,7 +605,7 @@ function updateOrbitPositions() {
     // Normalized depth: t = 1 at front (cos(phi) = 1), t = 0 at back (cos(phi) = -1)
     const t = (z + rz) / (2 * rz); // 0 to 1
     const isMobile = window.innerWidth < 768;
-    const scale = isMobile ? (0.60 + (0.32 * t)) : (0.68 + (0.35 * t));
+    const scale = isMobile ? (0.52 + (0.32 * t)) : (0.68 + (0.35 * t));
     const opacity = 0.45 + (0.55 * t); // 0.45 to 1.0
     const brightness = 0.65 + (0.4 * t); // 0.65 to 1.05
     const zIndex = Math.round(100 + (t * 800));
