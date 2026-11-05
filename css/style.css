@@ -4205,6 +4205,11 @@ textarea.form-control {
     right: 6px !important;
   }
 
+  /* Hide central RMHome logo on MOBILE ONLY (คอมยังอยู่เหมือนเดิม 100%) */
+  .orbit-center-core {
+    display: none !important;
+  }
+
   /* 9. House Collections: 3D Orbit Carousel & Grid (ลดสเกลงานแบบบ้านลงอีกให้เห็นทั่วๆ) */
   .house-models-section {
     padding: 2rem 0 !important;
@@ -4383,10 +4388,4 @@ textarea.form-control {
   .orbit-card-img-wrap {
     height: 74px !important;
   }
-}
-
-
-/* Hide central RMHome logo from 3D orbit showcase */
-.orbit-center-core {
-  display: none !important;
 }
