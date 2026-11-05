@@ -3697,6 +3697,14 @@ function renderSiteTrackerAdmin() {
   });
 }
 
+const DEFAULT_MILESTONE_CONFIG = [
+  { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', weight: 0.20 },
+  { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', weight: 0.25 },
+  { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', weight: 0.25 },
+  { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', weight: 0.15 },
+  { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', weight: 0.15 }
+];
+
 function openEditProjectModal(projectId) {
   const modal = document.getElementById('editProjectModal');
   if (!modal) return;
@@ -3714,8 +3722,18 @@ function openEditProjectModal(projectId) {
   const statusEl = document.getElementById('projEditStatus');
   const engEl = document.getElementById('projEditEngineerName');
   const progEl = document.getElementById('projEditProgress');
+  const badgeEl = document.getElementById('projProgressLiveBadge');
   const noteEl = document.getElementById('projEditStatusNote');
   const logEl = document.getElementById('projEditEngineerNote');
+  const milestonesContainer = document.getElementById('modalMilestonesContainer');
+
+  function updateLiveBadge(val) {
+    const num = Math.min(100, Math.max(0, parseInt(val || '0', 10)));
+    if (badgeEl) badgeEl.textContent = `${num}%`;
+    if (progEl && progEl.value !== String(num)) progEl.value = num;
+  }
+
+  let currentMilestones = [];
 
   if (proj) {
     if (titleEl) titleEl.textContent = `✏️ แก้ไขโครงการ: ${proj.contractNo}`;
@@ -3728,8 +3746,10 @@ function openEditProjectModal(projectId) {
     if (statusEl) statusEl.value = proj.status || 'ongoing';
     if (engEl) engEl.value = proj.engineerName || 'วศ. สิทธิชัย วัฒนา';
     if (progEl) progEl.value = proj.overallProgress || 0;
+    updateLiveBadge(proj.overallProgress || 0);
     if (noteEl) noteEl.value = proj.statusNote || '';
     if (logEl) logEl.value = proj.engineerLog ? proj.engineerLog.note : '';
+    currentMilestones = proj.milestones || [];
   } else {
     if (titleEl) titleEl.textContent = '➕ เพิ่มโครงการสร้างบ้านใหม่';
     if (idEl) idEl.value = '';
@@ -3741,9 +3761,114 @@ function openEditProjectModal(projectId) {
     if (statusEl) statusEl.value = 'ongoing';
     if (engEl) engEl.value = 'วศ. สิทธิชัย วัฒนา';
     if (progEl) progEl.value = 10;
+    updateLiveBadge(10);
     if (noteEl) noteEl.value = 'เริ่มดำเนินการตอกเสาเข็ม';
     if (logEl) logEl.value = 'ทำการส่งทีมงานเข้าปรับสภาพหน้าดินและทดสอบดินเรียบร้อย';
+    currentMilestones = [
+      { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: 50, status: 'in_progress', date: 'เริ่มดำเนินการ' },
+      { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', progress: 0, status: 'pending', date: '-' },
+      { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', progress: 0, status: 'pending', date: '-' },
+      { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: 0, status: 'pending', date: '-' },
+      { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: '-' }
+    ];
   }
+
+  // Render 5 Milestones
+  if (milestonesContainer) {
+    milestonesContainer.innerHTML = '';
+    DEFAULT_MILESTONE_CONFIG.forEach(cfg => {
+      const existingM = currentMilestones.find(m => m.step === cfg.step) || {
+        step: cfg.step,
+        title: cfg.title,
+        status: 'pending',
+        progress: 0,
+        date: '-'
+      };
+
+      const row = document.createElement('div');
+      row.className = 'milestone-admin-row';
+      row.setAttribute('data-step', cfg.step);
+      row.style.cssText = 'background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.75rem; display:grid; grid-template-columns: 2fr 1.2fr 1fr; gap:0.6rem; align-items:center;';
+
+      row.innerHTML = `
+        <div>
+          <div style="font-size:0.82rem; font-weight:700; color:#1e293b;">${escapeHtml(existingM.title || cfg.title)}</div>
+          <input type="text" class="m-date-input" style="width:100%; font-size:0.75rem; color:#64748b; border:1px solid #e2e8f0; border-radius:4px; padding:0.25rem 0.4rem; margin-top:2px;" placeholder="วันที่/หมายเหตุ เช่น เสร็จสิ้น 25 ม.ค. 2026" value="${escapeHtml(existingM.date || '')}">
+        </div>
+        <div>
+          <select class="m-status-select" style="width:100%; font-size:0.78rem; font-weight:600; padding:0.35rem; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
+            <option value="done" ${existingM.status === 'done' ? 'selected' : ''}>✅ เสร็จสิ้น (100%)</option>
+            <option value="in_progress" ${existingM.status === 'in_progress' ? 'selected' : ''}>⚙️ กำลังทำ</option>
+            <option value="pending" ${existingM.status === 'pending' ? 'selected' : ''}>⏳ รอเริ่ม (0%)</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.25rem;">
+          <input type="number" min="0" max="100" class="m-progress-input" style="width:55px; text-align:center; font-size:0.85rem; font-weight:700; padding:0.3rem; border:1.5px solid #cbd5e1; border-radius:6px;" value="${existingM.progress || 0}">
+          <span style="font-size:0.78rem; color:#64748b; font-weight:600;">%</span>
+        </div>
+      `;
+
+      const statusSel = row.querySelector('.m-status-select');
+      const progInp = row.querySelector('.m-progress-input');
+
+      statusSel.addEventListener('change', () => {
+        if (statusSel.value === 'done') {
+          progInp.value = 100;
+        } else if (statusSel.value === 'pending') {
+          progInp.value = 0;
+        } else if (statusSel.value === 'in_progress') {
+          if (parseInt(progInp.value || '0', 10) === 0 || parseInt(progInp.value || '0', 10) === 100) {
+            progInp.value = 50;
+          }
+        }
+      });
+
+      milestonesContainer.appendChild(row);
+    });
+  }
+
+  // Auto-calc button listener
+  const btnAutoCalc = document.getElementById('btnAutoCalcMilestones');
+  if (btnAutoCalc) {
+    btnAutoCalc.onclick = () => {
+      let total = 0;
+      DEFAULT_MILESTONE_CONFIG.forEach(cfg => {
+        const row = milestonesContainer.querySelector(`.milestone-admin-row[data-step="${cfg.step}"]`);
+        if (row) {
+          const p = Math.min(100, Math.max(0, parseInt(row.querySelector('.m-progress-input').value || '0', 10)));
+          total += (p * cfg.weight);
+        }
+      });
+      const roundedTotal = Math.round(total);
+      if (progEl) progEl.value = roundedTotal;
+      updateLiveBadge(roundedTotal);
+    };
+  }
+
+  // Direct manual inputs & stepper buttons
+  if (progEl) {
+    progEl.oninput = () => {
+      updateLiveBadge(progEl.value);
+    };
+  }
+
+  document.querySelectorAll('.btn-step-pct').forEach(btn => {
+    btn.onclick = () => {
+      const delta = parseInt(btn.getAttribute('data-delta') || '0', 10);
+      const cur = parseInt(progEl.value || '0', 10);
+      const next = Math.min(100, Math.max(0, cur + delta));
+      if (progEl) progEl.value = next;
+      updateLiveBadge(next);
+    };
+  });
+
+  document.querySelectorAll('.btn-set-pct').forEach(btn => {
+    btn.onclick = () => {
+      const pct = parseInt(btn.getAttribute('data-pct') || '0', 10);
+      if (progEl) progEl.value = pct;
+      updateLiveBadge(pct);
+    };
+  });
 
   modal.classList.add('open');
 }
@@ -3761,6 +3886,7 @@ function saveProjectForm() {
   const progEl = document.getElementById('projEditProgress');
   const noteEl = document.getElementById('projEditStatusNote');
   const logEl = document.getElementById('projEditEngineerNote');
+  const milestonesContainer = document.getElementById('modalMilestonesContainer');
 
   if (!contractEl.value || !nameEl.value || !phoneEl.value) {
     alert('กรุณากรอก เลขที่สัญญา, ชื่อลูกค้า และเบอร์โทรศัพท์ให้ครบถ้วน');
@@ -3770,6 +3896,32 @@ function saveProjectForm() {
   const projects = getStoredConstructionProjectsAdmin();
   const projId = idEl.value;
   const progressVal = Math.min(100, Math.max(0, parseInt(progEl.value || '0', 10)));
+
+  // Collect updated 5 milestones
+  const updatedMilestones = [];
+  DEFAULT_MILESTONE_CONFIG.forEach(cfg => {
+    const row = milestonesContainer ? milestonesContainer.querySelector(`.milestone-admin-row[data-step="${cfg.step}"]`) : null;
+    if (row) {
+      const st = row.querySelector('.m-status-select').value;
+      const pr = Math.min(100, Math.max(0, parseInt(row.querySelector('.m-progress-input').value || '0', 10)));
+      const dt = row.querySelector('.m-date-input').value.trim();
+      updatedMilestones.push({
+        step: cfg.step,
+        title: cfg.title,
+        status: st,
+        progress: pr,
+        date: dt || '-'
+      });
+    } else {
+      updatedMilestones.push({
+        step: cfg.step,
+        title: cfg.title,
+        status: progressVal >= (cfg.step * 20) ? 'done' : 'pending',
+        progress: progressVal >= (cfg.step * 20) ? 100 : 0,
+        date: '-'
+      });
+    }
+  });
 
   if (projId) {
     // Update existing
@@ -3782,8 +3934,9 @@ function saveProjectForm() {
       existing.location = locEl.value.trim();
       existing.status = statusEl.value;
       existing.engineerName = engEl.value.trim();
-      existing.overallProgress = progressVal;
+      existing.overallProgress = progressVal; // Manual or auto-calculated %
       existing.statusNote = noteEl.value.trim();
+      existing.milestones = updatedMilestones; // 5 detailed milestones
       if (!existing.engineerLog) existing.engineerLog = {};
       existing.engineerLog.note = logEl.value.trim();
       existing.engineerLog.updateDate = new Date().toLocaleDateString('th-TH');
@@ -3803,15 +3956,9 @@ function saveProjectForm() {
       engineerPhone: '091-299-8797',
       startDate: new Date().toLocaleDateString('th-TH'),
       estimatedFinish: 'ภายใน 5 เดือน',
-      overallProgress: progressVal,
+      overallProgress: progressVal, // Manual or auto-calculated %
       statusNote: noteEl.value.trim() || 'งานเริ่มดำเนินตามแผน',
-      milestones: [
-        { step: 1, title: 'งวดที่ 1: ตอกเสาเข็ม ฐานราก และคานคอดิน', progress: progressVal > 20 ? 100 : progressVal * 5, status: progressVal > 20 ? 'done' : 'in_progress', date: 'เริ่มดำเนินการ' },
-        { step: 2, title: 'งวดที่ 2: โครงสร้างเสา-คาน และพื้นชั้น 1-2', progress: progressVal > 50 ? 100 : (progressVal > 20 ? 50 : 0), status: progressVal > 50 ? 'done' : (progressVal > 20 ? 'in_progress' : 'pending'), date: '-' },
-        { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนังมวลเบา', progress: progressVal > 75 ? 100 : (progressVal > 50 ? 50 : 0), status: progressVal > 75 ? 'done' : (progressVal > 50 ? 'in_progress' : 'pending'), date: '-' },
-        { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: progressVal > 90 ? 100 : 0, status: progressVal > 90 ? 'done' : 'pending', date: '-' },
-        { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: progressVal === 100 ? 100 : 0, status: progressVal === 100 ? 'done' : 'pending', date: '-' }
-      ],
+      milestones: updatedMilestones, // 5 detailed milestones
       photos: [
         { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าควบคุมและตรวจสอบหน้างาน', date: new Date().toLocaleDateString('th-TH') }
       ],

@@ -1532,8 +1532,37 @@
             <input type="text" id="projEditEngineerName" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="วศ. สิทธิชัย วัฒนา">
           </div>
           <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">ความคืบหน้ารวม (% 0-100) *</label>
-            <input type="number" id="projEditProgress" min="0" max="100" required style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="65">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label style="font-size:0.8rem; font-weight:600; color:#334155;">ความคืบหน้ารวม (% 0-100) *</label>
+              <span id="projProgressLiveBadge" style="font-size:0.9rem; font-weight:800; color:#0e3d29;">65%</span>
+            </div>
+            <div style="display:flex; gap:0.35rem; align-items:center; margin-top:0.25rem; flex-wrap:wrap;">
+              <input type="number" id="projEditProgress" min="0" max="100" required style="width:75px; padding:0.45rem; border:1.5px solid #0e3d29; border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center;" placeholder="65">
+              <button type="button" class="btn-step-pct" data-delta="-5" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ลด 5%">-5%</button>
+              <button type="button" class="btn-step-pct" data-delta="+5" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;" title="เพิ่ม 5%">+5%</button>
+              <button type="button" class="btn-set-pct" data-pct="30" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ตั้งเป็น 30%">30%</button>
+              <button type="button" class="btn-set-pct" data-pct="50" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ตั้งเป็น 50%">50%</button>
+              <button type="button" class="btn-set-pct" data-pct="100" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #a7f3d0; background:#e8f5ee; color:#0e3d29; font-size:0.75rem; font-weight:700; cursor:pointer;" title="เสร็จสมบูรณ์ 100%">100%</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 Milestones Editor Box -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <span style="font-size:0.85rem; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:0.4rem;">
+                📋 จัดการ 5 งวดงานก่อสร้าง (ปรับสถานะ & คำนวณอัตโนมัติ)
+              </span>
+              <span style="font-size:0.74rem; color:#64748b;">สามารถติ๊กสถานะแต่ละงวด หรือกดปุ่มคำนวณ % หรือจะพิมพ์เปอร์เซ็นต์เองด้านบนได้อิสระ</span>
+            </div>
+            <button type="button" id="btnAutoCalcMilestones" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem;">
+              ⚡ คำนวณ % รวมจากงวดงาน
+            </button>
+          </div>
+
+          <div id="modalMilestonesContainer" style="display:flex; flex-direction:column; gap:0.6rem;">
+            <!-- Rendered dynamically by js/admin.js -->
           </div>
         </div>
 
