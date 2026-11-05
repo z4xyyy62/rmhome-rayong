@@ -3098,7 +3098,7 @@ function initSiteTracker() {
   const input = document.getElementById('trackerContractInput');
   const searchBtn = document.getElementById('btnTrackSearch');
   const container = document.getElementById('trackerResultContainer');
-  const demoPills = document.querySelectorAll('.demo-pill-btn');
+  const pillsWrap = document.getElementById('trackerDemoPillsWrap');
 
   if (!input || !container) return;
 
@@ -3299,26 +3299,61 @@ function initSiteTracker() {
     });
   }
 
-  demoPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      const contract = pill.getAttribute('data-contract');
-      if (contract) {
-        input.value = contract;
-        doSearch(contract);
-      }
-    });
-  });
-
   const projects = getStoredConstructionProjects();
+
+  // Dynamic synchronized pills with dashboard
+  if (pillsWrap) {
+    if (!projects || projects.length === 0) {
+      // If deleted all, do not show pills row
+      pillsWrap.style.display = 'none';
+      pillsWrap.innerHTML = '';
+    } else {
+      pillsWrap.style.display = 'flex';
+      let pillsHtml = `<span>ดูโครงการของคุณ:</span>`;
+
+      // Show up to 3 project pills
+      const displayCount = Math.min(3, projects.length);
+      for (let i = 0; i < displayCount; i++) {
+        const p = projects[i];
+        pillsHtml += `
+          <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(p.contractNo)}">
+            🏡 ${escapeHtml(p.contractNo)} (${escapeHtml(p.customerName || '')})
+          </button>
+        `;
+      }
+
+      // If more than 3 projects, show +1-99 badge
+      if (projects.length > 3) {
+        const extraCount = projects.length - 3;
+        pillsHtml += `
+          <span class="demo-pill-btn" style="background:rgba(212, 175, 55, 0.25); color:var(--gold-light); font-weight:700; cursor:default; border-color:var(--gold);" title="ยังมีอีก ${extraCount} โครงการ">+${extraCount}</span>
+        `;
+      }
+
+      pillsWrap.innerHTML = pillsHtml;
+
+      // Attach click handlers to dynamic pills
+      pillsWrap.querySelectorAll('.demo-pill-btn[data-contract]').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const contract = pill.getAttribute('data-contract');
+          if (contract) {
+            input.value = contract;
+            doSearch(contract);
+          }
+        });
+      });
+    }
+  }
+
   if (projects && projects.length > 0) {
     renderProjectCard(projects[0]);
   } else {
     container.innerHTML = `
       <div class="tracker-result-card" style="text-align:center; padding:2.5rem 1.5rem;">
         <div style="font-size:2rem; margin-bottom:0.6rem;">🏗️</div>
-        <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการใหม่</h4>
+        <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการของคุณ</h4>
         <p style="color:var(--text-dim); font-size:0.85rem; max-width:480px; margin:0 auto;">
-          ขณะนี้ยังไม่มีโครงการที่เปิดให้ติดตาม เมื่อมีโครงการของท่านจะสามารถกรอกเลขที่สัญญาเพื่อตรวจเช็กได้ทันที
+          กรอกเลขที่สัญญาหรือเบอร์โทรศัพท์ เพื่อตรวจเช็กความคืบหน้างานก่อสร้างแบบเรียลไทม์
         </p>
       </div>
     `;
