@@ -4389,3 +4389,8 @@ textarea.form-control {
     height: 74px !important;
   }
 }
+
+/* Hide central RMHome logo from 3D rotating showcase on BOTH computer and mobile */
+.orbit-center-core {
+  display: none !important;
+}
