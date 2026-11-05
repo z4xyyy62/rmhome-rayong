@@ -436,11 +436,48 @@ function renderAdminUsersList() {
 /* ---------------------------------------------------------
    3. Dashboard Metrics, Live Reports & Leads Functionality
    --------------------------------------------------------- */
+function formatLeadDateTime(lead) {
+  if (!lead) return '-';
+  let d = null;
+  if (lead.createdAt && !isNaN(Date.parse(lead.createdAt))) {
+    d = new Date(lead.createdAt);
+  } else if (lead.id && typeof lead.id === 'string' && lead.id.startsWith('lead_')) {
+    const ts = parseInt(lead.id.replace('lead_', ''), 10);
+    if (!isNaN(ts) && ts > 1000000000000) {
+      d = new Date(ts);
+    }
+  }
+
+  if (!d) {
+    if (lead.time && lead.time !== 'เพิ่งส่งเข้ามา' && lead.time !== 'เมื่อสักครู่') {
+      return lead.time;
+    }
+    d = new Date();
+  }
+
+  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  return `เวลา ${timeStr} น. วันที่ ${dateStr}`;
+}
+
 function getStoredLeads() {
   try {
     const raw = localStorage.getItem('rm_leads');
     if (!raw) return [];
-    return JSON.parse(raw) || [];
+    const leads = JSON.parse(raw) || [];
+    let updated = false;
+    leads.forEach(l => {
+      if (l.time === 'เพิ่งส่งเข้ามา' || l.time === 'เมื่อสักครู่' || !l.time) {
+        l.time = formatLeadDateTime(l);
+        updated = true;
+      }
+    });
+    if (updated) {
+      try {
+        localStorage.setItem('rm_leads', JSON.stringify(leads));
+      } catch (err) {}
+    }
+    return leads;
   } catch (e) {
     return [];
   }
@@ -581,14 +618,14 @@ function renderLeadsList() {
       nextStatusHint = 'คลิกวนกลับเป็น ➔ รอติดต่อ';
     }
 
-    const leadTime = lead.time || lead.createdAt || 'เพิ่งส่งเข้ามา';
+    const leadTime = formatLeadDateTime(lead);
 
     row.innerHTML = `
       <div class="lead-info-col">
         <span class="lead-name">${escapeHtml(lead.name)}</span>
         <span class="lead-phone">${escapeHtml(lead.phone)}</span>
         <span style="font-size:0.75rem; color:#94a3b8; margin-left:0.5rem;">📍 ${escapeHtml(lead.location || 'ระยอง')}</span>
-        <span style="font-size:0.72rem; color:#cbd5e1; margin-left:0.35rem;">(${escapeHtml(leadTime)})</span>
+        <span style="font-size:0.74rem; color:#64748b; margin-left:0.35rem;">🕒 ${escapeHtml(leadTime)}</span>
       </div>
       <button class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
     `;
@@ -686,7 +723,7 @@ function openLeadDetail(lead) {
   document.getElementById('modalLeadLocation').textContent = lead.location || 'ระยอง';
   document.getElementById('modalLeadBudget').textContent = lead.budget || 'ไม่ระบุ';
   document.getElementById('modalLeadMessage').textContent = lead.message || 'ไม่มีข้อความเพิ่มเติม';
-  document.getElementById('modalLeadTime').textContent = lead.time || lead.createdAt || 'ไม่นานมานี้';
+  document.getElementById('modalLeadTime').textContent = formatLeadDateTime(lead);
 
   updateModalStatusUI(lead.status || 'new');
 
@@ -737,20 +774,24 @@ function promptAndAddTestLead() {
   if (!phone) return;
 
   const leads = getStoredLeads();
-  leads.unshift({
-    id: 'lead_' + Date.now(),
+  const now = new Date();
+  const newLeadObj = {
+    id: 'lead_' + now.getTime(),
     name,
     phone,
     location: 'อำเภอเมืองระยอง',
     budget: '3.5 - 5 ล้านบาท',
     message: 'สนใจสร้างบ้านพูลวิลล่าสไตล์โมเดิร์น',
     status: 'new',
-    time: 'เพิ่งส่งเข้ามา',
-    createdAt: new Date().toLocaleString('th-TH')
-  });
+    createdAt: now.toISOString()
+  };
+  newLeadObj.time = formatLeadDateTime(newLeadObj);
+
+  leads.unshift(newLeadObj);
   saveLeads(leads);
   renderMetrics();
   renderLeadsList();
+  if (typeof renderLeadsTabList === 'function') renderLeadsTabList();
 }
 
 function exportLeadsToCsv() {
@@ -770,7 +811,7 @@ function exportLeadsToCsv() {
     const safeLoc = `"${(l.location || '').replace(/"/g, '""')}"`;
     const safeBudget = `"${(l.budget || '').replace(/"/g, '""')}"`;
     const safeMsg = `"${(l.message || '').replace(/"/g, '""')}"`;
-    const safeTime = `"${(l.time || l.createdAt || '').replace(/"/g, '""')}"`;
+    const safeTime = `"${(formatLeadDateTime(l)).replace(/"/g, '""')}"`;
 
     csvContent += `${index + 1},${safeName},${safePhone},${safeLoc},${safeBudget},${statusLabel},${safeMsg},${safeTime}\n`;
   });
@@ -1976,7 +2017,7 @@ function renderLeadsTabList() {
         <div class="lead-meta-row">
           <span>💰 ${escapeHtml(lead.budget || 'ไม่ระบุงบ')}</span>
           <span>•</span>
-          <span>${escapeHtml(lead.time || 'เมื่อสักครู่')}</span>
+          <span>🕒 ${escapeHtml(formatLeadDateTime(lead))}</span>
         </div>
       </div>
       <div class="lead-actions">

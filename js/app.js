@@ -1289,6 +1289,12 @@ function initContactForm() {
   });
 }
 
+function formatLeadDateTime(d = new Date()) {
+  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  return `เวลา ${timeStr} น. วันที่ ${dateStr}`;
+}
+
 function saveLeadToLocalStorage(newLead) {
   try {
     let leads = [];
@@ -1300,9 +1306,10 @@ function saveLeadToLocalStorage(newLead) {
         leads = [];
       }
     }
-    newLead.id = 'lead_' + Date.now();
-    newLead.time = 'เพิ่งส่งเข้ามา';
-    newLead.createdAt = new Date().toLocaleString('th-TH');
+    const now = new Date();
+    newLead.id = 'lead_' + now.getTime();
+    newLead.time = formatLeadDateTime(now);
+    newLead.createdAt = now.toISOString();
     leads.unshift(newLead);
     localStorage.setItem('rm_leads', JSON.stringify(leads));
     if (window.CloudSync && window.CloudSync.isConnected()) {
