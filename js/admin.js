@@ -436,6 +436,8 @@ function renderAdminUsersList() {
 /* ---------------------------------------------------------
    3. Dashboard Metrics, Live Reports & Leads Functionality
    --------------------------------------------------------- */
+const THAI_MONTHS_SHORT_LEAD = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
 function formatLeadDateTime(lead) {
   if (!lead) return '-';
   let d = null;
@@ -449,15 +451,15 @@ function formatLeadDateTime(lead) {
   }
 
   if (!d) {
-    if (lead.time && lead.time !== 'เพิ่งส่งเข้ามา' && lead.time !== 'เมื่อสักครู่') {
-      return lead.time;
-    }
     d = new Date();
   }
 
-  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-  return `เวลา ${timeStr} น. วันที่ ${dateStr}`;
+  const day = d.getDate();
+  const month = THAI_MONTHS_SHORT_LEAD[d.getMonth()] || '';
+  const year = d.getFullYear(); // ค.ศ.
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `เวลา ${hours}:${minutes} น. วันที่ ${day} ${month} ${year}`;
 }
 
 function getStoredLeads() {
@@ -467,8 +469,9 @@ function getStoredLeads() {
     const leads = JSON.parse(raw) || [];
     let updated = false;
     leads.forEach(l => {
-      if (l.time === 'เพิ่งส่งเข้ามา' || l.time === 'เมื่อสักครู่' || !l.time) {
-        l.time = formatLeadDateTime(l);
+      const correctTime = formatLeadDateTime(l);
+      if (l.time !== correctTime) {
+        l.time = correctTime;
         updated = true;
       }
     });

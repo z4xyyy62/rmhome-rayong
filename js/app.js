@@ -1289,10 +1289,15 @@ function initContactForm() {
   });
 }
 
+const THAI_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
 function formatLeadDateTime(d = new Date()) {
-  const timeStr = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-  const dateStr = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
-  return `เวลา ${timeStr} น. วันที่ ${dateStr}`;
+  const day = d.getDate();
+  const month = THAI_MONTHS_SHORT[d.getMonth()] || '';
+  const year = d.getFullYear(); // ค.ศ.
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `เวลา ${hours}:${minutes} น. วันที่ ${day} ${month} ${year}`;
 }
 
 function saveLeadToLocalStorage(newLead) {
