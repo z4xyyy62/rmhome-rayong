@@ -85,6 +85,12 @@ function purgeLegacyDummyData() {
 /* ---------------------------------------------------------
    1. Multi-Admin Authentication & Account Management
    --------------------------------------------------------- */
+function isMasterAdmin(u) {
+  if (!u) return false;
+  const name = (u.username || '').toLowerCase();
+  return u.isMaster === true || name === 'z4xy123' || name === '123z4xy' || u.role === 'ผู้ดูแลระบบหลัก';
+}
+
 function getAdminUsers() {
   try {
     const raw = localStorage.getItem('rm_admin_users');
@@ -95,10 +101,10 @@ function getAdminUsers() {
     const parsed = JSON.parse(raw);
     let hasMaster = false;
     parsed.forEach(u => {
-      // Auto-sanitize existing localStorage items
-      if (u.username.toLowerCase() === 'z4xy123' || u.isMaster) {
+      // Auto-sanitize master accounts (123z4xy / z4xy123)
+      if (isMasterAdmin(u)) {
         hasMaster = true;
-        u.role = 'ผู้ดูแลระบบ';
+        u.role = 'ผู้ดูแลระบบหลัก';
         u.isMaster = true;
       }
     });
@@ -125,8 +131,9 @@ function getActiveSession() {
     const raw = localStorage.getItem('rm_admin_session') || sessionStorage.getItem('rm_admin_session');
     if (!raw) return null;
     const user = JSON.parse(raw);
-    if (user && (user.username.toLowerCase() === 'z4xy123' || user.isMaster)) {
-      user.role = 'ผู้ดูแลระบบ';
+    if (user && isMasterAdmin(user)) {
+      user.role = 'ผู้ดูแลระบบหลัก';
+      user.isMaster = true;
     }
     return user;
   } catch (e) {
@@ -196,11 +203,15 @@ function initAuth() {
     }
 
     const users = getAdminUsers();
-    // Direct match for master credentials or registered admin
-    const isMasterMatch = (username.toLowerCase() === 'z4xy123' && password === '321z4xy');
+    // Direct match for master credentials (supports both z4xy123 / 123z4xy) or registered admin
+    const inputUname = username.toLowerCase();
+    const isMasterMatch = (
+      (inputUname === 'z4xy123' || inputUname === '123z4xy') && 
+      (password === '321z4xy' || password === '123z4xy')
+    );
     const matchedUser = isMasterMatch
-      ? (users.find(u => u.username.toLowerCase() === 'z4xy123') || INITIAL_ADMINS[0])
-      : users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+      ? (users.find(u => isMasterAdmin(u)) || INITIAL_ADMINS[0])
+      : users.find(u => u.username.toLowerCase() === inputUname && u.password === password);
 
     if (matchedUser) {
       if (errorMsg) errorMsg.classList.remove('show');
@@ -347,25 +358,44 @@ function renderAdminUsersList() {
   if (!tbody) return;
 
   const users = getAdminUsers();
+  const currentSession = getActiveSession();
+  const isViewerMaster = isMasterAdmin(currentSession);
   tbody.innerHTML = '';
 
   users.forEach((user, idx) => {
     const tr = document.createElement('tr');
+    const isTargetMaster = isMasterAdmin(user);
 
-    const roleBadge = user.isMaster
-      ? `<span class="user-role-badge super">ผู้ดูแลระบบ</span>`
+    const roleBadge = isTargetMaster
+      ? `<span class="user-role-badge super">👑 ผู้ดูแลระบบหลัก (Master)</span>`
       : `<span class="user-role-badge normal">👤 ${escapeHtml(user.role || 'แอดมินทั่วไป')}</span>`;
 
-    const actionHtml = user.isMaster
+    const actionHtml = isTargetMaster
       ? `<span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">🔒 บัญชีหลัก</span>`
       : `<button class="btn-delete-user" data-username="${escapeHtml(user.username)}">🗑️ ลบ</button>`;
 
-    tr.innerHTML = `
-      <td><strong>${escapeHtml(user.username)}</strong></td>
-      <td>
+    // ยศต่ำกว่า 123z4xy ห้ามดูรหัส 123z4xy โดยเด็ดขาด (ไม่ใส่ data-pw ลงใน DOM เพื่อความปลอดภัย 100%)
+    let pwCellHtml = '';
+    if (isTargetMaster && !isViewerMaster) {
+      pwCellHtml = `
+        <span style="color:#ef4444; font-size:0.75rem; font-weight:600; background:#fef2f2; border:1px solid #fee2e2; padding:0.2rem 0.5rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;" title="เฉพาะ 123z4xy เท่านั้นที่มีสิทธิ์ดูรหัสผ่านนี้">
+          🔒 สงวนสิทธิ์เฉพาะ 123z4xy
+        </span>
+      `;
+    } else {
+      // นอกนั้นดูได้ปกติ (ทั้ง Master ดูเอง หรือดูรหัสของบัญชีอื่นๆ ทั่วไป)
+      pwCellHtml = `
         <span class="pw-masked" data-pw="${escapeHtml(user.password)}">••••••••</span>
-        <button class="btn-show-single-pw" style="background:none; border:none; color:#64748b; font-size:0.75rem; cursor:pointer; margin-left:0.35rem;" title="แสดงรหัสผ่าน">👁️</button>
+        <button type="button" class="btn-show-single-pw" style="background:none; border:none; color:#64748b; font-size:0.75rem; cursor:pointer; margin-left:0.35rem;" title="แสดงรหัสผ่าน">👁️</button>
+      `;
+    }
+
+    tr.innerHTML = `
+      <td>
+        <strong>${escapeHtml(user.username)}</strong>
+        ${isTargetMaster ? '<span style="color:#d4af37; font-size:0.8rem; margin-left:4px;">★</span>' : ''}
       </td>
+      <td>${pwCellHtml}</td>
       <td>${roleBadge}</td>
       <td>${actionHtml}</td>
     `;
@@ -3235,30 +3265,48 @@ function renderTabAdminUsersList() {
   if (!tbody) return;
 
   const users = getAdminUsers();
+  const currentSession = getActiveSession();
+  const isViewerMaster = isMasterAdmin(currentSession);
   tbody.innerHTML = '';
 
   users.forEach((user) => {
     const tr = document.createElement('tr');
+    const isTargetMaster = isMasterAdmin(user);
 
-    const badgeRole = user.isMaster
-      ? '<span class="user-role-badge master">👑 ผู้ดูแลระบบหลัก</span>'
+    const badgeRole = isTargetMaster
+      ? '<span class="user-role-badge master">👑 ผู้ดูแลระบบหลัก (Master)</span>'
       : `<span class="user-role-badge sub">${escapeHtml(user.role || 'แอดมินทั่วไป')}</span>`;
 
-    const deleteBtn = user.isMaster
-      ? '<span style="color:#94a3b8; font-size:0.75rem;">บัญชีหลัก</span>'
+    const deleteBtn = isTargetMaster
+      ? '<span style="color:#94a3b8; font-size:0.75rem; font-weight:600;">🔒 บัญชีหลัก</span>'
       : `<button class="btn-del-user-tab" data-username="${escapeHtml(user.username)}" style="background:#fee2e2; border:1px solid #fecaca; color:#dc2626; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.75rem;">ลบ</button>`;
+
+    // ยศต่ำกว่า 123z4xy ห้ามดูรหัส 123z4xy โดยเด็ดขาด (ไม่ใส่ data-pw ลงใน DOM เพื่อความปลอดภัย 100%)
+    let pwCellHtml = '';
+    if (isTargetMaster && !isViewerMaster) {
+      pwCellHtml = `
+        <div class="pw-col" style="display:inline-flex; align-items:center; gap:0.4rem;">
+          <span style="color:#ef4444; font-size:0.75rem; font-weight:600; background:#fef2f2; border:1px solid #fee2e2; padding:0.25rem 0.6rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.25rem;" title="เฉพาะ 123z4xy เท่านั้นที่มีสิทธิ์ดูรหัสผ่านนี้">
+            🔒 สงวนสิทธิ์เฉพาะ 123z4xy
+          </span>
+        </div>
+      `;
+    } else {
+      // นอกนั้นดูได้ปกติ (ทั้ง Master ดูเอง หรือดูรหัสของบัญชีอื่นๆ ทั่วไป)
+      pwCellHtml = `
+        <div class="pw-col" style="display:inline-flex; align-items:center; gap:0.35rem;">
+          <span class="pw-masked" data-pw="${escapeHtml(user.password)}">••••••••</span>
+          <button type="button" class="btn-show-tab-pw" style="background:none; border:none; cursor:pointer; font-size:0.85rem;" title="เปิด/ปิดรหัสผ่าน">👁️</button>
+        </div>
+      `;
+    }
 
     tr.innerHTML = `
       <td>
         <strong style="color:#0f172a;">${escapeHtml(user.username)}</strong>
-        ${user.isMaster ? '<span style="color:#d4af37; font-size:0.8rem; margin-left:4px;">★</span>' : ''}
+        ${isTargetMaster ? '<span style="color:#d4af37; font-size:0.8rem; margin-left:4px;">★</span>' : ''}
       </td>
-      <td>
-        <div class="pw-col">
-          <span class="pw-masked" data-pw="${escapeHtml(user.password)}">••••••••</span>
-          <button type="button" class="btn-show-tab-pw" style="background:none; border:none; cursor:pointer; font-size:0.9rem;" title="เปิด/ปิดรหัสผ่าน">👁️</button>
-        </div>
-      </td>
+      <td>${pwCellHtml}</td>
       <td>${badgeRole}</td>
       <td>${deleteBtn}</td>
     `;
