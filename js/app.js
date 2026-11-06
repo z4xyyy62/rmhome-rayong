@@ -3303,8 +3303,9 @@ function initSiteTracker() {
 
   // Dynamic synchronized pills with dashboard
   if (pillsWrap) {
-    if (!projects || projects.length === 0) {
-      // If deleted all, do not show pills row
+    const validProjects = (projects || []).filter(p => p && ((p.contractNo && p.contractNo.trim()) || (p.customerName && p.customerName.trim())));
+    if (validProjects.length === 0) {
+      // If deleted all or no valid projects, do not show pills row
       pillsWrap.style.display = 'none';
       pillsWrap.innerHTML = '';
     } else {
@@ -3312,19 +3313,30 @@ function initSiteTracker() {
       let pillsHtml = `<span>ดูโครงการของคุณ:</span>`;
 
       // Show up to 3 project pills
-      const displayCount = Math.min(3, projects.length);
+      const displayCount = Math.min(3, validProjects.length);
       for (let i = 0; i < displayCount; i++) {
-        const p = projects[i];
+        const p = validProjects[i];
+        const cNo = (p.contractNo || '').trim();
+        const cName = (p.customerName || '').trim();
+        let labelText = '';
+        if (cNo && cName) {
+          labelText = `${cNo} (${cName})`;
+        } else if (cNo) {
+          labelText = cNo;
+        } else {
+          labelText = cName;
+        }
+        const searchKey = cNo || p.phone || cName;
         pillsHtml += `
-          <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(p.contractNo)}">
-            🏡 ${escapeHtml(p.contractNo)} (${escapeHtml(p.customerName || '')})
+          <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(searchKey)}">
+            🏡 ${escapeHtml(labelText)}
           </button>
         `;
       }
 
       // If more than 3 projects, show +1-99 badge
-      if (projects.length > 3) {
-        const extraCount = projects.length - 3;
+      if (validProjects.length > 3) {
+        const extraCount = validProjects.length - 3;
         pillsHtml += `
           <span class="demo-pill-btn" style="background:rgba(212, 175, 55, 0.25); color:var(--gold-light); font-weight:700; cursor:default; border-color:var(--gold);" title="ยังมีอีก ${extraCount} โครงการ">+${extraCount}</span>
         `;

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=green-gold">
+  <link rel="stylesheet" href="css/admin.css?v=20261106mobile">
 </head>
 <body>
 
@@ -1481,104 +1481,111 @@
 
   <!-- Construction Project Edit Modal -->
   <div class="modal-admin-overlay" id="editProjectModal">
-    <div class="modal-admin-box" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-admin-box xlarge modal-project-box">
       <div class="modal-admin-header">
-        <h3 id="modalProjectTitle" style="font-size:1.15rem; font-weight:700;">แก้ไขโครงการก่อสร้าง</h3>
-        <button class="modal-admin-close" id="modalCloseProjectBtn">&times;</button>
+        <div>
+          <h3 id="modalProjectTitle" style="font-size:1.25rem; font-weight:700; color:#0e3d29;">แก้ไขโครงการก่อสร้าง</h3>
+          <p style="font-size:0.83rem; color:#64748b; margin-top:2px;">จัดการความคืบหน้า 5 งวดงาน และรายละเอียดโครงการ</p>
+        </div>
+        <button class="modal-admin-close" id="modalCloseProjectBtn" aria-label="ปิด">&times;</button>
       </div>
 
-      <form id="projectEditForm" onsubmit="return false;" style="display:flex; flex-direction:column; gap:1rem;">
+      <form id="projectEditForm" onsubmit="return false;" class="project-edit-form">
         <input type="hidden" id="projEditId">
         
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">เลขที่สัญญา (Contract No.) *</label>
-            <input type="text" id="projEditContractNo" required style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="เช่น RM-2026-003">
+        <div class="form-grid-2col project-form-row">
+          <div class="form-group">
+            <label class="form-label" for="projEditContractNo">เลขที่สัญญา (Contract No.) *</label>
+            <input type="text" id="projEditContractNo" class="form-control" required placeholder="เช่น RM-2026-003">
           </div>
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">ชื่อลูกค้า / เจ้าของบ้าน *</label>
-            <input type="text" id="projEditCustomerName" required style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="เช่น คุณธีรศักดิ์ และครอบครัว">
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">เบอร์โทรศัพท์เจ้าของบ้าน *</label>
-            <input type="text" id="projEditPhone" required style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="08x-xxx-xxxx">
-          </div>
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">แบบบ้านที่สร้าง *</label>
-            <input type="text" id="projEditModelName" required style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="เช่น The Grand Nordic Villa">
+          <div class="form-group">
+            <label class="form-label" for="projEditCustomerName">ชื่อลูกค้า / เจ้าของบ้าน *</label>
+            <input type="text" id="projEditCustomerName" class="form-control" required placeholder="เช่น คุณธีรศักดิ์ และครอบครัว">
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:0.75rem;">
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">สถานที่ก่อสร้าง</label>
-            <input type="text" id="projEditLocation" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="เช่น อ.เมืองระยอง จ.ระยอง">
+        <div class="form-grid-2col project-form-row">
+          <div class="form-group">
+            <label class="form-label" for="projEditPhone">เบอร์โทรศัพท์เจ้าของบ้าน *</label>
+            <input type="tel" id="projEditPhone" class="form-control" required placeholder="08x-xxx-xxxx">
           </div>
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">สถานะโครงการ</label>
-            <select id="projEditStatus" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;">
+          <div class="form-group">
+            <label class="form-label" for="projEditModelName">แบบบ้านที่สร้าง *</label>
+            <input type="text" id="projEditModelName" class="form-control" required placeholder="เช่น The Grand Nordic Villa">
+          </div>
+        </div>
+
+        <div class="form-grid-2col project-form-row">
+          <div class="form-group">
+            <label class="form-label" for="projEditLocation">สถานที่ก่อสร้าง</label>
+            <input type="text" id="projEditLocation" class="form-control" placeholder="เช่น อ.เมืองระยอง จ.ระยอง">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="projEditStatus">สถานะโครงการ</label>
+            <select id="projEditStatus" class="form-control">
               <option value="ongoing">🟢 กำลังดำเนินการก่อสร้าง</option>
               <option value="completed">✅ ส่งมอบบ้านแล้ว</option>
             </select>
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-          <div>
-            <label style="font-size:0.8rem; font-weight:600; color:#334155;">วิศวกรผู้ควบคุมงาน</label>
-            <input type="text" id="projEditEngineerName" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="วศ. สิทธิชัย วัฒนา">
+        <div class="form-grid-2col project-form-row">
+          <div class="form-group">
+            <label class="form-label" for="projEditEngineerName">วิศวกรผู้ควบคุมงาน</label>
+            <input type="text" id="projEditEngineerName" class="form-control" placeholder="วศ. สิทธิชัย วัฒนา">
           </div>
-          <div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <label style="font-size:0.8rem; font-weight:600; color:#334155;">ความคืบหน้ารวม (% 0-100) *</label>
-              <span id="projProgressLiveBadge" style="font-size:0.9rem; font-weight:800; color:#0e3d29;">65%</span>
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+              <label class="form-label" for="projEditProgress" style="margin-bottom:0;">ความคืบหน้ารวม (% 0-100) *</label>
+              <span id="projProgressLiveBadge" class="live-progress-badge">65%</span>
             </div>
-            <div style="display:flex; gap:0.35rem; align-items:center; margin-top:0.25rem; flex-wrap:wrap;">
-              <input type="number" id="projEditProgress" min="0" max="100" required style="width:75px; padding:0.45rem; border:1.5px solid #0e3d29; border-radius:6px; font-size:0.95rem; font-weight:700; text-align:center;" placeholder="65">
-              <button type="button" class="btn-step-pct" data-delta="-5" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ลด 5%">-5%</button>
-              <button type="button" class="btn-step-pct" data-delta="+5" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;" title="เพิ่ม 5%">+5%</button>
-              <button type="button" class="btn-set-pct" data-pct="30" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ตั้งเป็น 30%">30%</button>
-              <button type="button" class="btn-set-pct" data-pct="50" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; font-size:0.75rem; font-weight:700; cursor:pointer;" title="ตั้งเป็น 50%">50%</button>
-              <button type="button" class="btn-set-pct" data-pct="100" style="padding:0.4rem 0.5rem; border-radius:6px; border:1px solid #a7f3d0; background:#e8f5ee; color:#0e3d29; font-size:0.75rem; font-weight:700; cursor:pointer;" title="เสร็จสมบูรณ์ 100%">100%</button>
+            <div class="pct-input-stepper-wrap">
+              <input type="number" id="projEditProgress" min="0" max="100" required class="form-control pct-main-input" placeholder="65">
+              <div class="pct-presets-wrap">
+                <button type="button" class="btn-step-pct" data-delta="-5" title="ลด 5%">-5%</button>
+                <button type="button" class="btn-step-pct" data-delta="+5" title="เพิ่ม 5%">+5%</button>
+                <button type="button" class="btn-set-pct" data-pct="30" title="ตั้งเป็น 30%">30%</button>
+                <button type="button" class="btn-set-pct" data-pct="50" title="ตั้งเป็น 50%">50%</button>
+                <button type="button" class="btn-set-pct pct-done-btn" data-pct="100" title="เสร็จสมบูรณ์ 100%">100%</button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 5 Milestones Editor Box -->
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.9rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+        <div class="milestones-manager-box">
+          <div class="milestones-manager-header">
             <div>
-              <span style="font-size:0.85rem; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:0.4rem;">
+              <span class="milestones-manager-title">
                 📋 จัดการ 5 งวดงานก่อสร้าง (ปรับสถานะ & คำนวณอัตโนมัติ)
               </span>
-              <span style="font-size:0.74rem; color:#64748b;">สามารถติ๊กสถานะแต่ละงวด หรือกดปุ่มคำนวณ % หรือจะพิมพ์เปอร์เซ็นต์เองด้านบนได้อิสระ</span>
+              <span class="milestones-manager-sub">
+                ปรับสถานะแต่ละงวด หรือกดคำนวณ % หรือพิมพ์เปอร์เซ็นต์เองด้านบนได้อิสระ
+              </span>
             </div>
-            <button type="button" id="btnAutoCalcMilestones" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem;">
+            <button type="button" id="btnAutoCalcMilestones" class="btn-auto-calc">
               ⚡ คำนวณ % รวมจากงวดงาน
             </button>
           </div>
 
-          <div id="modalMilestonesContainer" style="display:flex; flex-direction:column; gap:0.6rem;">
+          <div id="modalMilestonesContainer" class="milestones-container-list">
             <!-- Rendered dynamically by js/admin.js -->
           </div>
         </div>
 
-        <div>
-          <label style="font-size:0.8rem; font-weight:600; color:#334155;">ข้อความสถานะย่อ (Status Note)</label>
-          <input type="text" id="projEditStatusNote" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="เช่น ดำเนินการเร็วกว่าแผนงาน 5 วัน">
+        <div class="form-group full-width">
+          <label class="form-label" for="projEditStatusNote">ข้อความสถานะย่อ (Status Note)</label>
+          <input type="text" id="projEditStatusNote" class="form-control" placeholder="เช่น ดำเนินการเร็วกว่าแผนงาน 5 วัน">
         </div>
 
-        <div>
-          <label style="font-size:0.8rem; font-weight:600; color:#334155;">บันทึกจากวิศวกรผู้ควบคุม (Engineer Daily Log)</label>
-          <textarea id="projEditEngineerNote" rows="3" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;" placeholder="ระบุความคืบหน้าหน้างานล่าสุด..."></textarea>
+        <div class="form-group full-width">
+          <label class="form-label" for="projEditEngineerNote">บันทึกจากวิศวกรผู้ควบคุม (Engineer Daily Log)</label>
+          <textarea id="projEditEngineerNote" class="form-control" rows="3" placeholder="ระบุความคืบหน้าหน้างานล่าสุด..."></textarea>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.5rem;">
-          <button type="button" class="btn-action-outline" id="btnCancelProjectEdit">ยกเลิก</button>
-          <button type="button" class="btn-primary" id="btnSaveProjectEdit" style="background:#0e3d29; color:#fff; border:1px solid #d4af37; padding:0.5rem 1.25rem; border-radius:8px; font-weight:600; cursor:pointer;">
+        <div class="modal-form-actions">
+          <button type="button" class="btn-action-outline btn-modal-cancel" id="btnCancelProjectEdit">ยกเลิก</button>
+          <button type="button" class="btn-green-submit btn-modal-save" id="btnSaveProjectEdit">
             💾 บันทึกข้อมูลโครงการ
           </button>
         </div>
@@ -1587,7 +1594,7 @@
   </div>
 
   <script src="js/cloud-sync.js"></script>
-  <script src="js/admin.js?v=20261105auth"></script>
+  <script src="js/admin.js?v=20261106mobile"></script>
 </body>
 </html>
 

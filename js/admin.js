@@ -3807,23 +3807,25 @@ function openEditProjectModal(projectId) {
       const row = document.createElement('div');
       row.className = 'milestone-admin-row';
       row.setAttribute('data-step', cfg.step);
-      row.style.cssText = 'background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.75rem; display:grid; grid-template-columns: 2fr 1.2fr 1fr; gap:0.6rem; align-items:center;';
 
       row.innerHTML = `
-        <div>
-          <div style="font-size:0.82rem; font-weight:700; color:#1e293b;">${escapeHtml(existingM.title || cfg.title)}</div>
-          <input type="text" class="m-date-input" style="width:100%; font-size:0.75rem; color:#64748b; border:1px solid #e2e8f0; border-radius:4px; padding:0.25rem 0.4rem; margin-top:2px;" placeholder="วันที่/หมายเหตุ เช่น เสร็จสิ้น 25 ม.ค. 2026" value="${escapeHtml(existingM.date || '')}">
+        <div class="m-header-col">
+          <div class="m-title-row">
+            <span class="m-step-pill">งวด ${cfg.step}</span>
+            <span class="m-title-text">${escapeHtml(existingM.title || cfg.title)}</span>
+          </div>
+          <input type="text" class="m-date-input" placeholder="วันที่/หมายเหตุ เช่น เสร็จสิ้น 25 ม.ค. 2026" value="${escapeHtml(existingM.date || '')}">
         </div>
-        <div>
-          <select class="m-status-select" style="width:100%; font-size:0.78rem; font-weight:600; padding:0.35rem; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
+        <div class="m-controls-row">
+          <select class="m-status-select" aria-label="สถานะงวดที่ ${cfg.step}">
             <option value="done" ${existingM.status === 'done' ? 'selected' : ''}>✅ เสร็จสิ้น (100%)</option>
             <option value="in_progress" ${existingM.status === 'in_progress' ? 'selected' : ''}>⚙️ กำลังทำ</option>
             <option value="pending" ${existingM.status === 'pending' ? 'selected' : ''}>⏳ รอเริ่ม (0%)</option>
           </select>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.25rem;">
-          <input type="number" min="0" max="100" class="m-progress-input" style="width:55px; text-align:center; font-size:0.85rem; font-weight:700; padding:0.3rem; border:1.5px solid #cbd5e1; border-radius:6px;" value="${existingM.progress || 0}">
-          <span style="font-size:0.78rem; color:#64748b; font-weight:600;">%</span>
+          <div class="m-progress-wrap">
+            <input type="number" min="0" max="100" class="m-progress-input" value="${existingM.progress || 0}" aria-label="เปอร์เซ็นต์งวดที่ ${cfg.step}">
+            <span class="m-progress-unit">%</span>
+          </div>
         </div>
       `;
 
@@ -3839,6 +3841,17 @@ function openEditProjectModal(projectId) {
           if (parseInt(progInp.value || '0', 10) === 0 || parseInt(progInp.value || '0', 10) === 100) {
             progInp.value = 50;
           }
+        }
+      });
+
+      progInp.addEventListener('input', () => {
+        const val = Math.min(100, Math.max(0, parseInt(progInp.value || '0', 10)));
+        if (val === 100) {
+          statusSel.value = 'done';
+        } else if (val === 0) {
+          statusSel.value = 'pending';
+        } else {
+          statusSel.value = 'in_progress';
         }
       });
 
@@ -3907,7 +3920,11 @@ function saveProjectForm() {
   const logEl = document.getElementById('projEditEngineerNote');
   const milestonesContainer = document.getElementById('modalMilestonesContainer');
 
-  if (!contractEl.value || !nameEl.value || !phoneEl.value) {
+  const contractVal = (contractEl.value || '').trim();
+  const nameVal = (nameEl.value || '').trim();
+  const phoneVal = (phoneEl.value || '').trim();
+
+  if (!contractVal || !nameVal || !phoneVal) {
     alert('กรุณากรอก เลขที่สัญญา, ชื่อลูกค้า และเบอร์โทรศัพท์ให้ครบถ้วน');
     return;
   }
