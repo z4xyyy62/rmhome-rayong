@@ -3146,107 +3146,201 @@ function initSiteTracker() {
   function renderProjectCard(proj) {
     const isOngoing = proj.status !== 'completed';
     const statusClass = isOngoing ? 'ongoing' : 'completed';
-    const statusText = isOngoing ? '🟢 กำลังดำเนินการก่อสร้าง' : '✅ ส่งมอบบ้านเรียบร้อยแล้ว';
+    const statusText = isOngoing ? 'กำลังดำเนินการก่อสร้าง' : 'ส่งมอบบ้านเรียบร้อยแล้ว';
+    const overallProgress = Math.min(100, Math.max(0, parseInt(proj.overallProgress || '0', 10)));
+
+    const milestoneStepIcons = {
+      1: '🏗️',
+      2: '🏛️',
+      3: '🏠',
+      4: '⚡',
+      5: '🔑'
+    };
 
     const milestonesHtml = (proj.milestones || []).map(m => {
       const mClass = m.status || 'pending';
-      let icon = m.step;
-      let tagText = 'รอเริ่ม';
+      const stepNum = m.step || 1;
+      let badgeContent = '';
+      let tagText = 'รอเริ่มตามแผนงาน';
+      let progressMiniBar = '';
+
       if (mClass === 'done') {
-        icon = '✓';
-        tagText = 'เสร็จสิ้น 100%';
+        badgeContent = '<span class="m-badge-done">✓</span>';
+        tagText = 'เสร็จสมบูรณ์ 100%';
       } else if (mClass === 'in_progress') {
-        icon = '⚙️';
+        badgeContent = `<span class="m-badge-active">${stepNum}</span>`;
         tagText = `กำลังดำเนินงาน ${m.progress || 0}%`;
+        progressMiniBar = `
+          <div class="milestone-mini-progress">
+            <div class="milestone-mini-bar">
+              <div class="milestone-mini-fill" style="width: ${m.progress || 0}%;"></div>
+            </div>
+            <span class="milestone-mini-pct">${m.progress || 0}%</span>
+          </div>
+        `;
+      } else {
+        badgeContent = `<span class="m-badge-pending">${stepNum}</span>`;
+        tagText = 'รอเริ่มตามแผนงาน';
       }
+
+      const cleanTitle = (m.title || `งวดที่ ${stepNum}`).replace(/^งวดที่\s*\d+:\s*/, '');
 
       return `
         <div class="milestone-step-card ${mClass}">
-          <div class="milestone-badge-icon">${icon}</div>
+          <div class="milestone-badge-icon">${badgeContent}</div>
           <div class="milestone-info">
             <div class="milestone-title-row">
-              <span class="milestone-title">${escapeHtml(m.title)}</span>
+              <div class="milestone-title-wrap">
+                <span class="milestone-step-label">งวดที่ ${stepNum}</span>
+                <span class="milestone-title">${escapeHtml(cleanTitle)}</span>
+              </div>
               <span class="milestone-status-tag ${mClass}">${tagText}</span>
             </div>
-            <div class="milestone-date-text">📅 ${escapeHtml(m.date || '')}</div>
+            ${progressMiniBar}
+            <div class="milestone-date-text">
+              <span>📅 ${escapeHtml(m.date || 'ตามลำดับแผนงาน')}</span>
+            </div>
           </div>
         </div>
       `;
     }).join('');
 
-    const photosHtml = (proj.photos || []).map(p => `
+    const hasPhotos = Array.isArray(proj.photos) && proj.photos.length > 0;
+    const photosHtml = hasPhotos ? proj.photos.map(p => `
       <div class="tracker-photo-card">
-        <img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.title)}" class="tracker-photo-img" loading="lazy">
+        <img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.title || 'ภาพหน้างาน')}" class="tracker-photo-img" loading="lazy">
         <div class="tracker-photo-caption">
-          <h5>${escapeHtml(p.title)}</h5>
-          <span>📅 ${escapeHtml(p.date)}</span>
+          <h5>${escapeHtml(p.title || 'ภาพความคืบหน้าหน้างาน')}</h5>
+          <span>📅 ${escapeHtml(p.date || '')}</span>
         </div>
       </div>
-    `).join('');
+    `).join('') : '';
 
-    const engineerNote = proj.engineerLog ? proj.engineerLog.note : 'งานดำเนินตามมาตรฐานวิศวกรรม';
-    const engineerDate = proj.engineerLog ? proj.engineerLog.updateDate : '';
+    const engineerNote = proj.engineerLog && proj.engineerLog.note ? proj.engineerLog.note : 'งานดำเนินตามมาตรฐานวิศวกรรม กว. โครงสร้างแข็งแรง ตรวจวัดระดับและควบคุมงานตามแบบแปลนทุกประการ';
+    const engineerDate = proj.engineerLog && proj.engineerLog.updateDate ? proj.engineerLog.updateDate : (proj.startDate || '');
 
     container.innerHTML = `
       <div class="tracker-result-card">
+        <div class="tracker-card-ambient-glow"></div>
+
+        <!-- Top Header & Badges -->
         <div class="tracker-header-row">
           <div class="tracker-title-col">
-            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.4rem;">
-              <span class="tracker-contract-badge">📄 เลขที่สัญญา: ${escapeHtml(proj.contractNo)}</span>
-              <span class="tracker-status-pill ${statusClass}">${statusText}</span>
+            <div class="tracker-badge-cluster">
+              <span class="tracker-contract-badge">
+                <span class="badge-dot-gold"></span> เลขที่สัญญา: <strong>${escapeHtml(proj.contractNo)}</strong>
+              </span>
+              <span class="tracker-status-pill ${statusClass}">
+                <span class="live-pulse-dot ${statusClass}"></span> ${statusText}
+              </span>
             </div>
-            <h3>${escapeHtml(proj.customerName)}</h3>
-            <p style="color:var(--gold-light); font-size:0.85rem;">${escapeHtml(proj.statusNote || '')}</p>
+            <h3 class="tracker-customer-title">${escapeHtml(proj.customerName)}</h3>
+            ${proj.statusNote ? `<div class="tracker-note-chip">✨ ${escapeHtml(proj.statusNote)}</div>` : ''}
           </div>
-          <div>
-            <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn btn-gold" style="font-size:0.82rem; padding:0.45rem 1rem;">
-              📞 โทรหาวิศวกรผู้ดูแล
+          <div class="tracker-header-actions">
+            <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn-tracker-call">
+              <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+              <span>ติดต่อวิศวกรประจำโครงการ</span>
             </a>
           </div>
         </div>
 
-        <div class="tracker-meta-grid">
-          <div class="tracker-meta-item">
-            <span class="tracker-meta-label">🏡 แบบบ้านที่ก่อสร้าง</span>
-            <span class="tracker-meta-val">${escapeHtml(proj.modelName)}</span>
-          </div>
-          <div class="tracker-meta-item">
-            <span class="tracker-meta-label">📍 สถานที่ก่อสร้าง</span>
-            <span class="tracker-meta-val">${escapeHtml(proj.location)}</span>
-          </div>
-          <div class="tracker-meta-item">
-            <span class="tracker-meta-label">👷 วิศวกรผู้ควบคุมโครงการ</span>
-            <span class="tracker-meta-val">${escapeHtml(proj.engineerName)} (${escapeHtml(proj.engineerLicense || '')})</span>
-          </div>
-          <div class="tracker-meta-item">
-            <span class="tracker-meta-label">⏱️ กำหนดส่งมอบบ้าน</span>
-            <span class="tracker-meta-val">${escapeHtml(proj.estimatedFinish || '-')}</span>
-          </div>
-        </div>
-
+        <!-- Cockpit Progress Meter with 5 Checkpoints -->
         <div class="tracker-progress-section">
-          <div class="tracker-progress-header">
-            <div class="tracker-progress-label">
-              <span>🏗️ ความคืบหน้างานก่อสร้างรวม:</span>
+          <div class="tracker-progress-top">
+            <div class="tracker-progress-title">
+              <div class="progress-icon-badge">🏗️</div>
+              <div>
+                <h4>ความคืบหน้ารวมของโครงการ</h4>
+                <p>ประมวลผลตามน้ำหนักความสมบูรณ์ของ 5 งวดงานก่อสร้าง</p>
+              </div>
             </div>
-            <div class="tracker-progress-percent">${proj.overallProgress || 0}%</div>
+            <div class="tracker-progress-figure">
+              <span class="pct-num">${overallProgress}%</span>
+              <span class="pct-sub">${overallProgress === 100 ? 'เสร็จสมบูรณ์ 100%' : 'กำลังเดินหน้าต่อเนื่อง'}</span>
+            </div>
           </div>
-          <div class="tracker-progress-track">
-            <div class="tracker-progress-fill" style="width: ${proj.overallProgress || 0}%;"></div>
+
+          <div class="tracker-progress-bar-wrap">
+            <div class="tracker-progress-track">
+              <div class="tracker-progress-fill" style="width: ${overallProgress}%;">
+                <div class="tracker-progress-shimmer"></div>
+              </div>
+            </div>
+            <div class="tracker-milestone-ticks">
+              <div class="tick-col ${overallProgress >= 20 ? 'reached' : ''}">
+                <span class="tick-dot"></span>
+                <span class="tick-text">งวด 1 (20%)</span>
+              </div>
+              <div class="tick-col ${overallProgress >= 40 ? 'reached' : ''}">
+                <span class="tick-dot"></span>
+                <span class="tick-text">งวด 2 (40%)</span>
+              </div>
+              <div class="tick-col ${overallProgress >= 60 ? 'reached' : ''}">
+                <span class="tick-dot"></span>
+                <span class="tick-text">งวด 3 (60%)</span>
+              </div>
+              <div class="tick-col ${overallProgress >= 80 ? 'reached' : ''}">
+                <span class="tick-dot"></span>
+                <span class="tick-text">งวด 4 (80%)</span>
+              </div>
+              <div class="tick-col ${overallProgress >= 100 ? 'reached' : ''}">
+                <span class="tick-dot"></span>
+                <span class="tick-text">งวด 5 (100%)</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="tracker-section-heading">
-          <span>📋 รายละเอียดขั้นตอนงวดงานก่อสร้าง (5 งวดมาตรฐาน)</span>
-        </div>
-        <div class="milestones-stepper">
-          ${milestonesHtml}
+        <!-- 4 Specification Tiles -->
+        <div class="tracker-meta-grid">
+          <div class="tracker-meta-card">
+            <div class="meta-icon-col">🏡</div>
+            <div class="meta-text-col">
+              <span class="meta-label">แบบบ้านที่ก่อสร้าง</span>
+              <span class="meta-val">${escapeHtml(proj.modelName || 'Nordic Custom Villa')}</span>
+            </div>
+          </div>
+          <div class="tracker-meta-card">
+            <div class="meta-icon-col">📍</div>
+            <div class="meta-text-col">
+              <span class="meta-label">สถานที่ก่อสร้าง</span>
+              <span class="meta-val">${escapeHtml(proj.location || 'จ.ระยอง')}</span>
+            </div>
+          </div>
+          <div class="tracker-meta-card">
+            <div class="meta-icon-col">👷‍♂️</div>
+            <div class="meta-text-col">
+              <span class="meta-label">วิศวกรผู้ควบคุมโครงการ</span>
+              <span class="meta-val">${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย วัฒนา')} ${proj.engineerLicense ? `<small>(${escapeHtml(proj.engineerLicense)})</small>` : ''}</span>
+            </div>
+          </div>
+          <div class="tracker-meta-card">
+            <div class="meta-icon-col">⏱️</div>
+            <div class="meta-text-col">
+              <span class="meta-label">กำหนดการส่งมอบบ้าน</span>
+              <span class="meta-val">${escapeHtml(proj.estimatedFinish || 'ตามสัญญา')}</span>
+            </div>
+          </div>
         </div>
 
-        ${proj.photos && proj.photos.length > 0 ? `
+        <!-- 5-Milestones Timeline Section -->
+        <div class="tracker-timeline-section">
+          <div class="tracker-section-heading">
+            <span class="heading-gold-line"></span>
+            <span>📋 สถานะ 5 งวดงานก่อสร้างมาตรฐาน (Construction Milestones)</span>
+          </div>
+          <div class="milestones-stepper">
+            ${milestonesHtml}
+          </div>
+        </div>
+
+        <!-- Photos Section: ONLY SHOWN IF PHOTOS EXIST ("รูปไม่ได้ใส่ก็ได้") -->
+        ${hasPhotos ? `
           <div class="tracker-photos-section">
             <div class="tracker-section-heading">
-              <span>📸 ภาพถ่ายอัปเดตความคืบหน้าหน้างานจริงล่าสุด</span>
+              <span class="heading-gold-line"></span>
+              <span>📸 ภาพถ่ายอัปเดตหน้างานจริงล่าสุด (Site Progress Photos)</span>
             </div>
             <div class="tracker-photos-grid">
               ${photosHtml}
@@ -3254,23 +3348,35 @@ function initSiteTracker() {
           </div>
         ` : ''}
 
+        <!-- Certified Engineering Daily Log Memo -->
         <div class="engineer-log-card">
-          <div class="engineer-avatar-circle">
-            <img src="assets/images/quality-engineer.jpg" alt="Engineer Avatar">
+          <div class="engineer-log-seal-box">
+            <div class="engineer-seal-circle">🏛️</div>
+            <span class="engineer-seal-tag">วศ. ควบคุมงาน</span>
           </div>
-          <div class="engineer-log-content">
-            <h4>บันทึกจากวิศวกรผู้ควบคุมโครงการ (${escapeHtml(proj.engineerName)})</h4>
-            <span class="log-date">อัปเดตล่าสุด: ${escapeHtml(engineerDate)}</span>
-            <p>${escapeHtml(engineerNote)}</p>
+          <div class="engineer-log-body">
+            <div class="engineer-log-meta">
+              <div>
+                <h4 class="engineer-log-headline">บันทึกรายงานหน้างานโดยวิศวกรผู้ควบคุมโครงการ</h4>
+                <div class="engineer-sub-name">${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย วัฒนา')} • วิศวกรโยธาวิชาชีพ ${proj.engineerLicense ? `(${escapeHtml(proj.engineerLicense)})` : ''}</div>
+              </div>
+              ${engineerDate ? `<span class="engineer-log-date">📅 รายงานเมื่อ: ${escapeHtml(engineerDate)}</span>` : ''}
+            </div>
+            <div class="engineer-quote-box">
+              <p>${escapeHtml(engineerNote)}</p>
+            </div>
           </div>
         </div>
 
+        <!-- Direct Instant Actions -->
         <div class="tracker-action-buttons">
-          <a href="https://line.me" target="_blank" rel="noopener noreferrer" class="btn" style="background:#06c755; color:#fff; font-size:0.85rem; padding:0.5rem 1.15rem; border:none; border-radius:8px;">
-            💬 สอบถามวิศวกรผ่าน LINE
+          <a href="https://line.me" target="_blank" rel="noopener noreferrer" class="btn-tracker-line">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 2.97 1.74 5.61 4.45 7.15-.2.74-.72 2.7-1.04 3.91-.08.31.18.57.48.42 1.9-1.02 4.41-2.48 5.11-2.92.33.04.66.07 1 .07 5.52 0 10-3.92 10-8.75S17.52 2 12 2z"/></svg>
+            <span>สอบถาม / ขอภาพเพิ่มเติมผ่าน LINE Official</span>
           </a>
-          <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn btn-gold" style="font-size:0.85rem; padding:0.5rem 1.15rem;">
-            📞 สายตรงวิศวกรโครงการ
+          <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn-tracker-direct-call">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            <span>สายตรงวิศวกรผู้ควบคุมโครงการ</span>
           </a>
         </div>
       </div>

@@ -3660,15 +3660,18 @@ function renderSiteTrackerAdmin() {
       <div class="tracker-proj-header">
         <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
           <span class="tracker-proj-badge">📄 ${escapeHtml(proj.contractNo)}</span>
-          <h4 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin:0;">${escapeHtml(proj.customerName)}</h4>
+          <h4 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0;">${escapeHtml(proj.customerName)}</h4>
           ${statusBadge}
         </div>
-        <div style="font-size:1.15rem; font-weight:800; color:#0e3d29;">
-          ความคืบหน้า: ${proj.overallProgress || 0}%
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:0.85rem; color:#64748b; font-weight:600;">ความคืบหน้ารวม:</span>
+          <span style="font-size:1.25rem; font-weight:800; color:#0e3d29; background:#e8f5ee; padding:0.2rem 0.65rem; border-radius:8px; border:1px solid #a7f3d0;">
+            ${proj.overallProgress || 0}%
+          </span>
         </div>
       </div>
 
-      <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; margin-bottom:1rem;">
+      <div style="width:100%; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden; margin:0.85rem 0 1.15rem 0;">
         <div style="width:${proj.overallProgress || 0}%; height:100%; background:linear-gradient(90deg, #10b981, #d4af37); border-radius:999px;"></div>
       </div>
 
@@ -3676,19 +3679,27 @@ function renderSiteTrackerAdmin() {
         <div><strong>🏡 แบบบ้าน:</strong> ${escapeHtml(proj.modelName)}</div>
         <div><strong>📞 เบอร์โทร:</strong> ${escapeHtml(proj.phone)}</div>
         <div><strong>📍 ทำเล:</strong> ${escapeHtml(proj.location)}</div>
-        <div><strong>👷 วิศวกรคุมงาน:</strong> ${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย')}</div>
+        <div><strong>👷 วิศวกร:</strong> ${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย')}</div>
       </div>
 
-      <div style="background:#f1f5f9; padding:0.75rem; border-radius:8px; font-size:0.82rem; color:#475569; margin-bottom:1rem;">
-        <strong>📝 บันทึกล่าสุด:</strong> ${escapeHtml(proj.engineerLog ? proj.engineerLog.note : '-')}
-      </div>
+      ${proj.statusNote ? `
+        <div style="background:#fefce8; border:1px solid #fef08a; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.82rem; color:#854d0e; font-weight:600; margin-bottom:0.75rem;">
+          ✨ สถานะย่อ: ${escapeHtml(proj.statusNote)}
+        </div>
+      ` : ''}
+
+      ${proj.engineerLog && proj.engineerLog.note ? `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:0.75rem 0.95rem; border-radius:8px; font-size:0.82rem; color:#475569; margin-bottom:1rem;">
+          <strong>📝 บันทึกวิศวกร:</strong> ${escapeHtml(proj.engineerLog.note)}
+        </div>
+      ` : ''}
 
       <div class="tracker-proj-actions">
-        <button class="btn-action-outline btn-edit-proj" data-id="${proj.id}" style="font-size:0.8rem; padding:0.4rem 0.85rem;">
+        <button class="btn-action-outline btn-edit-proj" data-id="${proj.id}" style="font-size:0.82rem; padding:0.45rem 1rem; font-weight:600;">
           ✏️ แก้ไข & อัปเดตงวดงาน
         </button>
-        <button class="btn-action-outline btn-delete-proj" data-id="${proj.id}" style="color:#dc2626; border-color:#fecaca; font-size:0.8rem; padding:0.4rem 0.85rem;">
-          🗑️ ลบ
+        <button class="btn-action-outline btn-delete-proj" data-id="${proj.id}" style="color:#dc2626; border-color:#fecaca; background:#fff; font-size:0.82rem; padding:0.45rem 1rem; font-weight:600;">
+          🗑️ ลบโครงการ
         </button>
       </div>
     `;
