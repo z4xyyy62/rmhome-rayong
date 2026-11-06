@@ -140,6 +140,9 @@
         <p id="adminUserGreeting">สวัสดี, z4xy123 (ผู้ดูแลระบบ)</p>
       </div>
       <div class="header-actions">
+        <button class="btn-action-outline" id="btnLineNotifyModal" style="background:#f0fdf4; border-color:#22c55e; color:#15803d; font-weight:600;" title="ตั้งค่าระบบแจ้งเตือนเข้า LINE เมื่อมีลูกค้าติดต่อ">
+          <span>🔔 ตั้งค่าแจ้งเตือน LINE</span>
+        </button>
         <button class="btn-action-outline" id="btnCloudSync" style="background:#0e3d29; color:#fff; border:1px solid #d4af37; font-weight:600;" title="ตั้งค่าฐานข้อมูลคลาวด์กลาง (Firebase Realtime DB) เพื่อให้ทุกเครื่องในโลกเห็นข้อมูลอัปเดตตรงกัน">
           <span>☁️ ตั้งค่า Cloud DB</span>
         </button>
@@ -462,7 +465,10 @@
               รายชื่อผู้สนใจสร้างบ้านและข้อมูลติดต่อที่ส่งเข้ามาจากแบบฟอร์มหน้าเว็บ
             </p>
           </div>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button class="btn-action-outline" id="btnOpenLineSettingsInLeads" style="background:#f0fdf4; border-color:#22c55e; color:#15803d; font-size:0.8rem; padding:0.4rem 0.8rem; font-weight:600;" title="ตั้งค่าระบบแจ้งเตือนเข้า LINE">
+              🔔 ตั้งค่าแจ้งเตือน LINE
+            </button>
             <button class="btn-export-csv" id="btnExportCsvTabLeads" title="ส่งออก CSV">
               📥 ส่งออก CSV
             </button>
@@ -1590,6 +1596,78 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- LINE Notification & Webhook Modal -->
+  <div class="modal-admin-overlay" id="lineNotifyModal">
+    <div class="modal-admin-box" style="max-width: 680px;">
+      <div class="modal-admin-header">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span style="font-size:1.6rem;">🔔</span>
+          <div>
+            <h3 style="font-size:1.2rem; font-weight:700; color:#0e3d29; margin:0;">ตั้งค่าระบบแจ้งเตือนลูกค้าเข้า LINE</h3>
+            <p style="font-size:0.8rem; color:#64748b; margin:2px 0 0 0;">เชื่อมต่อกับ Google Apps Script & LINE Messaging API แจ้งเตือนทันทีเมื่อลูกค้ากรอกแบบฟอร์ม</p>
+          </div>
+        </div>
+        <button class="modal-admin-close" id="modalCloseLineNotifyBtn" aria-label="ปิด">&times;</button>
+      </div>
+
+      <div style="padding: 1.25rem 0 0 0;">
+        <!-- Status Box -->
+        <div id="lineNotifyStatusBox" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.85rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span id="lineStatusIndicator" style="width:10px; height:10px; border-radius:50%; background:#94a3b8; display:inline-block;"></span>
+            <span id="lineStatusText" style="font-size:0.88rem; font-weight:600; color:#334155;">ยังไม่ได้เชื่อมต่อ Webhook</span>
+          </div>
+          <span id="lineStatusBadge" style="font-size:0.75rem; background:#e2e8f0; color:#475569; padding:0.2rem 0.6rem; border-radius:999px; font-weight:600;">OFFLINE</span>
+        </div>
+
+        <!-- Webhook URL Input -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" for="lineWebhookUrlInput" style="font-weight:700;">
+            Google Apps Script Web App URL (Webhook Endpoint) *
+          </label>
+          <input type="url" id="lineWebhookUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" style="font-family:monospace; font-size:0.85rem;">
+          <p style="font-size:0.78rem; color:#64748b; margin-top:0.35rem; line-height:1.4;">
+            💡 นำ URL ที่ได้จากการ Deploy เป็น Web App (Who has access: Anyone) ใน Google Apps Script มาวางที่นี่
+          </p>
+        </div>
+
+        <!-- Action Buttons Row -->
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+          <button type="button" class="btn-green-submit" id="btnSaveLineWebhook" style="padding:0.5rem 1.25rem; font-weight:600;">
+            💾 บันทึกการเชื่อมต่อ
+          </button>
+          <button type="button" class="btn-action-outline" id="btnTestLineNotify" style="border-color:#38bdf8; color:#0284c7; font-weight:600; background:#f0f9ff;">
+            🧪 ทดสอบส่งแจ้งเตือนเข้า LINE ตอนนี้
+          </button>
+          <button type="button" class="btn-action-outline" id="btnCopyGasScript" style="border-color:#d4af37; color:#b45309; font-weight:600; background:#fefce8;">
+            📋 คัดลอกโค้ด Google Apps Script
+          </button>
+        </div>
+
+        <!-- Quick Setup Guide Accordion/Box -->
+        <div style="background:#f1f5f9; border-radius:10px; padding:1.1rem; border:1px solid #cbd5e1;">
+          <h4 style="font-size:0.88rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+            📖 สรุปวิธีติดตั้งง่ายๆ ใน 3 นาที:
+          </h4>
+          <ol style="font-size:0.82rem; color:#475569; padding-left:1.2rem; line-height:1.6; margin:0;">
+            <li>เปิด <a href="https://sheets.new" target="_blank" style="color:#0284c7; font-weight:600; text-decoration:underline;">Google Sheets</a> ใหม่ -> ไปที่ <strong>ส่วนขยาย (Extensions)</strong> -> <strong>Apps Script</strong></li>
+            <li>กดปุ่ม <strong>"📋 คัดลอกโค้ด Google Apps Script"</strong> ด้านบน แล้วนำไปวางทับโค้ดเดิมทั้งหมด</li>
+            <li>ใส่ <strong>LINE Channel Access Token</strong> ในบรรทัดที่ 18 แล้วกด Save 💾</li>
+            <li>กด <strong>Deploy (การทำให้ใช้งานได้)</strong> -> <strong>New deployment</strong> -> เลือกประเภท <strong>Web app</strong> -> ตั้งค่า Who has access เป็น <strong>Anyone (ทุกคน)</strong></li>
+            <li>คัดลอก <strong>Web App URL</strong> นำมาวางในช่องด้านบน แล้วกด <strong>"บันทึกการเชื่อมต่อ"</strong> พร้อมทดสอบได้ทันที!</li>
+          </ol>
+          <p style="font-size:0.78rem; color:#64748b; margin:0.6rem 0 0 0;">
+            🔒 <strong>ความเป็นส่วนตัว:</strong> ลูกค้าแต่ละท่านจะเห็นแชทคุยกับบริษัทคนเดียว 100% ไม่เห็นแชทของลูกค้าอื่น ส่วนแอดมินหลายคนสามารถเข้าตอบพร้อมกันได้ผ่านแอป LINE Official Account
+          </p>
+        </div>
+
+        <div class="modal-form-actions" style="margin-top:1.25rem;">
+          <button type="button" class="btn-action-outline btn-modal-cancel" id="btnCloseLineNotifyFooter">ปิดหน้าต่าง</button>
+        </div>
+      </div>
     </div>
   </div>
 

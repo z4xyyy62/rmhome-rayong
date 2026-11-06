@@ -513,6 +513,7 @@ function initDashboard() {
   initTabAdminUsers();
   initTabLeads();
   initSiteTrackerAdmin();
+  initLineNotifyModal();
 }
 
 function renderMetrics() {
@@ -3553,7 +3554,14 @@ function getStoredConstructionProjectsAdmin() {
     const raw = localStorage.getItem('rm_construction_projects');
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(p => {
+          if (!p) return false;
+          const cNo = (p.contractNo || '').trim();
+          const cName = (p.customerName || '').trim();
+          return cNo.length > 0 || cName.length > 0;
+        });
+      }
     }
     localStorage.setItem('rm_construction_projects', JSON.stringify(DEFAULT_CONSTRUCTION_PROJECTS));
     return DEFAULT_CONSTRUCTION_PROJECTS;
@@ -3564,9 +3572,15 @@ function getStoredConstructionProjectsAdmin() {
 
 function saveConstructionProjectsAdmin(projects) {
   try {
-    localStorage.setItem('rm_construction_projects', JSON.stringify(projects));
+    const cleanProjects = (projects || []).filter(p => {
+      if (!p) return false;
+      const cNo = (p.contractNo || '').trim();
+      const cName = (p.customerName || '').trim();
+      return cNo.length > 0 || cName.length > 0;
+    });
+    localStorage.setItem('rm_construction_projects', JSON.stringify(cleanProjects));
     if (window.CloudSync && typeof window.CloudSync.saveItem === 'function') {
-      window.CloudSync.saveItem('rm_construction_projects', projects).catch(e => console.warn(e));
+      window.CloudSync.saveItem('rm_construction_projects', cleanProjects).catch(e => console.warn(e));
     }
   } catch (e) {
     console.error('Failed to save construction projects:', e);
@@ -4012,4 +4026,163 @@ function saveProjectForm() {
   modal.classList.remove('open');
   renderSiteTrackerAdmin();
   alert('✅ บันทึกข้อมูลโครงการก่อสร้างเรียบร้อยแล้ว! ลูกค้าสามารถนำรหัสสัญญาหรือเบอร์โทรไปตรวจเช็กความคืบหน้าที่หน้าเว็บได้ทันที');
+}
+
+/* ==========================================================================
+   LINE Notification & Google Apps Script Webhook Manager
+   ========================================================================== */
+function initLineNotifyModal() {
+  const modal = document.getElementById('lineNotifyModal');
+  const btnHeader = document.getElementById('btnLineNotifyModal');
+  const btnLeads = document.getElementById('btnOpenLineSettingsInLeads');
+  const closeBtn = document.getElementById('modalCloseLineNotifyBtn');
+  const footerCloseBtn = document.getElementById('btnCloseLineNotifyFooter');
+  const inputUrl = document.getElementById('lineWebhookUrlInput');
+  const btnSave = document.getElementById('btnSaveLineWebhook');
+  const btnTest = document.getElementById('btnTestLineNotify');
+  const btnCopy = document.getElementById('btnCopyGasScript');
+
+  if (!modal) return;
+
+  function updateStatusUI() {
+    const savedUrl = (localStorage.getItem('rm_line_webhook_url') || '').trim();
+    const ind = document.getElementById('lineStatusIndicator');
+    const txt = document.getElementById('lineStatusText');
+    const badge = document.getElementById('lineStatusBadge');
+
+    if (inputUrl && !inputUrl.value && savedUrl) {
+      inputUrl.value = savedUrl;
+    }
+
+    if (savedUrl && savedUrl.startsWith('http')) {
+      if (ind) ind.style.background = '#22c55e';
+      if (txt) {
+        txt.textContent = '🟢 เชื่อมต่อ Webhook สำเร็จแล้ว (พร้อมใช้งาน)';
+        txt.style.color = '#15803d';
+      }
+      if (badge) {
+        badge.textContent = 'CONNECTED';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+      }
+    } else {
+      if (ind) ind.style.background = '#94a3b8';
+      if (txt) {
+        txt.textContent = '⚪ ยังไม่ได้เชื่อมต่อ Webhook';
+        txt.style.color = '#64748b';
+      }
+      if (badge) {
+        badge.textContent = 'OFFLINE';
+        badge.style.background = '#e2e8f0';
+        badge.style.color = '#475569';
+      }
+    }
+  }
+
+  function openModal() {
+    updateStatusUI();
+    const currentUrl = localStorage.getItem('rm_line_webhook_url') || '';
+    if (inputUrl) inputUrl.value = currentUrl;
+    modal.classList.add('open');
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+  }
+
+  if (btnHeader) btnHeader.addEventListener('click', openModal);
+  if (btnLeads) btnLeads.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (footerCloseBtn) footerCloseBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      const url = (inputUrl ? inputUrl.value : '').trim();
+      if (!url) {
+        if (confirm('คุณต้องการลบการเชื่อมต่อ LINE Webhook ใช่หรือไม่?')) {
+          localStorage.removeItem('rm_line_webhook_url');
+          if (window.CloudSync && typeof window.CloudSync.saveItem === 'function') {
+            window.CloudSync.saveItem('rm_line_webhook_url', '');
+          }
+          updateStatusUI();
+          alert('ลบการเชื่อมต่อ Webhook เรียบร้อยแล้ว');
+        }
+        return;
+      }
+
+      if (!url.startsWith('http')) {
+        alert('⚠️ กรุณากรอก Webhook URL ให้ถูกต้อง (ต้องขึ้นต้นด้วย https://)');
+        return;
+      }
+
+      localStorage.setItem('rm_line_webhook_url', url);
+      if (window.CloudSync && typeof window.CloudSync.saveItem === 'function') {
+        window.CloudSync.saveItem('rm_line_webhook_url', url);
+      }
+
+      updateStatusUI();
+      alert('✅ บันทึก Webhook URL สำเร็จแล้ว! ระบบจะส่งแจ้งเตือนเข้า LINE ทันทีเมื่อลูกค้าส่งแบบฟอร์มหน้าเว็บ');
+    });
+  }
+
+  if (btnTest) {
+    btnTest.addEventListener('click', () => {
+      const url = (inputUrl ? inputUrl.value : '').trim() || localStorage.getItem('rm_line_webhook_url');
+      if (!url || !url.startsWith('http')) {
+        alert('⚠️ กรุณากรอก Webhook URL และกดบันทึกก่อนทำการทดสอบ');
+        if (inputUrl) inputUrl.focus();
+        return;
+      }
+
+      const testPayload = {
+        name: 'คุณทดสอบ ระบบไลน์',
+        phone: '089-999-9999',
+        location: 'อ.เมืองระยอง',
+        budget: '3.5 ล้านบาท',
+        message: 'ทดสอบส่งข้อความแจ้งเตือนจากหลังบ้าน RM HOME',
+        time: new Date().toLocaleString('th-TH'),
+        isTest: true
+      };
+
+      const originalText = btnTest.textContent;
+      btnTest.textContent = '⏳ กำลังส่งทดสอบ...';
+      btnTest.disabled = true;
+
+      fetch(url.trim(), {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(testPayload)
+      }).then(() => {
+        btnTest.textContent = originalText;
+        btnTest.disabled = false;
+        alert('🚀 ส่งข้อความทดสอบสำเร็จแล้ว!\n\nกรุณาเปิดแอป LINE หรือเช็กในกลุ่มแอดมิน เพื่อตรวจสอบว่า Flex Message เด้งแจ้งเตือนเรียบร้อยดีหรือไม่');
+      }).catch(err => {
+        btnTest.textContent = originalText;
+        btnTest.disabled = false;
+        alert('⚠️ เกิดข้อผิดพลาดในการส่ง: ' + err.message);
+      });
+    });
+  }
+
+  if (btnCopy) {
+    btnCopy.addEventListener('click', async () => {
+      try {
+        const res = await fetch('google-apps-script-line-bot.js');
+        const code = await res.text();
+        await navigator.clipboard.writeText(code);
+        const originalText = btnCopy.textContent;
+        btnCopy.textContent = '✅ คัดลอกโค้ดสำเร็จ!';
+        setTimeout(() => {
+          btnCopy.textContent = originalText;
+        }, 3000);
+      } catch (err) {
+        alert('กรุณาคัดลอกโค้ดจากไฟล์ google-apps-script-line-bot.js ในโปรเจกต์');
+      }
+    });
+  }
 }

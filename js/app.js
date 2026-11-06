@@ -1270,14 +1270,18 @@ function initContactForm() {
     submitBtn.disabled = true;
 
     // Save lead to localStorage for Admin Report
-    saveLeadToLocalStorage({
+    const leadData = {
       name,
       phone,
       location,
       budget: budget || 'ตามประเมินหน้างาน',
       message: message || 'สนใจสร้างบ้านกับ RMHome',
       status: 'new'
-    });
+    };
+    saveLeadToLocalStorage(leadData);
+
+    // Send LINE Webhook notification if configured
+    sendLineWebhookNotification(leadData);
 
     // Simulate instant secure processing
     setTimeout(() => {
@@ -1323,6 +1327,40 @@ function saveLeadToLocalStorage(newLead) {
     }
   } catch (err) {
     console.error('Error saving lead:', err);
+  }
+}
+
+function sendLineWebhookNotification(lead) {
+  try {
+    const webhookUrl = localStorage.getItem('rm_line_webhook_url');
+    if (!webhookUrl || !webhookUrl.trim() || !webhookUrl.trim().startsWith('http')) {
+      return; // Webhook not configured
+    }
+
+    const payload = {
+      name: lead.name || 'ไม่ระบุชื่อ',
+      phone: lead.phone || 'ไม่ระบุเบอร์',
+      location: lead.location || 'ไม่ระบุทำเล',
+      budget: lead.budget || 'ตามประเมินหน้างาน',
+      message: lead.message || 'สนใจสร้างบ้านกับ RMHome',
+      time: lead.time || formatLeadDateTime(new Date()),
+      isTest: lead.isTest === true
+    };
+
+    fetch(webhookUrl.trim(), {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      console.log('✅ LINE Webhook dispatched successfully');
+    }).catch(err => {
+      console.warn('⚠️ LINE Webhook error:', err);
+    });
+  } catch (e) {
+    console.warn('LINE Notification error:', e);
   }
 }
 
@@ -3076,7 +3114,14 @@ function getStoredConstructionProjects() {
     const raw = localStorage.getItem('rm_construction_projects');
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.filter(p => {
+          if (!p) return false;
+          const cNo = (p.contractNo || '').trim();
+          const cName = (p.customerName || '').trim();
+          return cNo.length > 0 || cName.length > 0;
+        });
+      }
     }
     return DEFAULT_CONSTRUCTION_PROJECTS;
   } catch (e) {
@@ -3372,64 +3417,101 @@ function initSiteTracker() {
     });
   }
 
-  const projects = getStoredConstructionProjects();
-
   // Dynamic synchronized pills with dashboard
-  if (pillsWrap) {
-    const validProjects = (projects || []).filter(p => p && ((p.contractNo && p.contractNo.trim()) || (p.customerName && p.customerName.trim())));
+  function updateTrackerPills() {
+    if (!pillsWrap) return;
+    const allProjects = getStoredConstructionProjects() || [];
+    const validProjects = allProjects.filter(p => {
+      if (!p) return false;
+      const cNo = (p.contractNo || '').trim();
+      const cName = (p.customerName || '').trim();
+      return cNo.length > 0 || cName.length > 0;
+    });
+
     if (validProjects.length === 0) {
       // If deleted all or no valid projects, do not show pills row
       pillsWrap.style.display = 'none';
       pillsWrap.innerHTML = '';
-    } else {
-      pillsWrap.style.display = 'flex';
-      let pillsHtml = `<span>ดูโครงการของคุณ:</span>`;
-
-      // Show up to 3 project pills
-      const displayCount = Math.min(3, validProjects.length);
-      for (let i = 0; i < displayCount; i++) {
-        const p = validProjects[i];
-        const cNo = (p.contractNo || '').trim();
-        const cName = (p.customerName || '').trim();
-        let labelText = '';
-        if (cNo && cName) {
-          labelText = `${cNo} (${cName})`;
-        } else if (cNo) {
-          labelText = cNo;
-        } else {
-          labelText = cName;
-        }
-        const searchKey = cNo || p.phone || cName;
-        pillsHtml += `
-          <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(searchKey)}">
-            🏡 ${escapeHtml(labelText)}
-          </button>
-        `;
-      }
-
-      // If more than 3 projects, show +1-99 badge
-      if (validProjects.length > 3) {
-        const extraCount = validProjects.length - 3;
-        pillsHtml += `
-          <span class="demo-pill-btn" style="background:rgba(212, 175, 55, 0.25); color:var(--gold-light); font-weight:700; cursor:default; border-color:var(--gold);" title="ยังมีอีก ${extraCount} โครงการ">+${extraCount}</span>
-        `;
-      }
-
-      pillsWrap.innerHTML = pillsHtml;
-
-      // Attach click handlers to dynamic pills
-      pillsWrap.querySelectorAll('.demo-pill-btn[data-contract]').forEach(pill => {
-        pill.addEventListener('click', () => {
-          const contract = pill.getAttribute('data-contract');
-          if (contract) {
-            input.value = contract;
-            doSearch(contract);
-          }
-        });
-      });
+      return;
     }
+
+    pillsWrap.style.display = 'flex';
+    let pillsHtml = `<span>ดูโครงการของคุณ:</span>`;
+    let renderedCount = 0;
+
+    // Show up to 3 valid project pills
+    for (let i = 0; i < validProjects.length && renderedCount < 3; i++) {
+      const p = validProjects[i];
+      const cNo = (p.contractNo || '').trim();
+      const cName = (p.customerName || '').trim();
+      let labelText = '';
+      if (cNo && cName) {
+        labelText = `${cNo} (${cName})`;
+      } else if (cNo) {
+        labelText = cNo;
+      } else if (cName) {
+        labelText = cName;
+      }
+
+      // STRICT GUARD: If labelText is empty, never render a blank pill!
+      if (!labelText.trim()) continue;
+
+      const searchKey = cNo || (p.phone || '').trim() || cName;
+      pillsHtml += `
+        <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(searchKey)}">
+          🏡 ${escapeHtml(labelText)}
+        </button>
+      `;
+      renderedCount++;
+    }
+
+    // If more valid projects exist than displayed, show +N badge
+    if (validProjects.length > renderedCount) {
+      const extraCount = validProjects.length - renderedCount;
+      pillsHtml += `
+        <span class="demo-pill-btn" style="background:rgba(212, 175, 55, 0.25); color:var(--gold-light); font-weight:700; cursor:default; border-color:var(--gold);" title="ยังมีอีก ${extraCount} โครงการ">+${extraCount}</span>
+      `;
+    }
+
+    pillsWrap.innerHTML = pillsHtml;
+
+    // Attach click handlers to dynamic pills
+    pillsWrap.querySelectorAll('.demo-pill-btn[data-contract]').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const contract = pill.getAttribute('data-contract');
+        if (contract && input) {
+          input.value = contract;
+          doSearch(contract);
+        }
+      });
+    });
   }
 
+  // Initial render of tracker pills
+  updateTrackerPills();
+
+  // Real-time synchronization across browser tabs (when admin modifies projects)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'rm_construction_projects') {
+      updateTrackerPills();
+      const current = getStoredConstructionProjects();
+      if (current && current.length > 0) {
+        renderProjectCard(current[0]);
+      } else {
+        container.innerHTML = `
+          <div class="tracker-result-card" style="text-align:center; padding:2.5rem 1.5rem;">
+            <div style="font-size:2rem; margin-bottom:0.6rem;">🏗️</div>
+            <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการของคุณ</h4>
+            <p style="color:var(--text-dim); font-size:0.85rem; max-width:480px; margin:0 auto;">
+              กรอกเลขที่สัญญาหรือเบอร์โทรศัพท์ เพื่อตรวจเช็กความคืบหน้างานก่อสร้างแบบเรียลไทม์
+            </p>
+          </div>
+        `;
+      }
+    }
+  });
+
+  const projects = getStoredConstructionProjects();
   if (projects && projects.length > 0) {
     renderProjectCard(projects[0]);
   } else {
