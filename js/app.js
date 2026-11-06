@@ -3037,11 +3037,6 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
       { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
     ],
-    photos: [
-      { url: 'assets/images/house-nordic.jpg', title: 'ตรวจระดับโครงหลังคาเหล็กกัลวาไนซ์ & งานก่อผนัง', date: '5 พ.ย. 2026' },
-      { url: 'assets/images/luxury-interior.jpg', title: 'เตรียมพื้นที่งานระบบท่อประปาและจุดต่อสายไฟฝังผนัง', date: '3 พ.ย. 2026' },
-      { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าตรวจเช็กแนวระนาบดิ่งฉากและ Slump คอนกรีต', date: '1 พ.ย. 2026' }
-    ],
     engineerLog: {
       updateDate: '5 พ.ย. 2026',
       note: 'ทำการเทคอนกรีตคานรับหลังคาและตรวจวัดระดับ Slump Test ได้มาตรฐาน 12.5 ซม. ขณะนี้ทีมช่างกำลังขึ้นโครงหลังคากัลวาไนซ์กันสนิม สภาพอากาศปลอดโปร่ง งานเดินหน้าได้ไวกว่ากำหนดการ 5 วัน'
@@ -3068,10 +3063,6 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
       { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนัง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา & สระว่ายน้ำ', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 5, title: 'งวดที่ 5: งานเก็บสี ทดสอบระบบสระ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
-    ],
-    photos: [
-      { url: 'assets/images/house-tropical.jpg', title: 'งานเทพื้นและผูกเหล็กเสริมโครงสร้างฐานราก', date: '4 พ.ย. 2026' },
-      { url: 'assets/images/quality-engineer.jpg', title: 'โฟร์แมนตรวจสอบระยะ Cover คอนกรีตและลูกปูน', date: '2 พ.ย. 2026' }
     ],
     engineerLog: {
       updateDate: '4 พ.ย. 2026',
@@ -3205,17 +3196,6 @@ function initSiteTracker() {
       `;
     }).join('');
 
-    const hasPhotos = Array.isArray(proj.photos) && proj.photos.length > 0;
-    const photosHtml = hasPhotos ? proj.photos.map(p => `
-      <div class="tracker-photo-card">
-        <img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.title || 'ภาพหน้างาน')}" class="tracker-photo-img" loading="lazy">
-        <div class="tracker-photo-caption">
-          <h5>${escapeHtml(p.title || 'ภาพความคืบหน้าหน้างาน')}</h5>
-          <span>📅 ${escapeHtml(p.date || '')}</span>
-        </div>
-      </div>
-    `).join('') : '';
-
     const engineerNote = proj.engineerLog && proj.engineerLog.note ? proj.engineerLog.note : 'งานดำเนินตามมาตรฐานวิศวกรรม กว. โครงสร้างแข็งแรง ตรวจวัดระดับและควบคุมงานตามแบบแปลนทุกประการ';
     const engineerDate = proj.engineerLog && proj.engineerLog.updateDate ? proj.engineerLog.updateDate : (proj.startDate || '');
 
@@ -3335,19 +3315,6 @@ function initSiteTracker() {
           </div>
         </div>
 
-        <!-- Photos Section: ONLY SHOWN IF PHOTOS EXIST ("รูปไม่ได้ใส่ก็ได้") -->
-        ${hasPhotos ? `
-          <div class="tracker-photos-section">
-            <div class="tracker-section-heading">
-              <span class="heading-gold-line"></span>
-              <span>📸 ภาพถ่ายอัปเดตหน้างานจริงล่าสุด (Site Progress Photos)</span>
-            </div>
-            <div class="tracker-photos-grid">
-              ${photosHtml}
-            </div>
-          </div>
-        ` : ''}
-
         <!-- Certified Engineering Daily Log Memo -->
         <div class="engineer-log-card">
           <div class="engineer-log-seal-box">
@@ -3372,7 +3339,7 @@ function initSiteTracker() {
         <div class="tracker-action-buttons">
           <a href="https://line.me" target="_blank" rel="noopener noreferrer" class="btn-tracker-line">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 2.97 1.74 5.61 4.45 7.15-.2.74-.72 2.7-1.04 3.91-.08.31.18.57.48.42 1.9-1.02 4.41-2.48 5.11-2.92.33.04.66.07 1 .07 5.52 0 10-3.92 10-8.75S17.52 2 12 2z"/></svg>
-            <span>สอบถาม / ขอภาพเพิ่มเติมผ่าน LINE Official</span>
+            <span>สอบถามข้อมูลโครงการผ่าน LINE Official</span>
           </a>
           <a href="tel:${escapeHtml(proj.engineerPhone || '0912998797')}" class="btn-tracker-direct-call">
             <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>

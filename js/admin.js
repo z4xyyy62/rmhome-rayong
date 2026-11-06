@@ -3514,11 +3514,6 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
       { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา ฝ้าเพดาน & ปูกระเบื้อง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 5, title: 'งวดที่ 5: งานสี สุขภัณฑ์ บิลต์อิน ตรวจรับ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
     ],
-    photos: [
-      { url: 'assets/images/house-nordic.jpg', title: 'ตรวจระดับโครงหลังคาเหล็กกัลวาไนซ์ & งานก่อผนัง', date: '5 พ.ย. 2026' },
-      { url: 'assets/images/luxury-interior.jpg', title: 'เตรียมพื้นที่งานระบบท่อประปาและจุดต่อสายไฟฝังผนัง', date: '3 พ.ย. 2026' },
-      { url: 'assets/images/quality-engineer.jpg', title: 'วิศวกรเข้าตรวจเช็กแนวระนาบดิ่งฉากและ Slump คอนกรีต', date: '1 พ.ย. 2026' }
-    ],
     engineerLog: {
       updateDate: '5 พ.ย. 2026',
       note: 'ทำการเทคอนกรีตคานรับหลังคาและตรวจวัดระดับ Slump Test ได้มาตรฐาน 12.5 ซม. ขณะนี้ทีมช่างกำลังขึ้นโครงหลังคากัลวาไนซ์กันสนิม สภาพอากาศปลอดโปร่ง งานเดินหน้าได้ไวกว่ากำหนดการ 5 วัน'
@@ -3545,10 +3540,6 @@ const DEFAULT_CONSTRUCTION_PROJECTS = [
       { step: 3, title: 'งวดที่ 3: โครงสร้างหลังคา และก่อผนัง', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 4, title: 'งวดที่ 4: งานระบบไฟฟ้า ประปา & สระว่ายน้ำ', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' },
       { step: 5, title: 'งวดที่ 5: งานเก็บสี ทดสอบระบบสระ & ส่งมอบบ้าน', progress: 0, status: 'pending', date: 'รอเริ่มดำเนินงาน' }
-    ],
-    photos: [
-      { url: 'assets/images/house-tropical.jpg', title: 'งานเทพื้นและผูกเหล็กเสริมโครงสร้างฐานราก', date: '4 พ.ย. 2026' },
-      { url: 'assets/images/quality-engineer.jpg', title: 'โฟร์แมนตรวจสอบระยะ Cover คอนกรีตและลูกปูน', date: '2 พ.ย. 2026' }
     ],
     engineerLog: {
       updateDate: '4 พ.ย. 2026',
