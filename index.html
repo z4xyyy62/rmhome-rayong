@@ -907,7 +907,7 @@
         🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ
       </h2>
       <p style="text-align:center; color:var(--text-dim); max-width:680px; margin:0 auto 2.25rem auto; font-size:0.95rem; line-height:1.6;">
-        สำหรับลูกค้าคนสำคัญของ RMHome ติดตามทุกขั้นตอนการก่อสร้างแบบเรียลไทม์ ตรวจสอบสถานะ 5 งวดงานก่อสร้าง เปอร์เซ็นต์ความคืบหน้า และบันทึกจากวิศวกรผู้ควบคุมโครงการได้ทุกที่ทุกเวลา
+        สำหรับลูกค้าคนสำคัญของ RMHome กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์ เพื่อเข้าสู่ระบบตรวจสอบความคืบหน้า 5 งวดงานก่อสร้างของคุณแบบเรียลไทม์
       </p>
 
       <!-- Search Card -->
@@ -917,17 +917,13 @@
             <svg viewBox="0 0 24 24">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
             </svg>
-            <input type="text" class="tracker-input" id="trackerContractInput" placeholder="กรอกเลขที่สัญญา (เช่น RM-2026-001) หรือ เบอร์โทรศัพท์เจ้าของบ้าน" autocomplete="off">
+            <input type="text" class="tracker-input" id="trackerContractInput" placeholder="กรอกเลขที่สัญญา (เช่น RM-2026-001) หรือ เบอร์โทรศัพท์ของท่าน" autocomplete="off">
           </div>
           <button type="button" class="tracker-search-btn" id="btnTrackSearch">
             <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             ค้นหาความคืบหน้า
           </button>
         </form>
-
-        <div class="tracker-demo-pills" id="trackerDemoPillsWrap">
-          <!-- Dynamically generated and synchronized with dashboard by js/app.js -->
-        </div>
       </div>
 
       <!-- Result Container (Injected by JS) -->
@@ -1626,7 +1622,7 @@
 
   <!-- Javascript -->
   <script src="js/cloud-sync.js"></script>
-  <script src="js/app.js?v=20261109update"></script>
+  <script src="js/app.js?v=20261109private"></script>
 </body>
 
 </html>

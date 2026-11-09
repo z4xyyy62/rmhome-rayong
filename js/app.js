@@ -3396,112 +3396,53 @@ function initSiteTracker() {
     });
   }
 
-  // Dynamic synchronized pills with dashboard
-  function updateTrackerPills() {
-    if (!pillsWrap) return;
-    const allProjects = getStoredConstructionProjects() || [];
-    const validProjects = allProjects.filter(p => {
-      if (!p) return false;
-      const cNo = (p.contractNo || '').trim();
-      const cName = (p.customerName || '').trim();
-      return cNo.length > 0 || cName.length > 0;
-    });
+  // Render private luxury prompt by default
+  function renderEmptyPrompt() {
+    container.innerHTML = `
+      <div class="tracker-result-card tracker-prompt-card" style="text-align:center; padding:3.5rem 1.5rem; background:linear-gradient(135deg, rgba(14,61,41,0.45) 0%, rgba(6,36,23,0.7) 100%); border:1px solid rgba(212,175,55,0.28); border-radius:18px; box-shadow:0 12px 36px rgba(0,0,0,0.35);">
+        <div style="width:72px; height:72px; margin:0 auto 1.25rem auto; border-radius:50%; background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.35); display:flex; align-items:center; justify-content:center; font-size:2rem; box-shadow:0 0 24px rgba(212,175,55,0.2);">
+          🔒
+        </div>
+        <h3 style="font-size:1.35rem; font-weight:700; color:#ffffff; margin-bottom:0.6rem; letter-spacing:-0.01em;">
+          ระบบตรวจเช็กความคืบหน้าเฉพาะบุคคล
+        </h3>
+        <p style="color:var(--text-dim, #94a3b8); font-size:0.92rem; max-width:540px; margin:0 auto 1.5rem auto; line-height:1.65;">
+          เพื่อรักษาความเป็นส่วนตัวและความปลอดภัยของข้อมูลลูกค้าทุกท่าน กรุณากรอก <strong>เลขที่สัญญา</strong> หรือ <strong>เบอร์โทรศัพท์</strong> ในช่องค้นหาด้านบน เพื่อเข้าดูรายงานความคืบหน้าบ้านของคุณ
+        </p>
+        <div style="display:inline-flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); padding:0.55rem 1.25rem; border-radius:30px; font-size:0.82rem; color:var(--color-gold-300, #d4af37);">
+          <span>💡 ตัวอย่าง: เบอร์โทร 08x-xxx-xxxx หรือเลขที่สัญญา เช่น RM-2026-001</span>
+        </div>
+      </div>
+    `;
+  }
 
-    if (validProjects.length === 0) {
-      // If deleted all or no valid projects, do not show pills row
-      pillsWrap.style.display = 'none';
-      pillsWrap.innerHTML = '';
-      return;
-    }
-
-    pillsWrap.style.display = 'flex';
-    let pillsHtml = `<span>ดูโครงการของคุณ:</span>`;
-    let renderedCount = 0;
-
-    // Show up to 3 valid project pills
-    for (let i = 0; i < validProjects.length && renderedCount < 3; i++) {
-      const p = validProjects[i];
-      const cNo = (p.contractNo || '').trim();
-      const cName = (p.customerName || '').trim();
-      let labelText = '';
-      if (cNo && cName) {
-        labelText = `${cNo} (${cName})`;
-      } else if (cNo) {
-        labelText = cNo;
-      } else if (cName) {
-        labelText = cName;
+  // Clear search returns to private prompt
+  if (input) {
+    input.addEventListener('input', () => {
+      if (!input.value.trim()) {
+        renderEmptyPrompt();
       }
-
-      // STRICT GUARD: If labelText is empty, never render a blank pill!
-      if (!labelText.trim()) continue;
-
-      const searchKey = cNo || (p.phone || '').trim() || cName;
-      pillsHtml += `
-        <button type="button" class="demo-pill-btn" data-contract="${escapeHtml(searchKey)}">
-          🏡 ${escapeHtml(labelText)}
-        </button>
-      `;
-      renderedCount++;
-    }
-
-    // If more valid projects exist than displayed, show +N badge
-    if (validProjects.length > renderedCount) {
-      const extraCount = validProjects.length - renderedCount;
-      pillsHtml += `
-        <span class="demo-pill-btn" style="background:rgba(212, 175, 55, 0.25); color:var(--gold-light); font-weight:700; cursor:default; border-color:var(--gold);" title="ยังมีอีก ${extraCount} โครงการ">+${extraCount}</span>
-      `;
-    }
-
-    pillsWrap.innerHTML = pillsHtml;
-
-    // Attach click handlers to dynamic pills
-    pillsWrap.querySelectorAll('.demo-pill-btn[data-contract]').forEach(pill => {
-      pill.addEventListener('click', () => {
-        const contract = pill.getAttribute('data-contract');
-        if (contract && input) {
-          input.value = contract;
-          doSearch(contract);
-        }
-      });
     });
   }
 
-  // Initial render of tracker pills
-  updateTrackerPills();
+  // Hide demo pills completely for privacy
+  if (pillsWrap) {
+    pillsWrap.style.display = 'none';
+    pillsWrap.innerHTML = '';
+  }
 
-  // Real-time synchronization across browser tabs (when admin modifies projects)
+  // Real-time synchronization across browser tabs
   window.addEventListener('storage', (e) => {
     if (e.key === 'rm_construction_projects') {
-      updateTrackerPills();
-      const current = getStoredConstructionProjects();
-      if (current && current.length > 0) {
-        renderProjectCard(current[0]);
+      const currentVal = (input.value || '').trim();
+      if (currentVal) {
+        doSearch(currentVal);
       } else {
-        container.innerHTML = `
-          <div class="tracker-result-card" style="text-align:center; padding:2.5rem 1.5rem;">
-            <div style="font-size:2rem; margin-bottom:0.6rem;">🏗️</div>
-            <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการของคุณ</h4>
-            <p style="color:var(--text-dim); font-size:0.85rem; max-width:480px; margin:0 auto;">
-              กรอกเลขที่สัญญาหรือเบอร์โทรศัพท์ เพื่อตรวจเช็กความคืบหน้างานก่อสร้างแบบเรียลไทม์
-            </p>
-          </div>
-        `;
+        renderEmptyPrompt();
       }
     }
   });
 
-  const projects = getStoredConstructionProjects();
-  if (projects && projects.length > 0) {
-    renderProjectCard(projects[0]);
-  } else {
-    container.innerHTML = `
-      <div class="tracker-result-card" style="text-align:center; padding:2.5rem 1.5rem;">
-        <div style="font-size:2rem; margin-bottom:0.6rem;">🏗️</div>
-        <h4 style="font-size:1.1rem; color:#fff; margin-bottom:0.4rem;">พร้อมติดตามโครงการของคุณ</h4>
-        <p style="color:var(--text-dim); font-size:0.85rem; max-width:480px; margin:0 auto;">
-          กรอกเลขที่สัญญาหรือเบอร์โทรศัพท์ เพื่อตรวจเช็กความคืบหน้างานก่อสร้างแบบเรียลไทม์
-        </p>
-      </div>
-    `;
-  }
+  // Display private empty prompt on initial load
+  renderEmptyPrompt();
 }
