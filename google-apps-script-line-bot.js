@@ -308,3 +308,4 @@ function sendLineNotification(lead) {
     Logger.log('LINE Error: ' + e.toString());
   }
 }
+

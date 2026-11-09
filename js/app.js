@@ -3241,8 +3241,6 @@ function initSiteTracker() {
       `;
     }).join('');
 
-    const engineerNote = proj.engineerLog && proj.engineerLog.note ? proj.engineerLog.note : 'งานดำเนินตามมาตรฐานวิศวกรรม กว. โครงสร้างแข็งแรง ตรวจวัดระดับและควบคุมงานตามแบบแปลนทุกประการ';
-    const engineerDate = proj.engineerLog && proj.engineerLog.updateDate ? proj.engineerLog.updateDate : (proj.startDate || '');
 
     container.innerHTML = `
       <div class="tracker-result-card">
@@ -3360,25 +3358,6 @@ function initSiteTracker() {
           </div>
         </div>
 
-        <!-- Certified Engineering Daily Log Memo -->
-        <div class="engineer-log-card">
-          <div class="engineer-log-seal-box">
-            <div class="engineer-seal-circle">🏛️</div>
-            <span class="engineer-seal-tag">วศ. ควบคุมงาน</span>
-          </div>
-          <div class="engineer-log-body">
-            <div class="engineer-log-meta">
-              <div>
-                <h4 class="engineer-log-headline">บันทึกรายงานหน้างานโดยวิศวกรผู้ควบคุมโครงการ</h4>
-                <div class="engineer-sub-name">${escapeHtml(proj.engineerName || 'วศ. สิทธิชัย วัฒนา')} • วิศวกรโยธาวิชาชีพ ${proj.engineerLicense ? `(${escapeHtml(proj.engineerLicense)})` : ''}</div>
-              </div>
-              ${engineerDate ? `<span class="engineer-log-date">📅 รายงานเมื่อ: ${escapeHtml(engineerDate)}</span>` : ''}
-            </div>
-            <div class="engineer-quote-box">
-              <p>${escapeHtml(engineerNote)}</p>
-            </div>
-          </div>
-        </div>
 
         <!-- Direct Instant Actions -->
         <div class="tracker-action-buttons">
