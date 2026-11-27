@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMHome Rayong (สร้างบ้านระยอง)
  * Interactive Application Scripts
  */
@@ -2287,6 +2287,20 @@ function initDynamicCMSContent() {
     renderWorkflow();
     renderHouseGrid();
   });
+
+  // BroadcastChannel: รับ real-time update จากแดชบอร์ด (ทำงานข้ามแท็บทันทีไม่ต้องรอ Firebase)
+  if (window.CloudSync && typeof window.CloudSync.onUpdate === "function") {
+    window.CloudSync.onUpdate(function (data) {
+      const k = data && data.key;
+      if (!k || k === "rm_site_info" || k === "rm_last_sync_timestamp") renderSiteInfo();
+      if (!k || k === "rm_reviews" || k === "rm_last_sync_timestamp") renderReviews();
+      if (!k || k === "rm_services" || k === "rm_last_sync_timestamp") renderServices();
+      if (!k || k === "rm_standards" || k === "rm_last_sync_timestamp") renderStandards();
+      if (!k || k === "rm_why_us" || k === "rm_last_sync_timestamp") renderTikTokFeed();
+      if (!k || k === "rm_workflow" || k === "rm_last_sync_timestamp") renderWorkflow();
+      if (!k || k === "rm_portfolio_items" || k === "rm_last_sync_timestamp") renderHouseGrid();
+    });
+  }
 }
 
 function createReviewCardNode(rev) {
@@ -2895,10 +2909,9 @@ function renderWorkflow() {
 
 function renderSiteInfo() {
   try {
+    const SITE_DEFAULTS = { brandName:'RMHOME', brandSub:'RAYONG', stat1Num:'10+', stat1Label:'ปีประสบการณ์', stat2Num:'200+', stat2Label:'หลังส่งมอบสมบูรณ์', stat3Num:'0%', stat3Label:'สถิติงาน สัญญาไม่เสร็จ', heroBadge:'บริษัทรับสร้างบ้านอันดับ 1', heroTitle:'สร้างบ้านในฝันของคุณ', heroSubtitle:'' };
     const raw = localStorage.getItem('rm_site_info');
-    if (!raw) return;
-    const info = JSON.parse(raw);
-    if (!info) return;
+    const info = raw ? { ...SITE_DEFAULTS, ...JSON.parse(raw) } : SITE_DEFAULTS;
 
     // Helper functions
     const setText = (id, text) => {
@@ -2945,15 +2958,15 @@ function renderSiteInfo() {
     if (info.navModelsLabel) setText('navLinkModels', info.navModelsLabel);
 
     // หมวด 2: Hero & สถิติ
-    if (info.heroBadge) setText('heroBadgeText', info.heroBadge);
+    setText('heroBadgeText', info.heroBadge);
     if (info.heroTitle) setHtml('heroTitleEl', info.heroTitle);
     if (info.heroSubtitle) setText('heroDescEl', info.heroSubtitle);
-    if (info.stat1Num) setText('heroStat1Num', info.stat1Num);
-    if (info.stat1Label) setText('heroStat1Label', info.stat1Label);
-    if (info.stat2Num) setText('heroStat2Num', info.stat2Num);
-    if (info.stat2Label) setText('heroStat2Label', info.stat2Label);
-    if (info.stat3Num) setText('heroStat3Num', info.stat3Num);
-    if (info.stat3Label) setText('heroStat3Label', info.stat3Label);
+    setText('heroStat1Num', info.stat1Num);
+    setText('heroStat1Label', info.stat1Label);
+    setText('heroStat2Num', info.stat2Num);
+    setText('heroStat2Label', info.stat2Label);
+    setText('heroStat3Num', info.stat3Num);
+    setText('heroStat3Label', info.stat3Label);
 
     // หมวด 3: หัวข้อและคำบรรยายของแต่ละหมวด
     if (info.secModelsTitle) setHtml('secModelsTitle', info.secModelsTitle);
