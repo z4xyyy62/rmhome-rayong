@@ -3,7 +3,7 @@
    Theme: Deep Emerald Forest Green & Luxury Radiant Gold
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
 
 :root {
   /* Christmas Red & Crimson Palette */
@@ -65,7 +65,7 @@
   --border-white-subtle: rgba(255, 255, 255, 0.16);
 
   /* Typography */
-  --font-thai: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-thai: 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Cinzel', serif;
 
   /* Text Colors */
