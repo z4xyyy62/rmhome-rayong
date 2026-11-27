@@ -581,10 +581,10 @@ function getOrbitRadii() {
       tiltY: 34
     };
   } else {
-    // Desktop: 100% UNTOUCHED!
+    // Desktop: Scaled up slightly for broader display
     return {
-      rx: 390,
-      rz: 210,
+      rx: 440,
+      rz: 230,
       tiltY: 38
     };
   }
