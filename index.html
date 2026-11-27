@@ -118,8 +118,8 @@
             style="width: 100%; height: 100%; object-fit: contain; border-radius: 9px; display: block;">
         </div>
         <div class="brand-text">
-          <span class="brand-title">RMHOME</span>
-          <span class="brand-sub">สร้างบ้านระยอง • คุณภาพพรีเมียม</span>
+          <span class="brand-title" id="siteBrandTitle">RMHOME</span>
+          <span class="brand-sub" id="siteBrandSub">สร้างบ้านระยอง • คุณภาพพรีเมียม</span>
         </div>
       </a>
 
@@ -285,20 +285,20 @@
       <!-- Hero Trust Stats -->
       <div class="hero-stats">
         <div class="stat-item">
-          <div class="stat-number">10+</div>
-          <div class="stat-label">ปีประสบการณ์ในระยอง</div>
+          <div class="stat-number" id="heroStat1Num">10+</div>
+          <div class="stat-label" id="heroStat1Label">ปีประสบการณ์ในระยอง</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">200+</div>
-          <div class="stat-label">หลังส่งมอบผลงานจริง</div>
+          <div class="stat-number" id="heroStat2Num">200+</div>
+          <div class="stat-label" id="heroStat2Label">หลังส่งมอบผลงานจริง</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">0%</div>
-          <div class="stat-label">สถิติทิ้งงาน สัญญาชัดเจน</div>
+          <div class="stat-number" id="heroStat3Num">100%</div>
+          <div class="stat-label" id="heroStat3Label">คุมงบได้ ไม่ทิ้งงาน</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">100%</div>
-          <div class="stat-label">ลูกค้าพึงพอใจ</div>
+          <div class="stat-number" id="heroStat4Num">20 ปี</div>
+          <div class="stat-label" id="heroStat4Label">รับประกันโครงสร้าง</div>
         </div>
       </div>
     </div>
@@ -310,8 +310,8 @@
       <div class="section-tag">
         <span class="gold-badge">WARM HOME COLLECTIONS</span>
       </div>
-      <h2 class="section-title">บ้านอบอุ่นที่เรามอบให้คุณ <span class="text-gold-gradient">RMHome ระยอง</span></h2>
-      <p class="section-subtitle">
+      <h2 class="section-title" id="secModelsTitle">บ้านอบอุ่นที่เรามอบให้คุณ <span class="text-gold-gradient">RMHome ระยอง</span></h2>
+      <p class="section-subtitle" id="secModelsSubtitle">
         ดีไซน์สถาปัตยกรรมร่วมสมัย ลงตัวกับสภาพอากาศเมืองชายฝั่งระยอง ฟังก์ชันตอบโจทย์ทุกเจเนอเรชัน
         ปรับแต่งแปลนได้ตามขนาดที่ดินของคุณ
       </p>
@@ -549,8 +549,8 @@
       <div class="section-tag">
         <span class="gold-badge">BUDGET ESTIMATION</span>
       </div>
-      <h2 class="section-title">โปรแกรมคำนวณงบสร้างบ้าน <span class="text-gold-gradient">ระยอง</span></h2>
-      <p class="section-subtitle">
+      <h2 class="section-title" id="secCalcTitle">โปรแกรมคำนวณงบสร้างบ้าน <span class="text-gold-gradient">ระยอง</span></h2>
+      <p class="section-subtitle" id="secCalcSubtitle">
         วางแผนการเงินอย่างแม่นยำ เลือกระดับวัสดุและขนาดพื้นที่ใช้สอย
         เพื่อประเมินราคาก่อสร้างและค่างวดผ่อนธนาคารโดยประมาณ
       </p>
@@ -690,9 +690,9 @@
           <div class="section-tag" style="text-align:left;">
             <span class="gold-badge">ENGINEERING EXCELLENCE</span>
           </div>
-          <h3>มาตรฐานงานวิศวกรรมสากล<br><span class="text-gold-gradient">มั่นคง ปลอดภัย อยู่ได้ชั่วลูกชั่วหลาน</span>
+          <h3 id="secStandardsTitle">มาตรฐานงานวิศวกรรมสากล<br><span class="text-gold-gradient">มั่นคง ปลอดภัย อยู่ได้ชั่วลูกชั่วหลาน</span>
           </h3>
-          <p>
+          <p id="secStandardsSubtitle">
             เพราะบ้านคือการลงทุนครั้งสำคัญในชีวิต RMHome ยึดมั่นในความซื่อสัตย์และมาตรฐานวิศวกรรมสูงสุด
             เราไม่ลดสเปกวัสดุ ตรวจสอบคุณภาพตามคู่มือ QC มากกว่า 120 รายการก่อนส่งมอบ
           </p>
@@ -738,9 +738,9 @@
       <div class="section-tag">
         <span class="gold-badge">OUR SERVICES</span>
       </div>
-      <h2 class="section-title">บริการครบวงจร <span class="text-gold-gradient">ของเรา</span></h2>
+      <h2 class="section-title" id="secServicesTitle">บริการครบวงจร <span class="text-gold-gradient">ของเรา</span></h2>
       <div class="title-accent-bar"></div>
-      <p class="section-subtitle">
+      <p class="section-subtitle" id="secServicesSubtitle">
         RMHome ดูแลครบ จบในที่เดียว ลดความยุ่งยาก ประหยัดเวลา เพื่อความสะดวกสบายสูงสุดของเจ้าของบ้าน
       </p>
 
@@ -846,8 +846,8 @@
       <div class="section-tag">
         <span class="gold-badge">HOW IT WORKS</span>
       </div>
-      <h2 class="section-title">6 ขั้นตอนสร้างบ้านง่ายๆ <span class="text-gold-gradient">กับ RMHome</span></h2>
-      <p class="section-subtitle">
+      <h2 class="section-title" id="secWorkflowTitle">6 ขั้นตอนสร้างบ้านง่ายๆ <span class="text-gold-gradient">กับ RMHome</span></h2>
+      <p class="section-subtitle" id="secWorkflowSubtitle">
         กระบวนการทำงานที่เป็นระบบ ตรวจสอบได้ทุกขั้นตอน เพื่อความสบายใจสูงสุดของเจ้าของบ้าน
       </p>
 
@@ -894,10 +894,10 @@
       <div class="section-tag" style="text-align:center; margin-bottom:0.75rem;">
         <span class="gold-badge">LIVE SITE TRACKER</span>
       </div>
-      <h2 style="text-align:center; font-size:2rem; font-weight:700; color:#fff; margin-bottom:0.6rem; letter-spacing:-0.02em;">
+      <h2 id="secTrackerTitle" style="text-align:center; font-size:2rem; font-weight:700; color:#fff; margin-bottom:0.6rem; letter-spacing:-0.02em;">
         🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ
       </h2>
-      <p style="text-align:center; color:var(--text-dim); max-width:680px; margin:0 auto 2.25rem auto; font-size:0.95rem; line-height:1.6;">
+      <p id="secTrackerSubtitle" style="text-align:center; color:var(--text-dim); max-width:680px; margin:0 auto 2.25rem auto; font-size:0.95rem; line-height:1.6;">
         สำหรับลูกค้าคนสำคัญของ RMHome กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์ เพื่อเข้าสู่ระบบตรวจสอบความคืบหน้า 5 งวดงานก่อสร้างของคุณแบบเรียลไทม์
       </p>
 
@@ -929,7 +929,7 @@
         <div class="section-tag">
           <span class="gold-badge">COVERAGE AREA</span>
         </div>
-        <h3>พื้นที่ให้บริการรับสร้างบ้านในจังหวัดระยอง และภาคตะวันออก</h3>
+        <h3 id="secAreasTitle">พื้นที่ให้บริการรับสร้างบ้านในจังหวัดระยอง และภาคตะวันออก</h3>
         <p>RMHome พร้อมส่งทีมสำรวจและเข้าก่อสร้างครอบคลุมทุกอำเภอในระยอง และจังหวัดใกล้เคียง: <strong>ชลบุรี · จันทบุรี
             · ตราด · ปราจีนบุรี · ฉะเชิงเทรา · สระแก้ว</strong></p>
 
@@ -1032,7 +1032,7 @@
           <div class="section-tag" style="text-align:left; margin-bottom:0.5rem;">
             <span class="gold-badge">TESTIMONIALS</span>
           </div>
-          <h2 class="section-title" style="text-align:left; margin-bottom:0.5rem;">
+          <h2 class="section-title" id="secReviewsTitle" style="text-align:left; margin-bottom:0.5rem;">
             เสียงตอบรับจาก <span class="text-gold-gradient">ลูกค้าในระยอง</span>
           </h2>
           <p class="section-subtitle" style="text-align:left; margin:0 0 0.75rem 0;">
@@ -1129,8 +1129,8 @@
           <div class="section-tag" style="text-align:left;">
             <span class="gold-badge">CONTACT US</span>
           </div>
-          <h3>พร้อมสร้างบ้านในฝัน<br><span class="text-gold-gradient">ปรึกษาวิศวกร RMHome</span></h3>
-          <p>
+          <h3 id="secContactTitle">พร้อมสร้างบ้านในฝัน<br><span class="text-gold-gradient">ปรึกษาวิศวกร RMHome</span></h3>
+          <p id="secContactSubtitle">
             ติดต่อสอบถาม นัดหมายสำรวจแปลงที่ดินในจังหวัดระยองฟรี หรือขอรับคำแนะนำด้านสินเชื่อและการออกแบบบ้านได้ทุกวัน
           </p>
 
@@ -1144,7 +1144,7 @@
               </div>
               <div class="direct-text">
                 <strong>เบอร์โทรศัพท์ติดต่อด่วน:</strong>
-                <a href="tel:0912998797" style="color:#fff; font-size:1.1rem; font-weight:700;">091-299-8797</a>
+                <a href="tel:0912998797" id="siteContactPhoneLink" style="color:#fff; font-size:1.1rem; font-weight:700;">091-299-8797</a>
               </div>
             </div>
 
@@ -1254,11 +1254,11 @@
                 style="width: 100%; height: 100%; object-fit: contain; border-radius: 9px; display: block;">
             </div>
             <div class="brand-text">
-              <span class="brand-title">RMHOME</span>
-              <span class="brand-sub">สร้างบ้านระยอง</span>
+              <span class="brand-title" id="siteFooterBrandTitle">RMHOME</span>
+              <span class="brand-sub" id="siteFooterBrandSub">สร้างบ้านระยอง</span>
             </div>
           </div>
-          <p>
+          <p id="siteFooterAbout">
             บริษัท อาร์เอ็มโฮม คอนสตรัคชั่น (ระยอง) จำกัด ผู้นำนวัตกรรมการรับสร้างบ้านครบวงจรในจังหวัดระยอง
             ด้วยทีมวิศวกรและสถาปนิกวิชาชีพ มาตรฐานโครงสร้างรับประกัน 20 ปี
           </p>
@@ -1295,7 +1295,7 @@
           <h4 class="footer-heading">ที่ตั้งสำนักงานระยอง</h4>
           <div class="footer-contact-info">
             <div id="siteAddressFooter">📍 41/5 หมู่ 4 หมู่บ้านหนองตะแบก ต.ตาขัน อ.บ้านค่าย จ.ระยอง 21120</div>
-            <div>📞 โทร: <a href="tel:0912998797" style="color:var(--color-gold-300);">091-299-8797</a></div>
+            <div>📞 โทร: <a href="tel:0912998797" id="siteFooterPhoneLink" style="color:var(--color-gold-300);">091-299-8797</a></div>
             <div>💬 LINE: <a href="https://line.me/ti/p/~sunny_anavin" target="_blank" rel="noopener" id="siteFooterLineLink" style="color:#06c755; font-weight:600; text-decoration:none;">sunny_anavin</a></div>
             <div>🎵 TikTok: <a href="https://www.tiktok.com/@rm.home.design.co" target="_blank" rel="noopener" style="color:#25f4ee; font-weight:600; text-decoration:none;">@rm.home.design.co</a></div>
             <div>✉️ Email: metineep16@gmail.com</div>
@@ -1305,7 +1305,7 @@
       </div>
 
       <div class="footer-bottom">
-        <div>© 2026 RMHome Rayong (สร้างบ้านระยอง). All Rights Reserved.</div>
+        <div id="siteFooterCopyright">© 2026 RMHome Rayong (สร้างบ้านระยอง). All Rights Reserved.</div>
         <div class="footer-bottom-meta">
           <span>นโยบายความเป็นส่วนตัว | ข้อกำหนดและเงื่อนไขการให้บริการ</span>
           <a href="admin.html" class="admin-login-badge" title="ระบบรายงานและจัดการข้อมูลหลังบ้าน (Admin Report)"

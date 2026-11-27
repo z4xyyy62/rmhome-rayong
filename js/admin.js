@@ -625,15 +625,57 @@ function renderLeadsList() {
 
     const leadTime = formatLeadDateTime(lead);
 
+    const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+    const initialChar = escapeHtml((lead.name || 'ค').trim().charAt(0).toUpperCase());
+
     row.innerHTML = `
-      <div class="lead-info-col">
-        <span class="lead-name">${escapeHtml(lead.name)}</span>
-        <span class="lead-phone">${escapeHtml(lead.phone)}</span>
-        <span style="font-size:0.75rem; color:#94a3b8; margin-left:0.5rem;">📍 ${escapeHtml(lead.location || 'ระยอง')}</span>
-        <span style="font-size:0.74rem; color:#64748b; margin-left:0.35rem;">🕒 ${escapeHtml(leadTime)}</span>
+      <div class="lead-card-header">
+        <div class="lead-avatar-col">
+          <div class="lead-avatar">${initialChar}</div>
+          <div class="lead-title-box">
+            <span class="lead-name">${escapeHtml(lead.name || 'ไม่ระบุชื่อ')}</span>
+            <span class="lead-time-sub">🕒 ${escapeHtml(leadTime)}</span>
+          </div>
+        </div>
+        <button type="button" class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
       </div>
-      <button class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
+
+      <div class="lead-card-details">
+        <div class="lead-detail-chip">
+          <span class="chip-icon">📞</span>
+          <span class="chip-val">${escapeHtml(lead.phone || '-')}</span>
+        </div>
+        <div class="lead-detail-chip">
+          <span class="chip-icon">📍</span>
+          <span class="chip-val">${escapeHtml(lead.location || 'ระยอง')}</span>
+        </div>
+        <div class="lead-detail-chip budget-chip">
+          <span class="chip-icon">💰</span>
+          <span class="chip-val">${escapeHtml(lead.budget || 'ไม่ระบุงบ')}</span>
+        </div>
+      </div>
+
+      <div class="lead-card-actions">
+        ${cleanPhone ? `
+          <a href="tel:${cleanPhone}" class="btn-lead-call" title="โทรหาลูกค้าทันที" onclick="event.stopPropagation();">
+            <svg viewBox="0 0 24 24" style="width:15px; height:15px; fill:currentColor;"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            <span>โทรออก</span>
+          </a>
+        ` : ''}
+        <button type="button" class="btn-lead-view" data-id="${lead.id}">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          <span>ดูรายละเอียด &amp; จัดการงาน</span>
+        </button>
+      </div>
     `;
+
+    const viewBtn = row.querySelector('.btn-lead-view');
+    if (viewBtn) {
+      viewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLeadDetail(lead);
+      });
+    }
 
     const pill = row.querySelector('.lead-status-pill');
     pill.addEventListener('click', (e) => {
@@ -2012,22 +2054,47 @@ function renderLeadsTabList() {
       nextStatusHint = 'คลิกวนกลับเป็น ➔ รอติดต่อ';
     }
 
+    const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+    const initialChar = escapeHtml((lead.name || 'ค').trim().charAt(0).toUpperCase());
+
     row.innerHTML = `
-      <div class="lead-avatar">${escapeHtml((lead.name || 'ค').charAt(0))}</div>
-      <div class="lead-info" style="cursor:pointer;">
-        <div class="lead-name-row">
-          <span class="lead-name">${escapeHtml(lead.name)}</span>
-          <button class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
+      <div class="lead-card-header">
+        <div class="lead-avatar-col">
+          <div class="lead-avatar">${initialChar}</div>
+          <div class="lead-title-box">
+            <span class="lead-name">${escapeHtml(lead.name || 'ไม่ระบุชื่อ')}</span>
+            <span class="lead-time-sub">🕒 ${escapeHtml(formatLeadDateTime(lead))}</span>
+          </div>
         </div>
-        <div class="lead-phone">📞 ${escapeHtml(lead.phone)} • ${escapeHtml(lead.location || 'ระยอง')}</div>
-        <div class="lead-meta-row">
-          <span>💰 ${escapeHtml(lead.budget || 'ไม่ระบุงบ')}</span>
-          <span>•</span>
-          <span>🕒 ${escapeHtml(formatLeadDateTime(lead))}</span>
+        <button type="button" class="lead-status-pill ${statusClass}" title="${nextStatusHint} (${statusText})">${statusText} ⇄</button>
+      </div>
+
+      <div class="lead-card-details">
+        <div class="lead-detail-chip">
+          <span class="chip-icon">📞</span>
+          <span class="chip-val">${escapeHtml(lead.phone || '-')}</span>
+        </div>
+        <div class="lead-detail-chip">
+          <span class="chip-icon">📍</span>
+          <span class="chip-val">${escapeHtml(lead.location || 'ระยอง')}</span>
+        </div>
+        <div class="lead-detail-chip budget-chip">
+          <span class="chip-icon">💰</span>
+          <span class="chip-val">${escapeHtml(lead.budget || 'ไม่ระบุงบ')}</span>
         </div>
       </div>
-      <div class="lead-actions">
-        <button class="btn-lead-view" data-id="${lead.id}">ดูข้อมูล</button>
+
+      <div class="lead-card-actions">
+        ${cleanPhone ? `
+          <a href="tel:${cleanPhone}" class="btn-lead-call" title="โทรหาลูกค้าทันที" onclick="event.stopPropagation();">
+            <svg viewBox="0 0 24 24" style="width:15px; height:15px; fill:currentColor;"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            <span>โทรออก</span>
+          </a>
+        ` : ''}
+        <button type="button" class="btn-lead-view" data-id="${lead.id}">
+          <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          <span>ดูรายละเอียด &amp; จัดการงาน</span>
+        </button>
       </div>
     `;
 
@@ -3120,20 +3187,53 @@ function saveSingleWorkflow(card, wfId, isAutoSave = false) {
 }
 
 /* ==========================================================================
-   12. Site Content CMS (แถบโปรโมชั่น & ข้อความหน้าเว็บหลัก)
+   12. Site Content CMS (All-in-One Site Content CMS - ข้อความทุกหน้าของเว็บ)
    ========================================================================== */
 const DEFAULT_SITE_INFO = {
-  promoText: 'จองสร้างบ้านระยองวันนี้ ฟรี! ออกแบบ 3D + ค่าขออนุญาตก่อสร้าง + ส่วนลดสูงสุด 300,000 บ.',
+  // หมวด 1: ข้อมูลแบรนด์ & การติดต่อ
+  brandName: 'RMHOME',
+  brandSub: 'สร้างบ้านระยอง • คุณภาพพรีเมียม',
   promoPill: 'PROMOTION 2026',
   phone: '091-299-8797',
+  promoText: 'จองสร้างบ้านระยองวันนี้ ฟรี! ออกแบบ 3D + ค่าขออนุญาตก่อสร้าง + ส่วนลดสูงสุด 300,000 บ.',
   hours: 'เปิดบริการ: จันทร์ - เสาร์ (09:00 - 18:00 น.)',
+  lineId: 'sunny_anavin',
+  lineUrl: 'https://line.me/ti/p/~sunny_anavin',
+  navModelsLabel: 'บ้านอบอุ่นที่เรามอบให้คุณ',
+  address: '41/5 หมู่ 4 หมู่บ้านหนองตะแบก ต.ตาขัน อ.บ้านค่าย จ.ระยอง 21120',
+
+  // หมวด 2: หน้าแรก Hero & สถิติความน่าเชื่อถือ
   heroBadge: 'บริษัทรับสร้างบ้านอันดับ 1 ในจังหวัดระยอง และพื้นที่เศรษฐกิจ EEC',
   heroTitle: 'สร้างบ้านในฝันของคุณ<br><span class="hero-brand-gold">สร้างบ้านระยอง RMHome</span>',
   heroSubtitle: 'เนรมิตบ้านคุณภาพระดับพรีเมียม ผสานความหรูหราและอบอุ่นต้อนรับเทศกาลแห่งความสุข ออกแบบเฉพาะเพื่อชีวิตคุณ คุมงบได้ ไม่บานปลาย หมดปัญหาทิ้งงาน 100% พร้อมบริการยื่นกู้และขออนุญาตครบวงจร',
-  navModelsLabel: 'บ้านอบอุ่นที่เรามอบให้คุณ',
-  address: '41/5 หมู่ 4 หมู่บ้านหนองตะแบก ต.ตาขัน อ.บ้านค่าย จ.ระยอง 21120',
-  lineId: 'sunny_anavin',
-  lineUrl: 'https://line.me/ti/p/~sunny_anavin'
+  stat1Num: '10+',
+  stat1Label: 'ปีประสบการณ์ในระยอง',
+  stat2Num: '200+',
+  stat2Label: 'หลังส่งมอบผลงานจริง',
+  stat3Num: '100%',
+  stat3Label: 'คุมงบได้ ไม่ทิ้งงาน',
+
+  // หมวด 3: หัวข้อและคำบรรยายของแต่ละหมวด
+  secModelsTitle: 'บ้านอบอุ่นที่เรามอบให้คุณ <span class="text-gold-gradient">RMHome ระยอง</span>',
+  secModelsSubtitle: 'ดีไซน์สถาปัตยกรรมร่วมสมัย ลงตัวกับสภาพอากาศเมืองชายฝั่งระยอง ฟังก์ชันตอบโจทย์ทุกเจเนอเรชัน ปรับแต่งแปลนได้ตามขนาดที่ดินของคุณ',
+  secCalcTitle: 'โปรแกรมคำนวณงบสร้างบ้าน <span class="text-gold-gradient">ระยอง</span>',
+  secCalcSubtitle: 'วางแผนการเงินอย่างแม่นยำ เลือกระดับวัสดุและขนาดพื้นที่ใช้สอย เพื่อประเมินราคาก่อสร้างและค่างวดผ่อนธนาคารโดยประมาณ',
+  secServicesTitle: 'บริการครบวงจร <span class="text-gold-gradient">ของเรา</span>',
+  secServicesSubtitle: 'RMHome ดูแลครบ จบในที่เดียว ลดความยุ่งยาก ประหยัดเวลา เพื่อความสะดวกสบายสูงสุดของเจ้าของบ้าน',
+  secStandardsTitle: 'มาตรฐานงานวิศวกรรมสากล<br><span class="text-gold-gradient">มั่นคง ปลอดภัย อยู่ได้ชั่วลูกชั่วหลาน</span>',
+  secStandardsSubtitle: 'เพราะบ้านคือการลงทุนครั้งสำคัญในชีวิต RMHome ยึดมั่นในความซื่อสัตย์และมาตรฐานวิศวกรรมสูงสุด เราไม่ลดสเปกวัสดุ ตรวจสอบคุณภาพตามคู่มือ QC มากกว่า 120 รายการก่อนส่งมอบ',
+  secWorkflowTitle: '6 ขั้นตอนสร้างบ้านง่ายๆ <span class="text-gold-gradient">กับ RMHome</span>',
+  secWorkflowSubtitle: 'กระบวนการทำงานที่เป็นระบบ ตรวจสอบได้ทุกขั้นตอน เพื่อความสบายใจสูงสุดของเจ้าของบ้าน',
+  secTrackerTitle: '🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ',
+  secTrackerSubtitle: 'สำหรับลูกค้าคนสำคัญของ RMHome กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์ เพื่อเข้าสู่ระบบตรวจสอบความคืบหน้า 5 งวดงานก่อสร้างของคุณแบบเรียลไทม์',
+  secAreasTitle: 'พื้นที่ให้บริการรับสร้างบ้านในจังหวัดระยอง และภาคตะวันออก',
+  secReviewsTitle: 'เสียงตอบรับจาก <span class="text-gold-gradient">ลูกค้าในระยอง</span>',
+  secContactTitle: 'พร้อมสร้างบ้านในฝัน<br><span class="text-gold-gradient">ปรึกษาวิศวกร RMHome</span>',
+  secContactSubtitle: 'ติดต่อสอบถาม นัดหมายสำรวจแปลงที่ดินในจังหวัดระยองฟรี หรือขอรับคำแนะนำด้านสินเชื่อและการออกแบบบ้านได้ทุกวัน',
+
+  // หมวด 4: ส่วนท้ายเว็บ & ลิขสิทธิ์
+  footerAbout: 'บริษัท อาร์เอ็มโฮม คอนสตรัคชั่น (ระยอง) จำกัด ผู้นำนวัตกรรมการรับสร้างบ้านครบวงจรในจังหวัดระยอง ด้วยทีมวิศวกรและสถาปนิกวิชาชีพ มาตรฐานโครงสร้างรับประกัน 20 ปี',
+  footerCopyright: '© 2026 RMHome Rayong (สร้างบ้านระยอง). All Rights Reserved.'
 };
 
 function getStoredSiteInfo() {
@@ -3153,6 +3253,9 @@ function saveSiteInfo(info) {
   try {
     localStorage.setItem('rm_site_info', JSON.stringify(info));
     notifyContentUpdated('site_info');
+    if (window.CloudSync && typeof window.CloudSync.syncAll === 'function') {
+      window.CloudSync.syncAll();
+    }
   } catch (e) {
     console.error('Failed to save site info:', e);
   }
@@ -3163,17 +3266,57 @@ function initSiteContentCMS() {
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+
+      const getVal = (id, def = '') => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : def;
+      };
+
       const info = {
-        promoText: document.getElementById('editPromoText').value.trim(),
-        promoPill: document.getElementById('editPromoPill').value.trim(),
-        phone: document.getElementById('editPhone').value.trim(),
-        hours: document.getElementById('editHours').value.trim(),
-        lineId: (document.getElementById('editLineId') ? document.getElementById('editLineId').value.trim() : 'sunny_anavin'),
-        lineUrl: (document.getElementById('editLineUrl') ? document.getElementById('editLineUrl').value.trim() : 'https://line.me/ti/p/~sunny_anavin'),
-        navModelsLabel: document.getElementById('editNavModelsLabel').value.trim(),
-        heroBadge: document.getElementById('editHeroBadge').value.trim(),
-        heroTitle: document.getElementById('editHeroTitle').value.trim(),
-        heroSubtitle: document.getElementById('editHeroSubtitle').value.trim()
+        // หมวด 1
+        brandName: getVal('editBrandName', 'RMHOME'),
+        brandSub: getVal('editBrandSub', 'สร้างบ้านระยอง • คุณภาพพรีเมียม'),
+        promoPill: getVal('editPromoPill', 'PROMOTION 2026'),
+        phone: getVal('editPhone', '091-299-8797'),
+        promoText: getVal('editPromoText', 'จองสร้างบ้านวันนี้ ฟรี! ออกแบบ 3D + ค่าขออนุญาตก่อสร้าง'),
+        hours: getVal('editHours', 'จันทร์ - เสาร์ (09:00 - 18:00 น.)'),
+        lineId: getVal('editLineId', 'sunny_anavin'),
+        lineUrl: getVal('editLineUrl', 'https://line.me/ti/p/~sunny_anavin'),
+        navModelsLabel: getVal('editNavModelsLabel', 'บ้านอบอุ่นที่เรามอบให้คุณ'),
+        address: getVal('editAddress', '41/5 หมู่ 4 หมู่บ้านหนองตะแบก ต.ตาขัน อ.บ้านค่าย จ.ระยอง 21120'),
+
+        // หมวด 2
+        heroBadge: getVal('editHeroBadge', 'บริษัทรับสร้างบ้านอันดับ 1 ในจังหวัดระยอง และพื้นที่เศรษฐกิจ EEC'),
+        heroTitle: getVal('editHeroTitle', 'สร้างบ้านในฝันของคุณ<br><span class="hero-brand-gold">สร้างบ้านระยอง RMHome</span>'),
+        heroSubtitle: getVal('editHeroSubtitle', 'บริษัทรับสร้างบ้านคุณภาพพรีเมียมอันดับ 1 ในระยอง ออกแบบบ้านสวย คุมงบได้ 100%'),
+        stat1Num: getVal('editStat1Num', '10+'),
+        stat1Label: getVal('editStat1Label', 'ปีประสบการณ์ในระยอง'),
+        stat2Num: getVal('editStat2Num', '200+'),
+        stat2Label: getVal('editStat2Label', 'หลังส่งมอบผลงานจริง'),
+        stat3Num: getVal('editStat3Num', '100%'),
+        stat3Label: getVal('editStat3Label', 'คุมงบได้ ไม่ทิ้งงาน'),
+
+        // หมวด 3
+        secModelsTitle: getVal('editSecModelsTitle', 'บ้านอบอุ่นที่เรามอบให้คุณ'),
+        secModelsSubtitle: getVal('editSecModelsSubtitle', 'ดีไซน์สถาปัตยกรรมร่วมสมัย ลงตัวกับสภาพอากาศเมืองระยอง'),
+        secCalcTitle: getVal('editSecCalcTitle', 'โปรแกรมคำนวณงบสร้างบ้าน ระยอง'),
+        secCalcSubtitle: getVal('editSecCalcSubtitle', 'วางแผนการเงินอย่างแม่นยำ เลือกระดับวัสดุและขนาดพื้นที่ใช้สอย'),
+        secServicesTitle: getVal('editSecServicesTitle', 'บริการครบวงจร ของเรา'),
+        secServicesSubtitle: getVal('editSecServicesSubtitle', 'ดูแลครบ จบในที่เดียว ลดความยุ่งยาก ประหยัดเวลา'),
+        secStandardsTitle: getVal('editSecStandardsTitle', 'มาตรฐานงานวิศวกรรมสากล'),
+        secStandardsSubtitle: getVal('editSecStandardsSubtitle', 'คัดสรรวัสดุพรีเมียม และควบคุมงานก่อสร้างทุกขั้นตอนโดยวิศวกรวิชาชีพ'),
+        secWorkflowTitle: getVal('editSecWorkflowTitle', 'ขั้นตอนสร้างบ้านง่ายๆ กับเรา'),
+        secWorkflowSubtitle: getVal('editSecWorkflowSubtitle', 'กระบวนการทำงานที่เป็นระบบ ตรวจสอบได้ทุกขั้นตอน'),
+        secTrackerTitle: getVal('editSecTrackerTitle', '🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ'),
+        secTrackerSubtitle: getVal('editSecTrackerSubtitle', 'กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์ เพื่อเข้าดูรายงานความคืบหน้า'),
+        secAreasTitle: getVal('editSecAreasTitle', 'พื้นที่ให้บริการรับสร้างบ้านในจังหวัดระยอง และภาคตะวันออก'),
+        secReviewsTitle: getVal('editSecReviewsTitle', 'เสียงตอบรับจาก ลูกค้าตัวจริง'),
+        secContactTitle: getVal('editSecContactTitle', 'ติดต่อขอรับคำปรึกษา & ประเมินราคาฟรี'),
+        secContactSubtitle: getVal('editSecContactSubtitle', 'พร้อมให้คำแนะนำ ออกแบบ 3D และประเมินราคาเบื้องต้นฟรี'),
+
+        // หมวด 4
+        footerAbout: getVal('editFooterAbout', 'บริษัทรับสร้างบ้านคุณภาพพรีเมียม ออกแบบและก่อสร้างด้วยมาตรฐานวิศวกรรม'),
+        footerCopyright: getVal('editFooterCopyright', '© 2026 RMHome Rayong. All Rights Reserved.')
       };
 
       saveSiteInfo(info);
@@ -3183,7 +3326,7 @@ function initSiteContentCMS() {
         feedback.style.display = 'inline';
         setTimeout(() => { feedback.style.display = 'none'; }, 2500);
       }
-      alert('✅ บันทึกข้อความหน้าเว็บหลักและแถบโปรโมชั่นเรียบร้อยแล้ว!\n\nหน้าแรกจะแสดงข้อความใหม่ทันทีแบบเรียลไทม์');
+      alert('✅ บันทึกข้อความและข้อมูลเว็บไซต์เรียบร้อยแล้ว!\n\nหน้าแรกจะแสดงข้อความใหม่ทันทีแบบเรียลไทม์ และซิงค์ขึ้นระบบ Cloud อัตโนมัติ');
     });
   }
 
@@ -3194,13 +3337,17 @@ function loadSiteContentForm() {
   const info = getStoredSiteInfo();
   const setVal = (id, val) => {
     const el = document.getElementById(id);
-    if (el) el.value = val || '';
+    if (el) el.value = (val !== undefined && val !== null) ? val : '';
   };
 
-  setVal('editPromoText', info.promoText);
+  // หมวด 1
+  setVal('editBrandName', info.brandName || 'RMHOME');
+  setVal('editBrandSub', info.brandSub || 'สร้างบ้านระยอง • คุณภาพพรีเมียม');
   setVal('editPromoPill', info.promoPill);
   setVal('editPhone', info.phone);
+  setVal('editPromoText', info.promoText);
   setVal('editHours', info.hours);
+
   let currentLineId = info.lineId || 'sunny_anavin';
   let currentLineUrl = info.lineUrl || 'https://line.me/ti/p/~sunny_anavin';
   if (currentLineId === '@sunny_anavin') currentLineId = 'sunny_anavin';
@@ -3208,9 +3355,40 @@ function loadSiteContentForm() {
   setVal('editLineId', currentLineId);
   setVal('editLineUrl', currentLineUrl);
   setVal('editNavModelsLabel', info.navModelsLabel);
+  setVal('editAddress', info.address);
+
+  // หมวด 2
   setVal('editHeroBadge', info.heroBadge);
   setVal('editHeroTitle', info.heroTitle);
   setVal('editHeroSubtitle', info.heroSubtitle);
+  setVal('editStat1Num', info.stat1Num || '10+');
+  setVal('editStat1Label', info.stat1Label || 'ปีประสบการณ์ในระยอง');
+  setVal('editStat2Num', info.stat2Num || '200+');
+  setVal('editStat2Label', info.stat2Label || 'หลังส่งมอบผลงานจริง');
+  setVal('editStat3Num', info.stat3Num || '100%');
+  setVal('editStat3Label', info.stat3Label || 'คุมงบได้ ไม่ทิ้งงาน');
+
+  // หมวด 3
+  setVal('editSecModelsTitle', info.secModelsTitle || 'บ้านอบอุ่นที่เรามอบให้คุณ');
+  setVal('editSecModelsSubtitle', info.secModelsSubtitle || 'ดีไซน์สถาปัตยกรรมร่วมสมัย ลงตัวกับสภาพอากาศเมืองระยอง');
+  setVal('editSecCalcTitle', info.secCalcTitle || 'โปรแกรมคำนวณงบสร้างบ้าน ระยอง');
+  setVal('editSecCalcSubtitle', info.secCalcSubtitle || 'วางแผนการเงินอย่างแม่นยำ เลือกระดับวัสดุและขนาดพื้นที่ใช้สอย');
+  setVal('editSecServicesTitle', info.secServicesTitle || 'บริการครบวงจร ของเรา');
+  setVal('editSecServicesSubtitle', info.secServicesSubtitle || 'ดูแลครบ จบในที่เดียว ลดความยุ่งยาก ประหยัดเวลา');
+  setVal('editSecStandardsTitle', info.secStandardsTitle || 'มาตรฐานงานวิศวกรรมสากล');
+  setVal('editSecStandardsSubtitle', info.secStandardsSubtitle || 'คัดสรรวัสดุพรีเมียม และควบคุมงานก่อสร้างทุกขั้นตอนโดยวิศวกรวิชาชีพ');
+  setVal('editSecWorkflowTitle', info.secWorkflowTitle || 'ขั้นตอนสร้างบ้านง่ายๆ กับเรา');
+  setVal('editSecWorkflowSubtitle', info.secWorkflowSubtitle || 'กระบวนการทำงานที่เป็นระบบ ตรวจสอบได้ทุกขั้นตอน');
+  setVal('editSecTrackerTitle', info.secTrackerTitle || '🔍 ตรวจเช็กความคืบหน้างานก่อสร้างบ้านของคุณ');
+  setVal('editSecTrackerSubtitle', info.secTrackerSubtitle || 'กรุณากรอกหมายเลขสัญญา หรือเบอร์โทรศัพท์ เพื่อเข้าดูรายงานความคืบหน้า');
+  setVal('editSecAreasTitle', info.secAreasTitle || 'พื้นที่ให้บริการรับสร้างบ้านในจังหวัดระยอง และภาคตะวันออก');
+  setVal('editSecReviewsTitle', info.secReviewsTitle || 'เสียงตอบรับจาก ลูกค้าตัวจริง');
+  setVal('editSecContactTitle', info.secContactTitle || 'ติดต่อขอรับคำปรึกษา & ประเมินราคาฟรี');
+  setVal('editSecContactSubtitle', info.secContactSubtitle || 'พร้อมให้คำแนะนำ ออกแบบ 3D และประเมินราคาเบื้องต้นฟรี');
+
+  // หมวด 4
+  setVal('editFooterAbout', info.footerAbout || 'บริษัทรับสร้างบ้านคุณภาพพรีเมียม ออกแบบและก่อสร้างด้วยมาตรฐานวิศวกรรม');
+  setVal('editFooterCopyright', info.footerCopyright || '© 2026 RMHome Rayong. All Rights Reserved.');
 }
 
 /* ==========================================================================

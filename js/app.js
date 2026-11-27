@@ -2900,47 +2900,84 @@ function renderSiteInfo() {
     const info = JSON.parse(raw);
     if (!info) return;
 
-    if (info.promoText) {
-      const el = document.getElementById('sitePromoText');
-      if (el) el.textContent = info.promoText;
-    }
-    if (info.promoPill) {
-      const el = document.getElementById('sitePromoPill');
-      if (el) el.textContent = info.promoPill;
-    }
-    if (info.phone) {
-      const el = document.getElementById('siteHotlineText');
-      if (el) el.textContent = `สายด่วนวิศวกร: ${info.phone}`;
-      const link = document.getElementById('siteHotlineLink');
-      if (link) link.href = `tel:${info.phone.replace(/[^0-9]/g, '')}`;
-    }
-    if (info.hours) {
-      const el = document.getElementById('siteHoursText');
-      if (el) el.textContent = info.hours;
-    }
-    if (info.address) {
-      const elMain = document.getElementById('siteAddressMain');
-      if (elMain) elMain.textContent = info.address;
-      const elFooter = document.getElementById('siteAddressFooter');
-      if (elFooter) elFooter.textContent = `📍 ${info.address}`;
-    }
-    if (info.navModelsLabel) {
-      const el = document.getElementById('navLinkModels');
-      if (el) el.textContent = info.navModelsLabel;
-    }
-    if (info.heroBadge) {
-      const el = document.getElementById('heroBadgeText');
-      if (el) el.textContent = info.heroBadge;
-    }
-    if (info.heroTitle) {
-      const el = document.getElementById('heroTitleEl');
-      if (el) el.innerHTML = info.heroTitle;
-    }
-    if (info.heroSubtitle) {
-      const el = document.getElementById('heroDescEl');
-      if (el) el.textContent = info.heroSubtitle;
-    }
+    // Helper functions
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el && text !== undefined && text !== null) el.textContent = text;
+    };
+    const setHtml = (id, html) => {
+      const el = document.getElementById(id);
+      if (el && html !== undefined && html !== null) el.innerHTML = html;
+    };
 
+    // หมวด 1: ข้อมูลแบรนด์ & การติดต่อ
+    if (info.brandName) {
+      setText('siteBrandTitle', info.brandName);
+      setText('siteFooterBrandTitle', info.brandName);
+    }
+    if (info.brandSub) {
+      setText('siteBrandSub', info.brandSub);
+      setText('siteFooterBrandSub', info.brandSub);
+    }
+    if (info.promoText) setText('sitePromoText', info.promoText);
+    if (info.promoPill) setText('sitePromoPill', info.promoPill);
+    if (info.phone) {
+      setText('siteHotlineText', `สายด่วนวิศวกร: ${info.phone}`);
+      const cleanPhone = info.phone.replace(/[^0-9]/g, '');
+      const link = document.getElementById('siteHotlineLink');
+      if (link) link.href = `tel:${cleanPhone}`;
+      const footerPhoneLink = document.getElementById('siteFooterPhoneLink');
+      if (footerPhoneLink) {
+        footerPhoneLink.href = `tel:${cleanPhone}`;
+        footerPhoneLink.textContent = info.phone;
+      }
+      const contactPhoneLink = document.getElementById('siteContactPhoneLink');
+      if (contactPhoneLink) {
+        contactPhoneLink.href = `tel:${cleanPhone}`;
+        contactPhoneLink.textContent = info.phone;
+      }
+    }
+    if (info.hours) setText('siteHoursText', info.hours);
+    if (info.address) {
+      setText('siteAddressMain', info.address);
+      setText('siteAddressFooter', `📍 ${info.address}`);
+    }
+    if (info.navModelsLabel) setText('navLinkModels', info.navModelsLabel);
+
+    // หมวด 2: Hero & สถิติ
+    if (info.heroBadge) setText('heroBadgeText', info.heroBadge);
+    if (info.heroTitle) setHtml('heroTitleEl', info.heroTitle);
+    if (info.heroSubtitle) setText('heroDescEl', info.heroSubtitle);
+    if (info.stat1Num) setText('heroStat1Num', info.stat1Num);
+    if (info.stat1Label) setText('heroStat1Label', info.stat1Label);
+    if (info.stat2Num) setText('heroStat2Num', info.stat2Num);
+    if (info.stat2Label) setText('heroStat2Label', info.stat2Label);
+    if (info.stat3Num) setText('heroStat3Num', info.stat3Num);
+    if (info.stat3Label) setText('heroStat3Label', info.stat3Label);
+
+    // หมวด 3: หัวข้อและคำบรรยายของแต่ละหมวด
+    if (info.secModelsTitle) setHtml('secModelsTitle', info.secModelsTitle);
+    if (info.secModelsSubtitle) setText('secModelsSubtitle', info.secModelsSubtitle);
+    if (info.secCalcTitle) setHtml('secCalcTitle', info.secCalcTitle);
+    if (info.secCalcSubtitle) setText('secCalcSubtitle', info.secCalcSubtitle);
+    if (info.secServicesTitle) setHtml('secServicesTitle', info.secServicesTitle);
+    if (info.secServicesSubtitle) setText('secServicesSubtitle', info.secServicesSubtitle);
+    if (info.secStandardsTitle) setHtml('secStandardsTitle', info.secStandardsTitle);
+    if (info.secStandardsSubtitle) setText('secStandardsSubtitle', info.secStandardsSubtitle);
+    if (info.secWorkflowTitle) setHtml('secWorkflowTitle', info.secWorkflowTitle);
+    if (info.secWorkflowSubtitle) setText('secWorkflowSubtitle', info.secWorkflowSubtitle);
+    if (info.secTrackerTitle) setText('secTrackerTitle', info.secTrackerTitle);
+    if (info.secTrackerSubtitle) setText('secTrackerSubtitle', info.secTrackerSubtitle);
+    if (info.secAreasTitle) setText('secAreasTitle', info.secAreasTitle);
+    if (info.secReviewsTitle) setHtml('secReviewsTitle', info.secReviewsTitle);
+    if (info.secContactTitle) setHtml('secContactTitle', info.secContactTitle);
+    if (info.secContactSubtitle) setText('secContactSubtitle', info.secContactSubtitle);
+
+    // หมวด 4: ส่วนท้ายเว็บ & ลิขสิทธิ์
+    if (info.footerAbout) setText('siteFooterAbout', info.footerAbout);
+    if (info.footerCopyright) setText('siteFooterCopyright', info.footerCopyright);
+
+    // LINE Links & Socials
     let lineLink = info.lineUrl || 'https://line.me/ti/p/~sunny_anavin';
     let lineId = info.lineId || 'sunny_anavin';
     if (lineId === '@sunny_anavin' || lineId === '@sunny') lineId = 'sunny_anavin';
