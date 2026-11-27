@@ -4854,8 +4854,12 @@ textarea.form-control {
   }
 }
 
-/* Hide central RMHome logo from 3D rotating showcase on BOTH computer and mobile */
-.orbit-center-core {
+/* Hide central RMHome logo and centerpiece from 3D rotating showcase on BOTH computer and mobile */
+.orbit-centerpiece,
+.orbit-center-core,
+.orbit-center-glow,
+.orbit-emblem-wrap,
+.orbit-core-text {
   display: none !important;
 }
 
